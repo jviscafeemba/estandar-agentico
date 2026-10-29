@@ -1,0 +1,23 @@
+{
+  "fecha": "2026-10-29T16:50:07.913Z",
+  "tarea": "transferencia",
+  "harness": "0.1.0",
+  "configuracion": "sin-harness",
+  "harness_activo": false,
+  "modelo": "predeterminado",
+  "exito": true,
+  "verificacion": true,
+  "suite": true,
+  "toco_verificaciones": false,
+  "costo_usd": 0.3307544,
+  "turnos": 16,
+  "permisos_denegados": [
+    "Edit: <HOME>\\AppData\\Local\\Temp\\eval-demo-inventario-transferencia-8gfF3k\\tests\\inventario.test.mjs",
+    "Edit: <HOME>\\AppData\\Local\\Temp\\eval-demo-inventario-transferencia-8gfF3k\\tests\\inventario.test.mjs"
+  ],
+  "segundos": 93,
+  "respuesta": "Agregué `transferir` a `src/inventario.mjs` y las pruebas están en verde: `npm test` pasa los 6 tests, 2 de ellos nuevos para RF-004.\n\n**Cómo funciona:** una transferencia se registra como dos movimientos nuevos, un egreso en el origen y un ingreso en el destino, en ese orden (ADR-001). No se guarda ningún campo `stock`. Los dos movimientos pasan por `registrarMovimiento`, así que la transferencia tiene las mismas reglas que un movimiento suelto:\n- No puede dejar el origen en negativo (RF-002).\n- La cantidad tiene que ser un entero positivo.\n- Necesita artículo y almacén.\n\nDevuelve una lista nueva y congelada; la original no cambia. Agregué una regla que no estaba en el pedido: si el origen y el destino son el mismo almacén, la función tira un error.\n\n**Pruebas:** primero escribí las pruebas y confirmé que fallaban, después implementé. Cubren:\n- Que se generen los dos movimientos.\n- El stock resultante en cada almacén.\n- Que la lista original no cambie.\n- Los rechazos: stock insuficiente, mismo almacén, cantidad 0 y destino vacío.\n\n**Docs:** en `docs/requerimientos/requerimientos.md` cambié RF-004 de \"Pendiente\" a \"Implementado\".\n\nFaltan dos pasos del flujo del proyecto que no corrí: `/emba-harness:verificar` (el chequeo del brain del proyecto) y `/emba-harness:revisar`, antes del PR.",
+  "error": "",
+  "diff": "diff --git \"a/<ruta-absoluta-al-repo>\\\\proyectos\\\\demo-inventario\\\\src/inventario.mjs\" \"b/<HOME>\\\\AppData\\\\Local\\\\Temp\\\\eval-demo-inventario-transferencia-8gfF3k\\\\src/inventario.mjs\"\nindex 0a41c5e..5d12a6c 100644\n--- \"a/<ruta-absoluta-al-repo>\\\\proyectos\\\\demo-inventario\\\\src/inventario.mjs\"\t\n+++ \"b/<HOME>\\\\AppData\\\\Local\\\\Temp\\\\eval-demo-inventario-transferencia-8gfF3k\\\\src/inventario.mjs\"\n@@ -20,6 +20,14 @@ export function registrarMovimiento(movimientos, movimiento) {\n   return Object.freeze([...movimientos, Object.freeze({ ...movimiento })]);\n }\n \n+// RF-004: una transferencia son dos movimientos (egreso en origen, ingreso en destino), no un cambio de saldos.\n+// El egreso pasa por registrarMovimiento, así que respeta RF-002.\n+export function transferir(movimientos, { articulo, origen, destino, cantidad }) {\n+  if (origen === destino) throw new Error(\"El almacén de origen y el de destino deben ser distintos\");\n+  const conEgreso = registrarMovimiento(movimientos, { tipo: \"egreso\", articulo, almacen: origen, cantidad });\n+  return registrarMovimiento(conEgreso, { tipo: \"ingreso\", articulo, almacen: destino, cantidad });\n+}\n+\n // RF-003: artículos por debajo de su stock mínimo en cada almacén.\n export function articulosAReponer(movimientos, minimos) {\n   return minimos\n",
+  "archivos": " .../dev/null                                       | 24 ---------------------\n .../dev/null                                       | 25 ----------------------\n .../docs/requerimientos/requerimientos.md\"         |  2 +-\n .../evals/resultados.jsonl\"                        |  1 -\n .../src/inventario.mjs\"                            |  8 +++++++\n .../tests/inventario.test.mjs\"                     | 23 +++++++++++++++++++-\n 6 files changed, 31 insertions(+), 52 deletions(-)\n"
+}

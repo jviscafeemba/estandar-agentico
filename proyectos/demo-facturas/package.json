@@ -1,0 +1,10 @@
+{
+  "name": "demo-facturas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Proyecto de prueba del estándar agéntico EMBA: facturación.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

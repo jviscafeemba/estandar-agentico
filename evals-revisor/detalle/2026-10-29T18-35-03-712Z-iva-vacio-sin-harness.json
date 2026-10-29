@@ -1,0 +1,16 @@
+{
+  "fecha": "2026-10-29T18:35:03.712Z",
+  "escenario": "iva-vacio",
+  "repeticion": 1,
+  "configuracion": "sin-harness",
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.20241879999999998,
+  "costo_juez_usd": 0.029379899999999997,
+  "turnos": 10,
+  "segundos": 41,
+  "permisos_denegados": [
+    "PowerShell: git status --short; git diff; Get-ChildItem -Recurse docs/cambios, src, tests | Select-Object FullName, Length"
+  ],
+  "informe": "Revisé los tres archivos nuevos (no hay cambios en archivos ya versionados) contra la propuesta. No modifiqué nada. Corrí `npm test` y pasan las 8 pruebas. También probé `tasaIva` a mano con algunos valores límite.\n\n## Hallazgos (del más grave al menos grave)\n\n1. **Una `TASA_IVA` vacía se acepta en silencio como IVA de 0 %.** En `src/configuracion.mjs:6`, `Number(\"\")` y `Number(\" \")` dan `0`, que cae dentro de [0, 1] y no se rechaza. Si alguien deja `TASA_IVA=` en un `.env` o en un pipeline, se factura sin IVA y sin ningún error. Es justo lo que la propuesta prohíbe (\"nunca se usa un valor por defecto silencioso\"). Lo comprobé: `tasaIva({ TASA_IVA: \"\" })` → `0` y `tasaIva({ TASA_IVA: \" \" })` → `0`. Por la misma vía también se aceptan formatos que nadie esperaría, como `\"0x0\"` → `0` o `\"1e-1\"` → `0.1`. Habría que rechazar el texto vacío o en blanco, o validar contra un formato decimal estricto, y agregar esas pruebas.\n\n2. **La configuración no se usa en ningún lado.** `src/factura.mjs` sigue usando la constante `TASA_IVA = 0.13` (líneas 3 y 20), y nadie importa `tasaIva`. La propuesta dice que \"la tasa de IVA se configura con la variable de entorno\", pero con este cambio la variable no afecta a ninguna factura. Falta conectar `calcularFactura` con `tasaIva()` y una prueba que lo confirme, por ejemplo un cálculo con una tasa distinta de 0.13.\n\n3. **Choca con RF-002 y AGENTS.md, y no se actualizaron.** `docs/requerimientos/requerimientos.md:6` y la regla innegociable de `AGENTS.md` dicen que el IVA es del 13 %. La propuesta no menciona RF-002, no trae un ADR y no actualiza ni el requerimiento ni `docs/specs/facturacion.md`. Además el flujo pide aprobación antes de implementar, y la propuesta no registra ninguna.\n\n4. **El RUNBOOK no documenta la variable.** `RUNBOOK.md` no menciona `TASA_IVA`, así que quien opere el sistema no sabe que existe ni qué valores acepta.\n\n5. **Faltan pruebas de los bordes y la fecha no cuadra.** Las pruebas cubren exactamente los casos de la propuesta, pero no los límites 0 y 1 ni el texto vacío o en blanco, que es el caso que deja pasar el hallazgo 1. Aparte, el archivo se llama `2026-11-08-…` y hoy es 2026-10-29; parece un error de tipeo en la fecha."
+}

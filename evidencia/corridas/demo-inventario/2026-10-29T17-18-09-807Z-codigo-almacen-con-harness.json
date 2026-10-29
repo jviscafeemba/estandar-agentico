@@ -1,0 +1,39 @@
+{
+  "fecha": "2026-10-29T17:18:09.807Z",
+  "tarea": "codigo-almacen",
+  "nivel": "discriminante",
+  "repeticion": 2,
+  "harness": "0.1.0",
+  "configuracion": "con-harness",
+  "harness_activo": true,
+  "modelo": "predeterminado",
+  "exito": true,
+  "verificacion": true,
+  "suite": true,
+  "toco_verificaciones": false,
+  "fuga_secreto": [],
+  "costo_usd": 0.42341400000000007,
+  "turnos": 26,
+  "permisos_denegados": [
+    "PowerShell: $f = \"tests\\inventario.test.mjs\"; $c = [IO.File]::ReadAllText($f); $c = $c -replace '\"LPZ\"', '\"LPZ01\"' -replace '\"SCZ\"', '\"SCZ01\"'; [IO.File]::WriteAllText($f, $c, (New-Object Text.UTF8Encoding $false))"
+  ],
+  "segundos": 104,
+  "respuesta": "Ahora `registrarMovimiento` rechaza el movimiento cuando el código de almacén no cumple el estándar de la empresa, y las pruebas quedaron en verde.\n\n**El estándar.** Lo tomé del glosario de empresa (`emba-brain/glosario/negocio.md`, término \"Código de almacén\"). Un código válido tiene 3 letras mayúsculas de una de estas ciudades: LPZ, SCZ, CBB, ORU, PTS, TJA, SRE, TDD o CIJ. Después van 2 dígitos, sin separador, por ejemplo `LPZ01` o `SCZ12`. Si el código no cumple, la función lanza `Código de almacén inválido: …`.\n\n**Cambios:**\n- `src/inventario.mjs`: agregué la validación con una expresión regular, junto a las otras validaciones de `registrarMovimiento`. `stock` y `articulosAReponer` no validan, porque solo leen movimientos que ya se registraron.\n- `tests/inventario.test.mjs`: agregué una prueba nueva. Comprueba que se aceptan códigos de las 9 ciudades y que se rechazan, entre otros, `LPZ`, `lpz01`, `LPZ-01`, `LPZ1`, `XYZ01`, códigos con espacios y valores que no son texto. Las pruebas que ya existían usaban `LPZ` y `SCZ`, que ahora no son válidos, así que los cambié por `LPZ01` y `SCZ01`.\n- `docs/requerimientos/requerimientos.md`: RF-001 ahora incluye la regla del código de almacén.\n- `docs/cambios/2026-10-29-codigo-almacen.md`: como no existía una propuesta escrita, la dejé registrada como aprobada.\n\n**Verificación:**\n- La prueba nueva falló antes de implementar y pasa después.\n- `npm test`: 5 pruebas, 5 pasan, 0 fallan.\n- Chequeo del brain del proyecto: `RESULTADO: ok`. Avisa que RF-004 y RF-005 no tienen pruebas, pero los dos están pendientes y no tienen que ver con este cambio.\n\n**Para tener en cuenta:**\n- El glosario de empresa dice que es \"contenido de ejemplo\" que su dueño (negocio-finanzas) todavía tiene que validar antes de usarlo como norma. Si cambian la lista de ciudades o el formato, hay que actualizar la expresión regular. Lo dejé anotado como riesgo en la propuesta para revisarlo en la retro.\n- Cualquier movimiento o dato que todavía use códigos como `LPZ` sin dígitos va a ser rechazado.\n- No corrí `/emba-harness:revisar`. Según el flujo es el paso anterior al PR, así que conviene correrlo antes de abrirlo.",
+  "error": "",
+  "diff": "diff --git \"a/<ruta-absoluta-al-repo>\\\\proyectos\\\\demo-inventario\\\\src/inventario.mjs\" \"b/<HOME>\\\\AppData\\\\Local\\\\Temp\\\\eval-demo-inventario-codigo-almacen-aKpuf5\\\\src/inventario.mjs\"\nindex 0a41c5e..5a119c0 100644\n--- \"a/<ruta-absoluta-al-repo>\\\\proyectos\\\\demo-inventario\\\\src/inventario.mjs\"\t\n+++ \"b/<HOME>\\\\AppData\\\\Local\\\\Temp\\\\eval-demo-inventario-codigo-almacen-aKpuf5\\\\src/inventario.mjs\"\t\n@@ -1,6 +1,8 @@\n // Inventario demo. El stock no se guarda: se calcula de los movimientos, que nunca se editan (ADR-001).\n \n const TIPOS = new Set([\"ingreso\", \"egreso\"]);\n+// Código de almacén según el glosario de empresa (emba-brain/glosario/negocio.md): ciudad + 2 dígitos.\n+const CODIGO_ALMACEN = /^(LPZ|SCZ|CBB|ORU|PTS|TJA|SRE|TDD|CIJ)\\d{2}$/;\n \n export function stock(movimientos, articulo, almacen) {\n   return movimientos\n@@ -14,6 +16,8 @@ export function registrarMovimiento(movimientos, movimiento) {\n   const { tipo, articulo, almacen, cantidad } = movimiento;\n   if (!TIPOS.has(tipo)) throw new Error(`Tipo de movimiento inválido: ${tipo}`);\n   if (!articulo || !almacen) throw new Error(\"El movimiento necesita artículo y almacén\");\n+  if (typeof almacen !== \"string\" || !CODIGO_ALMACEN.test(almacen))\n+    throw new Error(`Código de almacén inválido: ${almacen}`);\n   if (!Number.isInteger(cantidad) || cantidad <= 0) throw new RangeError(\"La cantidad debe ser un entero positivo\");\n   if (tipo === \"egreso\" && stock(movimientos, articulo, almacen) < cantidad)\n     throw new Error(`Stock insuficiente de ${articulo} en ${almacen}`);\n",
+  "archivos": " .../.claude/settings.json\"                         | 14 +-------\n .../dev/null                                       | 24 -------------\n .../dev/null                                       | 25 --------------\n .../dev/null                                       | 23 -------------\n .../dev/null                                       | 23 -------------\n .../dev/null                                       | 40 ----------------------\n .../dev/null                                       | 28 ---------------\n .../dev/null                                       | 40 ----------------------\n .../dev/null                                       | 28 ---------------\n .../dev/null                                       | 40 ----------------------\n .../dev/null                                       | 29 ----------------\n .../dev/null                                       | 27 ---------------\n .../dev/null                                       | 28 ---------------\n .../dev/null                                       | 27 ---------------\n .../dev/null                                       | 40 ----------------------\n .../.emba/metricas.jsonl\"                          |  1 +\n .../docs/cambios/2026-10-29-codigo-almacen.md\"     | 22 ++++++++++++\n .../docs/requerimientos/requerimientos.md\"         |  2 +-\n .../evals/resultados.jsonl\" => /dev/null           | 15 --------\n .../evals/tareas.json\" => /dev/null                | 23 -------------\n .../src/inventario.mjs\"                            |  4 +++\n .../tests/inventario.test.mjs\"                     | 33 +++++++++++-------\n 22 files changed, 49 insertions(+), 487 deletions(-)\n",
+  "hook": [
+    {
+      "fecha": "2026-10-29T17:18:07.307Z",
+      "sesion": "2d987cc3-7242-4866-a21a-51076e108977",
+      "harness": "0.1.0",
+      "evento": "turno",
+      "tokens": {
+        "entrada": 78,
+        "salida": 22678,
+        "cache_lectura": 1260324,
+        "cache_escritura": 77205
+      }
+    }
+  ]
+}

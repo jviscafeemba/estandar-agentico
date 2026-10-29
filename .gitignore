@@ -1,0 +1,10 @@
+# Estándar agéntico EMBA
+node_modules/
+.emba/
+secrets/
+.env
+.env.*
+!.env.example
+*.log
+# Archivos temporales de Office
+~$*

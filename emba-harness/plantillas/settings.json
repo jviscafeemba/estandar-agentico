@@ -1,0 +1,32 @@
+{
+  "extraKnownMarketplaces": {
+    "emba-local": {
+      "source": {
+        "source": "directory",
+        "path": "<ruta absoluta al marketplace, p. ej. C:/Users/<usuario>/Proyectos/poc-agentico>"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "emba-harness@emba-local": true,
+    "emba-empresa@emba-local": true
+  },
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.*.local)",
+      "Read(./.env.development)",
+      "Read(./.env.production)",
+      "Read(./.env.test)",
+      "Read(./secrets/**)",
+      "Edit(./.env)",
+      "Edit(./.env.local)",
+      "Edit(./.env.*.local)",
+      "Edit(./.env.development)",
+      "Edit(./.env.production)",
+      "Edit(./.env.test)",
+      "Edit(./secrets/**)"
+    ]
+  }
+}

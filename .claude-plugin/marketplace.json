@@ -1,0 +1,17 @@
+{
+  "name": "emba-local",
+  "owner": { "name": "EMBA - Plataforma agéntica" },
+  "description": "Marketplace interno de la prueba de concepto: brain de empresa y harness.",
+  "plugins": [
+    {
+      "name": "emba-empresa",
+      "source": "./emba-brain",
+      "description": "Brain de empresa: estándares, glosario, mapa de sistemas, seguridad de datos y decisiones de empresa."
+    },
+    {
+      "name": "emba-harness",
+      "source": "./emba-harness",
+      "description": "Harness de desarrollo agéntico: flujo de trabajo, hooks de seguridad, revisor independiente y métricas."
+    }
+  ]
+}

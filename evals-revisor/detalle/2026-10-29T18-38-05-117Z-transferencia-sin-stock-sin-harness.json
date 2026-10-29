@@ -1,0 +1,16 @@
+{
+  "fecha": "2026-10-29T18:38:05.117Z",
+  "escenario": "transferencia-sin-stock",
+  "repeticion": 2,
+  "configuracion": "sin-harness",
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.21951040000000002,
+  "costo_juez_usd": 0.030015899999999998,
+  "turnos": 12,
+  "segundos": 38,
+  "permisos_denegados": [
+    "PowerShell: git status; git diff; Get-ChildItem -Recurse -File -Exclude .git | Where-Object { $_.FullName -notmatch '\\\\.git\\\\' } | Select-Object -ExpandProperty FullName"
+  ],
+  "informe": "## Revisión: transferencias entre almacenes (sin commitear)\n\nHay tres archivos nuevos sin seguimiento y ningún cambio en archivos versionados: `docs/cambios/2026-11-06-transferencias.md`, `src/transferencia.mjs` y `tests/transferencia.test.mjs`. `npm test` pasa las 6 pruebas, pero que pasen no quiere decir que el cambio cumpla la propuesta. No modifiqué ningún archivo.\n\n### Hallazgos (del más grave al menos grave)\n\n1. **La transferencia puede dejar el stock de origen en negativo, lo que viola RF-002.** La propuesta dice \"respetando RF-002\", pero `transferir` arma los dos movimientos a mano y no pasa por `registrarMovimiento` (`src/transferencia.mjs:5-7`). Así se salta el control de stock insuficiente (`src/inventario.mjs:18-19`). Lo probé: `transferir([], {articulo:'A1', origen:'LPZ', destino:'SCZ', cantidad:5})` se acepta y deja **LPZ = -5** y SCZ = 5. Rompe una de las reglas que no se negocian de `AGENTS.md`.\n\n2. **No valida los datos del movimiento (RF-001).** Por el mismo atajo se aceptan cantidades negativas, cero o decimales, y artículo o almacén vacíos. Con `cantidad: -3` el resultado es LPZ = 3 y **SCZ = -3**, o sea que la transferencia funciona al revés y deja negativo al destino. Al no usar `registrarMovimiento`, las transferencias pueden guardar movimientos que el resto del sistema rechazaría.\n   - **Corrección sugerida para 1 y 2:** encadenar dos llamadas, `registrarMovimiento(registrarMovimiento(movimientos, egreso), ingreso)`, en lugar de crear los objetos a mano.\n\n3. **Las pruebas no cubren RF-002, aunque la propuesta lo exige.** `tests/transferencia.test.mjs` solo prueba el caso feliz y que origen y destino sean distintos. Falta, como mínimo:\n   - una transferencia con stock insuficiente en origen, que debe fallar con `/Stock insuficiente/`;\n   - una con cantidad inválida.\n\n   El flujo de `AGENTS.md` pide escribir primero una prueba que falle, y una prueba así habría detectado el hallazgo 1. La sección \"Pruebas primero\" de la propuesta (`docs/cambios/2026-11-06-transferencias.md:9`) tiene el mismo hueco: menciona RF-002 en los requerimientos pero no define ningún caso para comprobarlo.\n\n4. **Las pruebas no verifican que la lista original quede igual ni que el resultado esté congelado.** RF-001 y ADR-001 exigen las dos cosas. El código congela la lista, pero ninguna prueba lo comprueba, a diferencia de `tests/inventario.test.mjs:10-12`.\n\n5. **La documentación no se actualizó.** RF-004 sigue como \"Pendiente\" en `docs/requerimientos/requerimientos.md:8`. Debería pasar a \"Implementado\" recién cuando estén corregidos los hallazgos 1 a 3. Además, la propuesta no indica si está aprobada, y el flujo exige aprobación antes de implementar."
+}

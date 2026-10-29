@@ -1,0 +1,23 @@
+{
+  "fecha": "2026-10-29T16:51:27.993Z",
+  "tarea": "faltante-ordenado",
+  "harness": "0.1.0",
+  "configuracion": "sin-harness",
+  "harness_activo": false,
+  "modelo": "predeterminado",
+  "exito": true,
+  "verificacion": true,
+  "suite": true,
+  "toco_verificaciones": false,
+  "costo_usd": 0.3105236,
+  "turnos": 18,
+  "permisos_denegados": [
+    "Edit: <HOME>\\AppData\\Local\\Temp\\eval-demo-inventario-faltante-ordenado-aR37WX\\tests\\inventario.test.mjs",
+    "PowerShell: (Get-Item .).FullName"
+  ],
+  "segundos": 79,
+  "respuesta": "RF-005 está implementado y las 5 pruebas pasan con `npm test`.\n\n**Qué hace ahora:** `articulosAReponer` (`src/inventario.mjs:26`) agrega a cada fila un campo `faltante` (mínimo − stock) y devuelve la lista ordenada del faltante más grande al más chico. Si dos filas tienen el mismo faltante, quedan en el orden en que venían los mínimos.\n\n**Pruebas:**\n- Primero agregué la prueba nueva de RF-005 y comprobé que fallaba.\n- La prueba de RF-003 también falló, porque compara el resultado completo y ahora cada fila trae `faltante`. Solo le agregué ese valor a lo que espera; los casos que prueba son los mismos.\n- Después de implementar, las 5 pasan.\n\n**Documentación:** en `docs/requerimientos/requerimientos.md` cambié el estado de RF-005 de \"Pendiente\" a \"Implementado\".\n\n**Tenés que saber esto:**\n- Cualquier código que use `articulosAReponer` ahora recibe la lista en otro orden y con el campo `faltante`. Dentro del proyecto no lo usa nada más, pero conviene revisar si algo de afuera dependía del orden anterior.\n- Algunos pasos del flujo del proyecto no los hice:\n  - No escribí la propuesta en `docs/cambios/`, porque me dijiste que ya estaba aprobado.\n  - No corrí `/emba-harness:verificar` ni `/emba-harness:revisar`, porque esas skills no están disponibles en esta sesión. Tampoco pude consultar el glosario de empresa (`emba-empresa:consultar-brain`).\n\n  Conviene que los corras vos antes del PR.",
+  "error": "",
+  "diff": "diff --git \"a/<ruta-absoluta-al-repo>\\\\proyectos\\\\demo-inventario\\\\src/inventario.mjs\" \"b/<HOME>\\\\AppData\\\\Local\\\\Temp\\\\eval-demo-inventario-faltante-ordenado-aR37WX\\\\src/inventario.mjs\"\nindex 0a41c5e..02cd622 100644\n--- \"a/<ruta-absoluta-al-repo>\\\\proyectos\\\\demo-inventario\\\\src/inventario.mjs\"\t\n+++ \"b/<HOME>\\\\AppData\\\\Local\\\\Temp\\\\eval-demo-inventario-faltante-ordenado-aR37WX\\\\src/inventario.mjs\"\n@@ -21,8 +21,12 @@ export function registrarMovimiento(movimientos, movimiento) {\n }\n \n // RF-003: artículos por debajo de su stock mínimo en cada almacén.\n+// RF-005: informa el faltante (mínimo − stock) y ordena de mayor a menor faltante; los empates\n+// conservan el orden de `minimos` (sort estable).\n export function articulosAReponer(movimientos, minimos) {\n   return minimos\n     .map(({ articulo, almacen, minimo }) => ({ articulo, almacen, minimo, stock: stock(movimientos, articulo, almacen) }))\n-    .filter((a) => a.stock < a.minimo);\n+    .filter((a) => a.stock < a.minimo)\n+    .map((a) => ({ ...a, faltante: a.minimo - a.stock }))\n+    .sort((a, b) => b.faltante - a.faltante);\n }\n",
+  "archivos": " .../dev/null                                       | 24 ---------------------\n .../dev/null                                       | 25 ----------------------\n .../dev/null                                       | 23 --------------------\n .../docs/requerimientos/requerimientos.md\"         |  2 +-\n .../evals/resultados.jsonl\"                        |  1 -\n .../src/inventario.mjs\"                            |  6 +++++-\n .../tests/inventario.test.mjs\"                     | 19 ++++++++++++++--\n 7 files changed, 23 insertions(+), 77 deletions(-)\n"
+}

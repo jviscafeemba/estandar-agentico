@@ -1,0 +1,6 @@
+# ADR-E002: los controles de seguridad requieren revisión de dos personas.
+# Reemplazar <org> y los equipos por los de la organización real antes de usarlo.
+/emba-harness/hooks/   @<org>/plataforma-agentica @<org>/seguridad
+/politica/             @<org>/plataforma-agentica @<org>/seguridad
+/emba-brain/seguridad-datos/  @<org>/seguridad
+/emba-brain/glosario/  @<org>/negocio

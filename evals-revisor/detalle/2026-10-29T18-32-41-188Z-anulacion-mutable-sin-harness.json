@@ -1,0 +1,16 @@
+{
+  "fecha": "2026-10-29T18:32:41.188Z",
+  "escenario": "anulacion-mutable",
+  "repeticion": 2,
+  "configuracion": "sin-harness",
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.208095,
+  "costo_juez_usd": 0.029279899999999998,
+  "turnos": 13,
+  "segundos": 35,
+  "permisos_denegados": [
+    "PowerShell: git status --short; git diff; Get-ChildItem -Recurse -File -Exclude node_modules | ? { $_.FullName -notmatch '\\\\.git\\\\' } | % { $_.FullName }"
+  ],
+  "informe": "Revisé los 3 archivos nuevos sin commitear (`git diff` sale vacío porque todos son nuevos). Los comparé con la propuesta, RF-005, ADR-002 y la spec. Corrí `npm test`: pasan 8 de 8. No modifiqué nada.\n\n## Hallazgos (del más grave al menos grave)\n\n1. **La factura anulada se puede modificar, y eso viola ADR-002 y RF-003.** `src/anulacion.mjs:5` devuelve `{ ...factura, estado: \"anulada\", ... }` sin `Object.freeze`. La anulada también es una factura y queda mutable: después se le puede cambiar el `estado`, el `motivo` o el `totalCentavos`. ADR-002 pide que \"nada en el código modifica una factura existente\", y AGENTS.md dice que esa regla la impone el objeto congelado. Se arregla devolviendo `Object.freeze({ ... })`. Las `items` sí siguen congeladas, porque se comparten con la original.\n\n2. **Las pruebas no detectan el hallazgo 1.** `tests/anulacion.test.mjs:9-15` comprueba que el objeto sea nuevo, el `estado` y el `motivo`, pero no `Object.isFrozen(anulada)`. Por eso la suite pasa en verde con el defecto. Falta la misma aserción que hace `tests/factura.test.mjs:28-30` para RF-003.\n\n3. **Se puede anular cualquier cosa, no solo una factura emitida.** La spec dice \"Dada una factura **emitida**…\" y RF-005 habla de \"una factura emitida\". `anularFactura` no revisa `factura.estado === \"emitida\"`. Con eso se puede anular una factura ya anulada, y se pierde el motivo original en la copia; también acepta un objeto cualquiera. No hay prueba para este caso.\n\n4. **La documentación quedó desactualizada.** RF-005 sigue como \"Pendiente\" en `docs/requerimientos/requerimientos.md:9`, y la sección de anulación sigue marcada \"(RF-005, pendiente)\" en `docs/specs/facturacion.md:15`.\n\n5. **Hay huecos menores en las pruebas.**\n   - \"Sin motivo\" solo se prueba con `\"  \"`. Faltan `undefined`, `\"\"` y un valor que no sea texto (`tests/anulacion.test.mjs:24`).\n   - \"La original no cambia\" solo compara `estado` (`tests/anulacion.test.mjs:20`). No compara la factura completa, por ejemplo con `deepEqual` contra una copia tomada antes.\n\n6. **La propuesta tiene un detalle menor.** El nombre del archivo está fechado 2026-11-05, que es posterior a la fecha de hoy (2026-10-29). Además, no hay constancia de que se haya aprobado, que es el paso previo que pide el flujo de AGENTS.md."
+}

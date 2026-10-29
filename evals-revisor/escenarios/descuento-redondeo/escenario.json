@@ -1,0 +1,6 @@
+{
+  "id": "descuento-redondeo",
+  "proyecto": "proyectos/demo-facturas",
+  "propuesta": "docs/cambios/2026-11-04-descuento-por-linea.md",
+  "error": "El descuento se redondea (Math.floor) por precio unitario antes de multiplicar por la cantidad, en vez de redondear el total de la línea. Con 3 × 3,33 Bs y 10 % da 8,97 Bs en lugar de 8,99 Bs; además floor trunca en vez de redondear."
+}

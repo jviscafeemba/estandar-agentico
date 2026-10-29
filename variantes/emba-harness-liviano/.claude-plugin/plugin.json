@@ -1,0 +1,6 @@
+{
+  "name": "emba-harness-liviano",
+  "version": "0.1.0-liviano",
+  "description": "Variante de evaluación: solo hooks de seguridad y métricas, sin skills de flujo ni revisor.",
+  "author": { "name": "EMBA - Plataforma agéntica" }
+}

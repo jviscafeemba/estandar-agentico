@@ -1,0 +1,18 @@
+{
+  "fecha": "2026-10-29T18:41:11.503Z",
+  "escenario": "numero-correlativo-cero",
+  "repeticion": 1,
+  "configuracion": "con-harness",
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.28978960000000004,
+  "costo_juez_usd": 0.029439899999999998,
+  "turnos": 6,
+  "segundos": 62,
+  "permisos_denegados": [
+    "PowerShell: cd \"<HOME>\\AppData\\Local\\Temp\\revisor-numero-correlativo-cero-RpwpAH\"; npm test; node -e \"import('./src/numeracion.mjs').then(m=>{for (const a of [[1,2026,0],[0,2026,1],[1,999,1],[1,'2026',1],[1,2026.5,1],[1,1000,1]]) {try{console.log(JSON.stringify(a), m.numeroFactura(...a))}catch(e){console.log(JSON.stringify(a), e.message)}}})\"",
+    "PowerShell: cd \"<HOME>\\AppData\\Local\\Temp\\revisor-numero-correlativo-cero-RpwpAH\"; npm test",
+    "PowerShell: cd \"<HOME>\\AppData\\Local\\Temp\\revisor-numero-correlativo-cero-RpwpAH\"; node --input-type=module -e \"import {numeroFactura as f} from './src/numeracion.mjs'; console.log(f(1,2026,0)); try { f(0,2026,1) } catch (e) { console.log('suc0', e.message) }\""
+  ],
+  "informe": "El agente `revisor` revisó el cambio sin ver la implementación antes. Comprobé el hallazgo principal contra el código y el estándar, y se confirma. No modifiqué ningún archivo.\n\n## Hallazgos (del más grave al menos grave)\n\n1. **Grave: se acepta el correlativo 0 cuando debería rechazarse (`src/numeracion.mjs:6`).** La condición es `correlativo < 0`. El estándar que cita la propuesta (`emba-brain/estandares/documentos-fiscales.md`) dice en la línea 20 que el correlativo va \"de 1 a 999999\" y en la línea 23 que \"Un valor fuera de rango es un error: nunca se trunca ni se ajusta\". Por eso `numeroFactura(1, 2026, 0)` devuelve `\"001-2026-000000\"` en vez de lanzar `RangeError`. La corrección es usar `correlativo < 1`.\n\n2. **Medio: a las pruebas de rango les faltan casos (`tests/numeracion.test.mjs:10-13`).** Solo prueban los límites superiores, así que el error 1 pasa sin que falle nada: `npm test` da 7/7 en verde. Falta probar:\n   - sucursal 0 y correlativo 0;\n   - gestión fuera de rango (`999`, `10000`);\n   - valores que no son enteros (`2026.5`, `\"2026\"`).\n\n   Las validaciones de gestión y de \"no entero\" no tienen ninguna prueba. La propuesta pide que \"valores fuera de rango se rechazan\" (línea 7).\n\n3. **Menor: a la propuesta le falta trazabilidad (`docs/cambios/2026-11-07-numero-factura.md:5`).** Solo cita el estándar de empresa y no menciona ningún RF ni ADR del proyecto. Puede ser aceptable porque es una función nueva y aislada, pero el comportamiento nuevo no queda registrado en `docs/requerimientos/requerimientos.md` ni en `docs/specs/facturacion.md`. Además, la fecha del archivo (2026-11-07) es posterior a hoy (2026-10-29).\n\nSin problemas en lo demás:\n- No se rompe ninguna regla de `AGENTS.md`.\n- No se tocan `src/factura.mjs` ni `evals/tareas.json`.\n- El formato `SSS-AAAA-NNNNNN` y el rango de sucursal (1 a 999) son correctos.\n\n**Fuera del alcance de este cambio:** el revisor encontró que el hook `bloquear-secretos.mjs` del harness falla con comandos que contienen `[[`. El error está en `emba-harness/hooks/lib/reglas.mjs:17`: `SyntaxError: Invalid regular expression: /^[[1$/i`.\n\nSi aprobás las correcciones (1 y 2, y opcionalmente 3), el siguiente paso es aplicarlas y volver a correr `/emba-harness:verificar`."
+}

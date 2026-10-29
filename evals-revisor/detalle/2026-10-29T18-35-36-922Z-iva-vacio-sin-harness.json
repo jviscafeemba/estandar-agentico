@@ -1,0 +1,16 @@
+{
+  "fecha": "2026-10-29T18:35:36.922Z",
+  "escenario": "iva-vacio",
+  "repeticion": 2,
+  "configuracion": "sin-harness",
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.1909808,
+  "costo_juez_usd": 0.0295759,
+  "turnos": 9,
+  "segundos": 33,
+  "permisos_denegados": [
+    "PowerShell: git status; git diff; Get-ChildItem -Recurse docs/cambios, src, tests | Select-Object FullName, Length"
+  ],
+  "informe": "Revisé el cambio: no hay `git diff` porque los tres archivos son nuevos y no están trackeados (la propuesta, `src/configuracion.mjs` y `tests/configuracion.test.mjs`). `npm test` pasa 8/8, pero encontré problemas.\n\n## Hallazgos (del más grave al menos grave)\n\n1. **Una `TASA_IVA` vacía se convierte en IVA 0 % sin ningún error.** Esto contradice la regla de la propuesta: \"un valor inválido es un error (nunca se usa un valor por defecto silencioso)\". En `src/configuracion.mjs:6`, `Number(\"\")` y `Number(\"   \")` dan `0`, que cae dentro de `[0, 1]`. Lo probé: `tasaIva({TASA_IVA: \"\"})` devuelve `0` y con `\" \"` pasa lo mismo. Un `TASA_IVA=` mal escrito en el entorno anularía el IVA y nadie se enteraría. Por la misma vía se aceptan formatos que la regla no contempla: `\"0x0\"` da 0, `\"1e-1\"` da 0.1 y `\"-0\"` da `-0`. La validación debería exigir texto no vacío con formato decimal, por ejemplo `/^\\d+(\\.\\d+)?$/` antes de convertir.\n\n2. **La configuración no tiene efecto en las facturas.** `tasaIva()` no se usa en ningún lado. `calcularFactura` sigue usando la constante fija `TASA_IVA = 0.13` (`src/factura.mjs:3` y `:20`). La propuesta dice que \"la tasa de IVA se configura con la variable de entorno\", pero con este cambio poner `TASA_IVA=0.15` no modifica nada de lo que se factura. Además, ahora conviven una constante exportada `TASA_IVA` y una variable de entorno con el mismo nombre que pueden decir cosas distintas.\n\n3. **Faltan pruebas para los casos límite de la regla.** Las pruebas cubren justo los cuatro ejemplos de la propuesta (sin variable, `\"0.15\"`, `\"abc\"`, `\"1.5\"`), pero ninguna cubre el valor vacío, los extremos 0 y 1, los negativos ni el uso de la tasa dentro de `calcularFactura`. Por eso el hallazgo 1 pasa sin que falle nada.\n\n4. **La documentación quedó desalineada y la propuesta no se vincula a nada.** RF-002 en `docs/requerimientos/requerimientos.md:6` sigue fijando \"IVA (13 %)\" y el ejemplo de `docs/specs/facturacion.md:9` asume 13 %. La propuesta no cita RF-002 ni ningún ADR, no dice que esté aprobada (el flujo de `AGENTS.md` pide aprobación antes de implementar) y no menciona `RUNBOOK.md`, donde debería documentarse la nueva variable de entorno.\n\n5. **Menor:** la fecha de la propuesta (2026-11-08) es posterior a la de hoy (2026-10-29).\n\nNo modifiqué ningún archivo."
+}

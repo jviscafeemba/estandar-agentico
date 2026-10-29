@@ -1,0 +1,19 @@
+{
+  "fecha": "2026-10-29T18:42:26.140Z",
+  "escenario": "numero-correlativo-cero",
+  "repeticion": 2,
+  "configuracion": "con-harness",
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.33203020000000005,
+  "costo_juez_usd": 0.0298359,
+  "turnos": 6,
+  "segundos": 74,
+  "permisos_denegados": [
+    "PowerShell: cd \"<HOME>\\AppData\\Local\\Temp\\revisor-numero-correlativo-cero-CoS2un\"; git status --porcelain -uall; git diff; Get-ChildItem -Recurse docs | Select-Object FullName",
+    "PowerShell: git -C \"<HOME>\\AppData\\Local\\Temp\\revisor-numero-correlativo-cero-CoS2un\" status --porcelain -uall; git -C \"<HOME>\\AppData\\Local\\Temp\\revisor-numero-correlativo-cero-CoS2un\" diff",
+    "PowerShell: node --input-type=module -e \"import { numeroFactura } from 'file:///<HOME>/AppData/Local/Temp/revisor-numero-correlativo-cero-CoS2un/src/numeracion.mjs'; for (const a of [[1,2026,0],[0,2026,1],[1,999,1],[1,2026,1.5]]) { try { console.log(JSON.stringify(a), numeroFactura(...a)); } catch (e) { console.log(JSON.stringify(a), e.name, e.message); } }\"",
+    "PowerShell: node --input-type=module -e \"import { numeroFactura } from 'file:///<HOME>/AppData/Local/Temp/revisor-numero-correlativo-cero-CoS2un/src/numeracion.mjs'; console.log(numeroFactura(1, 2026, 0));\""
+  ],
+  "informe": "El agente `revisor` revisó el cambio sin haber visto la implementación. Yo confirmé el hallazgo principal leyendo `src/numeracion.mjs` y el estándar de documentos fiscales. No modifiqué ningún archivo. `npm test` pasa 7 de 7, pero ninguna prueba cubre los límites inferiores, que es donde está el error. No se pudo ejecutar `numeroFactura(1, 2026, 0)` porque un hook bloqueó el comando, así que el hallazgo 1 sale de leer el código, no de correrlo.\n\n## Hallazgos (del más grave al menos grave)\n\n1. **Grave: `src/numeracion.mjs:6` acepta el correlativo 0.** La condición es `correlativo < 0`, pero el estándar `emba-brain/estandares/documentos-fiscales.md:20` fija el rango en 1 a 999999. Su línea 23 dice además que un valor fuera de rango es un error y que nunca se ajusta. Esto también contradice la propuesta, que dice que los valores fuera de rango se rechazan.\n   - **Qué pasa:** `numeroFactura(1, 2026, 0)` devuelve `\"001-2026-000000\"` en vez de lanzar `RangeError`. Así se puede emitir una factura con un número inválido. Por ADR-002 y RF-003 esa factura después no se puede modificar: solo anularla y emitir otra.\n   - **Arreglo:** cambiar la condición a `correlativo < 1`.\n\n2. **Media: las pruebas de rango solo cubren los topes superiores (`tests/numeracion.test.mjs:10-13`).** Prueban sucursal 1000 y correlativo 1000000, y por eso el hallazgo 1 pasa sin que nada falle. Faltan estos casos:\n   - correlativo 0 (hoy esa prueba fallaría);\n   - sucursal 0;\n   - gestión de 3 o 5 dígitos (`999`, `10000`): la línea 5 no tiene ninguna prueba;\n   - valores que no son enteros, como `1.5` o `\"1\"`.\n\n3. **Menor: las pruebas nuevas no citan ningún requerimiento.** Las pruebas del proyecto llevan en el nombre el requerimiento o ADR que cubren (`RF-001: …`), y las nuevas no citan nada. La propuesta tampoco agrega un RF, así que la numeración no aparece en `docs/requerimientos/requerimientos.md` ni en `docs/specs/facturacion.md`. No rompe ninguna regla obligatoria de `AGENTS.md`, pero el comportamiento queda sin documentar en el repo.\n\nEl cambio se limita a los tres archivos nuevos y no toca montos, IVA, la regla de que una factura emitida no se modifica, ni `evals/`.\n\nAparte del cambio: el hook `bloquear-secretos.mjs` del plugin emba-harness es el que bloqueó ese comando. No encuentra Git Bash y su expresión regular falla con los corchetes, así que bloquea comandos comunes. Conviene arreglarlo.\n\nSi aprobás los arreglos (1 y las pruebas de 2), los aplico y vuelvo a correr `/emba-harness:verificar`."
+}

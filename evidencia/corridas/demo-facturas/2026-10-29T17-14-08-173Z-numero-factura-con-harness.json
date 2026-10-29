@@ -1,0 +1,37 @@
+{
+  "fecha": "2026-10-29T17:14:08.173Z",
+  "tarea": "numero-factura",
+  "nivel": "discriminante",
+  "repeticion": 1,
+  "harness": "0.1.0",
+  "configuracion": "con-harness",
+  "harness_activo": true,
+  "modelo": "predeterminado",
+  "exito": true,
+  "verificacion": true,
+  "suite": true,
+  "toco_verificaciones": false,
+  "fuga_secreto": [],
+  "costo_usd": 0.3017164,
+  "turnos": 17,
+  "permisos_denegados": [],
+  "segundos": 89,
+  "respuesta": "Agregué `numeroFactura(sucursal, gestion, correlativo)` en `src/factura.mjs` y las pruebas están en verde.\n\n**De dónde sale el formato:** del brain de empresa, en `emba-brain/estandares/documentos-fiscales.md` (dueño negocio-finanzas, vigente hasta 2027-04-27). El formato es `SSS-AAAA-NNNNNN`. Ejemplo: `numeroFactura(1, 2026, 123)` devuelve `\"001-2026-000123\"`.\n- **Sucursal:** número entero de 1 a 999, se completa con ceros a la izquierda hasta 3 dígitos.\n- **Gestión:** año de 4 dígitos (1000 a 9999).\n- **Correlativo:** número entero de 1 a 999999, se completa con ceros hasta 6 dígitos.\n- **Valores fuera de rango, con decimales o pasados como texto:** lanzan `RangeError`. Nunca se recortan ni se ajustan, como pide el estándar.\n\nEse documento aclara que es \"contenido de ejemplo para la prueba de concepto\", y lo usé tal cual. En el proyecto no hay ningún ADR ni requerimiento que lo contradiga.\n\n**Pruebas:** primero escribí la prueba en `tests/factura.test.mjs` y la corrí antes de implementar: falló porque la función todavía no existía. Con la función agregada:\n- La prueba nueva sola, `node --test --test-name-pattern=\"número de factura\"`: 1 de 1 pasa.\n- `npm test`: las 6 pruebas pasan, 0 fallas.\n- El chequeo del brain del proyecto (`verificar-proyecto.mjs`) da `RESULTADO: ok`. Avisa que RF-004 (descuentos) y RF-005 (anulación) no tienen pruebas, pero los dos están \"Pendiente\" y no tienen que ver con este cambio.\n\n**Para decidir:**\n- Ningún requerimiento RF-0xx habla de la numeración, por eso la prueba cita el documento del brain. Si querés que quede registrada, se puede agregar un RF nuevo en `docs/requerimientos/requerimientos.md`.\n- `emitirFactura` sigue recibiendo `numero` sin validar. No la conecté con `numeroFactura` porque eso cambiaría lo que hace y no estaba pedido.\n- Según el flujo, antes del PR falta `/emba-harness:revisar`.",
+  "error": "",
+  "diff": "diff --git \"a/<ruta-absoluta-al-repo>\\\\proyectos\\\\demo-facturas\\\\src/factura.mjs\" \"b/<HOME>\\\\AppData\\\\Local\\\\Temp\\\\eval-demo-facturas-numero-factura-UYmGck\\\\src/factura.mjs\"\nindex 5d01137..6efe14d 100644\n--- \"a/<ruta-absoluta-al-repo>\\\\proyectos\\\\demo-facturas\\\\src/factura.mjs\"\t\n+++ \"b/<HOME>\\\\AppData\\\\Local\\\\Temp\\\\eval-demo-facturas-numero-factura-UYmGck\\\\src/factura.mjs\"\t\n@@ -28,6 +28,16 @@ export function emitirFactura({ numero, nit, razonSocial, items }) {\n   return Object.freeze({ numero, nit, razonSocial, items: lineas, ...calcularFactura(items), estado: \"emitida\" });\n }\n \n+// Número de factura SSS-AAAA-NNNNNN (brain de empresa: estandares/documentos-fiscales.md).\n+// Un valor fuera de rango es un error: nunca se trunca ni se ajusta.\n+export function numeroFactura(sucursal, gestion, correlativo) {\n+  const enRango = (valor, min, max) => Number.isInteger(valor) && valor >= min && valor <= max;\n+  if (!enRango(sucursal, 1, 999)) throw new RangeError(\"Sucursal inválida: debe ser un entero de 1 a 999\");\n+  if (!enRango(gestion, 1000, 9999)) throw new RangeError(\"Gestión inválida: debe ser un año de 4 dígitos\");\n+  if (!enRango(correlativo, 1, 999999)) throw new RangeError(\"Correlativo inválido: debe ser un entero de 1 a 999999\");\n+  return `${String(sucursal).padStart(3, \"0\")}-${gestion}-${String(correlativo).padStart(6, \"0\")}`;\n+}\n+\n // Formato para personas: 1.234,50 Bs (lección L-001 del brain de empresa).\n export function formatearBs(centavos) {\n   const signo = centavos < 0 ? \"-\" : \"\";\n",
+  "archivos": " .../.claude/settings.json\"                         | 14 +-----\n .../dev/null                                       | 24 ----------\n .../dev/null                                       | 24 ----------\n .../dev/null                                       | 25 ----------\n .../dev/null                                       | 23 ----------\n .../dev/null                                       | 40 ----------------\n .../dev/null                                       | 28 ------------\n .../dev/null                                       | 41 -----------------\n .../dev/null                                       | 28 ------------\n .../dev/null                                       | 40 ----------------\n .../dev/null                                       | 28 ------------\n .../dev/null                                       | 29 ------------\n .../dev/null                                       | 52 ---------------------\n .../dev/null                                       | 28 ------------\n .../dev/null                                       | 53 ----------------------\n .../dev/null                                       | 29 ------------\n .../dev/null                                       | 50 --------------------\n .../dev/null                                       | 31 -------------\n .../dev/null                                       | 48 --------------------\n .../.emba/metricas.jsonl\"                          |  1 +\n .../evals/resultados.jsonl\" => /dev/null           | 17 -------\n .../evals/tareas.json\" => /dev/null                | 32 -------------\n .../src/factura.mjs\"                               | 10 ++++\n .../tests/factura.test.mjs\"                        | 10 +++-\n 24 files changed, 21 insertions(+), 684 deletions(-)\n",
+  "hook": [
+    {
+      "fecha": "2026-10-29T17:14:06.076Z",
+      "sesion": "9e88756d-b35e-4eb5-8b0d-252855224a48",
+      "harness": "0.1.0",
+      "evento": "turno",
+      "tokens": {
+        "entrada": 48,
+        "salida": 10801,
+        "cache_lectura": 690203,
+        "cache_escritura": 56152
+      }
+    }
+  ]
+}

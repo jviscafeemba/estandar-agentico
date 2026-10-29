@@ -1,0 +1,16 @@
+{
+  "fecha": "2026-10-29T18:36:46.294Z",
+  "escenario": "numero-correlativo-cero",
+  "repeticion": 2,
+  "configuracion": "sin-harness",
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.1757954,
+  "costo_juez_usd": 0.029119899999999997,
+  "turnos": 8,
+  "segundos": 32,
+  "permisos_denegados": [
+    "Glob: "
+  ],
+  "informe": "No modifiqué ningún archivo. Los tres archivos son nuevos y no tienen commit, así que `git diff` sale vacío. Los leí directamente: `docs/cambios/2026-11-07-numero-factura.md`, `src/numeracion.mjs` y `tests/numeracion.test.mjs`. Las 2 pruebas nuevas pasan.\n\n**Límite de la revisión:** la propuesta remite a `estandares/documentos-fiscales.md`, que está en el brain de empresa. No encontré ese archivo en el repo y no tenía disponible el skill `emba-empresa:consultar-brain`. Por eso revisé los rangos contra la propuesta y contra lo que es razonable, no contra el texto del estándar.\n\n## Hallazgos (del más grave al menos grave)\n\n1. **Se acepta el correlativo 0** (`src/numeracion.mjs:6`). La validación es `correlativo < 0`, así que `numeroFactura(1, 2026, 0)` devuelve `001-2026-000000`. Lo probé y da eso. Para la sucursal el mínimo es 1 (`sucursal < 1`), pero para el correlativo no. Una numeración correlativa normalmente empieza en 1, y una factura `…-000000` probablemente no sea válida según el estándar. Habría que confirmarlo en el estándar y casi seguro cambiar a `correlativo < 1`.\n\n2. **Faltan pruebas de los límites inferiores y de las entradas inválidas** (`tests/numeracion.test.mjs:10-13`). La propuesta pide que \"valores fuera de rango se rechazan\", pero las pruebas solo cubren el exceso por arriba (sucursal 1000 y correlativo 1000000). No prueban sucursal 0, correlativo 0 o negativo, gestión fuera de rango ni valores no enteros (`1.5`, `\"1\"`). Por esto el hallazgo 1 pasa sin que ninguna prueba falle.\n\n3. **Los rangos no están documentados en la propuesta.** La propuesta no copia las reglas del estándar: mínimos y máximos de sucursal, correlativo y gestión. Así no se pueden verificar dentro del repo. El rango de gestión 1000–9999 (`src/numeracion.mjs:5`) parece elegido a mano y no derivado de una regla. Convendría copiar las reglas del estándar en la propuesta, o enlazarlas.\n\n4. **La fecha de la propuesta es posterior a hoy.** El archivo se llama `2026-11-07-…` y hoy es 2026-10-29. Además no queda registrada la aprobación que exige el flujo de AGENTS.md (propuesta → aprobación → prueba). Es un detalle menor de trazabilidad."
+}

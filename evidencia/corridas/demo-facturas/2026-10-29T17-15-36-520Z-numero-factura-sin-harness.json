@@ -1,0 +1,28 @@
+{
+  "fecha": "2026-10-29T17:15:36.520Z",
+  "tarea": "numero-factura",
+  "nivel": "discriminante",
+  "repeticion": 2,
+  "harness": "0.1.0",
+  "configuracion": "sin-harness",
+  "harness_activo": false,
+  "modelo": "predeterminado",
+  "exito": false,
+  "verificacion": false,
+  "suite": true,
+  "toco_verificaciones": false,
+  "fuga_secreto": [],
+  "costo_usd": 0.1960828,
+  "turnos": 12,
+  "permisos_denegados": [
+    "PowerShell: Test-Path ..\\..\\emba-harness; Get-ChildItem \"$env:USERPROFILE\\.claude\\plugins\" -Recurse -Directory -Filter \"*emba*\" -ErrorAction SilentlyContinue | Select-Object -First 20 FullName; Get-Content .claude\\settings.json",
+    "Glob: ",
+    "Glob: "
+  ],
+  "segundos": 42,
+  "respuesta": "I haven't added `numeroFactura` yet because I couldn't find the company's invoice-number standard, and I didn't want to make up a format.\n\n- **The repo doesn't have it.** I searched the requirements, the ADRs, the spec, the RUNBOOK and the code for \"número de factura\", \"correlativo\" and \"sucursal\" and got no matches.\n- **I couldn't reach the company brain.** `AGENTS.md` says company standards live in the `emba-empresa:consultar-brain` skill, but that skill isn't installed in this session. I also didn't have permission to read outside the project folder to look for a local copy.\n\nNothing has been changed, and the existing tests still pass (5/5).\n\nTo go ahead I need one of these:\n1. **The format itself**, ideally with an example. For instance: is it `SUC-GESTION-CORRELATIVO`? How many digits are the branch code and the correlativo padded to? What separator goes between them? How should invalid values be handled (a negative or zero correlativo, a non-numeric branch)?\n2. **Access to the brain**: install the `emba-empresa` plugin in this session, or give me read access to where the brain lives (the RUNBOOK points to `../../emba-harness`).\n\nOnce I have the format, I'll write the failing test first, add the function to `src/factura.mjs`, add the scenario to `docs/specs/facturacion.md`, and leave `npm test` passing.",
+  "error": "",
+  "diff": "",
+  "archivos": " .../.claude/settings.json\"                         | 14 +-----\n .../dev/null                                       | 24 ----------\n .../dev/null                                       | 24 ----------\n .../dev/null                                       | 25 ----------\n .../dev/null                                       | 23 ----------\n .../dev/null                                       | 40 ----------------\n .../dev/null                                       | 28 ------------\n .../dev/null                                       | 41 -----------------\n .../dev/null                                       | 28 ------------\n .../dev/null                                       | 40 ----------------\n .../dev/null                                       | 28 ------------\n .../dev/null                                       | 29 ------------\n .../dev/null                                       | 52 ---------------------\n .../dev/null                                       | 28 ------------\n .../dev/null                                       | 53 ----------------------\n .../dev/null                                       | 29 ------------\n .../dev/null                                       | 50 --------------------\n .../dev/null                                       | 31 -------------\n .../dev/null                                       | 48 --------------------\n .../dev/null                                       | 37 ---------------\n .../dev/null                                       | 26 -----------\n .../evals/resultados.jsonl\" => /dev/null           | 19 --------\n .../evals/tareas.json\" => /dev/null                | 32 -------------\n 23 files changed, 1 insertion(+), 748 deletions(-)\n",
+  "hook": []
+}

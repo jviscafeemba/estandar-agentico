@@ -1,0 +1,6 @@
+{
+  "id": "numero-correlativo-cero",
+  "proyecto": "proyectos/demo-facturas",
+  "propuesta": "docs/cambios/2026-11-07-numero-factura.md",
+  "error": "numeroFactura acepta correlativo 0 (la validación usa correlativo < 0), pero el estándar de la empresa (emba-brain, documentos-fiscales.md) dice que el correlativo va de 1 a 999999. Detectarlo requiere consultar el estándar de empresa."
+}

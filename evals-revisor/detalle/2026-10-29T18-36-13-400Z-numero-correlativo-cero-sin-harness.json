@@ -1,0 +1,18 @@
+{
+  "fecha": "2026-10-29T18:36:13.400Z",
+  "escenario": "numero-correlativo-cero",
+  "repeticion": 1,
+  "configuracion": "sin-harness",
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.1994454,
+  "costo_juez_usd": 0.0294999,
+  "turnos": 11,
+  "segundos": 36,
+  "permisos_denegados": [
+    "PowerShell: git status; git diff; Get-ChildItem -Recurse -File docs/cambios, src, tests | Select-Object FullName",
+    "Glob: ",
+    "Glob: "
+  ],
+  "informe": "Todo pasa con `node --test` (7/7), pero encontré tres problemas. Una limitación primero: la propuesta remite a `estandares/documentos-fiscales.md` del brain de empresa, y no lo pude leer. La skill `emba-empresa:consultar-brain` no está disponible en esta sesión y no tengo permiso de lectura fuera del repo. Por eso los rangos válidos los evalué solo con lo que dicen el código, la propuesta y el sentido común de un correlativo; no los contrasté con el estándar.\n\n`git diff` sale vacío: el cambio son solo tres archivos nuevos (`docs/cambios/2026-11-07-numero-factura.md`, `src/numeracion.mjs`, `tests/numeracion.test.mjs`). No modifiqué nada.\n\n## Hallazgos (del más grave al menos grave)\n\n1. **Se acepta el correlativo 0** (`src/numeracion.mjs:6`). La condición es `correlativo < 0`, así que `numeroFactura(1, 2026, 0)` devuelve `001-2026-000000` en vez de rechazarlo. Un correlativo empieza en 1, y el código ya trata así a la sucursal (`sucursal < 1`). Lo más probable es que deba ser `correlativo < 1`; hay que confirmarlo con el estándar.\n\n2. **Las pruebas no cubren lo que pide la propuesta.** La propuesta dice \"valores fuera de rango se rechazan\", pero `tests/numeracion.test.mjs:10-13` solo prueba que se rechacen valores por encima del máximo de sucursal y de correlativo. Faltan:\n   - los valores por debajo del mínimo: sucursal 0, correlativo 0 o −1;\n   - cualquier caso de gestión inválida;\n   - números con decimales, como `1.5`.\n\n   Por eso el hallazgo 1 pasa sin que ninguna prueba falle. Tampoco hay una prueba de que el rechazo ocurra antes de la implementación, que es lo que exige el flujo.\n\n3. **El rango de gestión es muy amplio** (`src/numeracion.mjs:5`). Se acepta cualquier año entre 1000 y 9999, por ejemplo `001-1000-000001`. Hay que comprobar si el estándar fija un rango más estrecho. Además, este rechazo no tiene ninguna prueba.\n\n4. **Falta trazabilidad en la propuesta.** No tiene un ID RF-0xx, no hay una fila nueva en `docs/requerimientos/requerimientos.md` y no se actualizó `docs/specs/facturacion.md`. Además, `numeroFactura` no se usa en `src/factura.mjs`, así que las facturas siguen saliendo sin número. Si eso queda para otra etapa, la propuesta debería decirlo.\n\n5. **La fecha del archivo es posterior a hoy** (menor). El nombre dice `2026-11-07`, pero hoy es 2026-10-29. Probablemente es un error de tipeo."
+}

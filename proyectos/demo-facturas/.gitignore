@@ -1,0 +1,7 @@
+# Estándar agéntico EMBA
+.env
+.env.*
+!.env.example
+secrets/
+.emba/
+node_modules/

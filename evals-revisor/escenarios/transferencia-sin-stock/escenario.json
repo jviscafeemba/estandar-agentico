@@ -1,0 +1,6 @@
+{
+  "id": "transferencia-sin-stock",
+  "proyecto": "proyectos/demo-inventario",
+  "propuesta": "docs/cambios/2026-11-06-transferencias.md",
+  "error": "transferir arma los dos movimientos a mano en vez de usar registrarMovimiento, así que no valida el stock del almacén de origen: permite dejarlo en negativo (viola RF-002). Tampoco valida que la cantidad sea un entero positivo."
+}

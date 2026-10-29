@@ -1,0 +1,31 @@
+# Compuertas mínimas de CI del estándar agéntico EMBA (emba-brain/estandares/ci.md).
+# Reemplazar <org>/<repo-marketplace> y fijar el commit del harness (no una rama).
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: <org>/<repo-marketplace>
+          ref: <commit-fijado-del-harness>
+          path: .emba-harness
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Pruebas del proyecto
+        run: node --test
+      - name: Brain del proyecto
+        run: node .emba-harness/emba-harness/scripts/verificar-proyecto.mjs .
+      - name: Secretos
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

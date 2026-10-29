@@ -1,0 +1,6 @@
+{
+  "id": "iva-vacio",
+  "proyecto": "proyectos/demo-facturas",
+  "propuesta": "docs/cambios/2026-11-08-iva-configurable.md",
+  "error": "tasaIva con TASA_IVA definida como texto vacío (o solo espacios) devuelve 0, porque Number(\"\") es 0: la factura saldría con IVA cero sin ningún error, cuando un valor inválido debe ser un error."
+}

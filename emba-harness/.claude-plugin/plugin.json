@@ -1,0 +1,6 @@
+{
+  "name": "emba-harness",
+  "version": "0.2.0",
+  "description": "Harness de desarrollo agéntico EMBA: flujo propuesta → prueba → verificación → revisión independiente, hooks de seguridad con pruebas y registro de métricas.",
+  "author": { "name": "EMBA - Plataforma agéntica" }
+}

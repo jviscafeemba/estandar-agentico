@@ -1,0 +1,6 @@
+{
+  "id": "anulacion-mutable",
+  "proyecto": "proyectos/demo-facturas",
+  "propuesta": "docs/cambios/2026-11-05-anular-factura.md",
+  "error": "anularFactura devuelve un objeto que no está congelado (falta Object.freeze), así que la factura anulada se puede modificar después; viola ADR-002 (facturas inmutables). También permite anular una factura que ya estaba anulada."
+}

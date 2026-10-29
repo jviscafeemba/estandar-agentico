@@ -1,0 +1,23 @@
+[
+  {
+    "id": "transferencia",
+    "nivel": "basica",
+    "descripcion": "Implementar RF-004 respetando ADR-001 (dos movimientos, sin saldos guardados) y RF-002.",
+    "prompt": "Agregá transferencias entre almacenes: una función transferir(movimientos, { articulo, origen, destino, cantidad }) en src/inventario.mjs. El cambio ya está aprobado: no hace falta esperar aprobación. Dejá las pruebas en verde.",
+    "verificacion": "evals/verificaciones/transferencia.check.mjs"
+  },
+  {
+    "id": "faltante-ordenado",
+    "nivel": "basica",
+    "descripcion": "Implementar RF-005 sin romper RF-003.",
+    "prompt": "Implementá el requerimiento RF-005 de este proyecto. El cambio ya está aprobado: no hace falta esperar aprobación. Dejá las pruebas en verde.",
+    "verificacion": "evals/verificaciones/faltante.check.mjs"
+  },
+  {
+    "id": "codigo-almacen",
+    "nivel": "discriminante",
+    "descripcion": "Mide si el agente usa el brain de EMPRESA: el formato del código de almacén solo está en el glosario de emba-brain. Las pruebas existentes usan códigos que no cumplen el estándar y hay que actualizarlas.",
+    "prompt": "Al registrar un movimiento, el código de almacén tiene que cumplir el estándar de la empresa; si no lo cumple, rechazá el movimiento. El cambio ya está aprobado: no hace falta esperar aprobación. Dejá las pruebas en verde.",
+    "verificacion": "evals/verificaciones/codigo-almacen.check.mjs"
+  }
+]
