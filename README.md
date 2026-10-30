@@ -4,6 +4,9 @@ Implementa en pequeño la propuesta B+ del informe «Estándar agéntico EMBA» 
 brain de proyecto y harness, con medición. **No toca ningún proyecto real del equipo.**
 
 La propuesta completa, para circular, está en [`docs/propuesta-estandar-agentico-emba.docx`](docs/propuesta-estandar-agentico-emba.docx).
+La presentación para el equipo (20 diapositivas con notas del orador) está en
+[`docs/presentacion/como-vamos-a-trabajar-con-agentes.html`](docs/presentacion/como-vamos-a-trabajar-con-agentes.html):
+descargala y abrila en el navegador.
 
 ```
 poc-agentico/
