@@ -107,6 +107,8 @@ Sonnet 5.5 · 1 repetición · semilla 2026 · guion `humano-lider.md` v1. Detal
 | e3-descuento-global | base | B | 0/1 | 0,351 + 0,002 | 19 | 104 | 1 | TERMINADO | ✘ (nombre fuera del pedido) |
 | **Total** | | | 4/6 | **1,843** | 70 | 323 | 4 | | |
 
+![Piloto: costo por corrida, con el elemento y sin él](graficas/03-piloto-costo.svg)
+
 **Lectura.** El piloto sirvió para lo que era: encontrar fallas del montaje antes de gastar. No dice nada todavía
 sobre si los elementos funcionan.
 - **E4 y E6:** en los dos brazos, Sonnet frenó ante la prueba que contradice el pedido y citó ADR-002. Vio el `curl`
@@ -198,6 +200,12 @@ modo B con propuesta ≈ 0,35-1,07 USD y 110 s; revisor ≈ 0,35 USD (29/10).
 | E7 (12 sesiones) · E8 · E9 | 26 | ≈ 11 |
 | Corridas repetidas por infraestructura (+15 %) | — | ≈ 6 |
 | **Total** | **≈ 145** | **≈ 50 USD** (entre 35 y 65) |
+
+![Paso 4: costo estimado por grupo de elementos](graficas/03-paso4-estimado.svg)
+
+Las gráficas las genera `node simulacion/graficas.mjs <paso>` desde los `resultados.jsonl`. Los informes de los pasos
+4 a 7 las van a traer: éxito por elemento y brazo con intervalo de Wilson, costo, intervenciones del líder y
+antes/después.
 
 - **Duración:** ≈ 3-4 h de construcción (E7 con varias sesiones, `demo-plataforma`, E5 con descripción del autor,
   E8, E9 y los nuevos de E3, E6 y E10) más ≈ 2,5 h de corridas en serie, o ≈ 1,5 h con 2 en paralelo. El paso 4
