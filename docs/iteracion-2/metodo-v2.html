@@ -14,6 +14,7 @@
   --ok: #4b5a6e;      --ok-bg: #e7ebf1;     /* ya existe (iteración 1) */
   --new: #0f7a66;     --new-bg: #dcf1ec;    /* nuevo, probado en ai-genesys o NEXO */
   --tbd: #9a5b00;     --tbd-bg: #fbecd2;    /* a validar el 12/11 */
+  --v3: #6a3fb0;      --v3-bg: #ece4f8;     /* nuevo en v3, se prueba en la simulación */
   --f-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
   --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
@@ -21,10 +22,12 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #11161d; --surface: #19202a; --ink: #e6ebf2; --muted: #9aa6b6; --line: #2c3644; --accent: #6ea8ec;
   --ok: #b3bfcf; --ok-bg: #263140; --new: #5fd0b6; --new-bg: #123a33; --tbd: #f0b45a; --tbd-bg: #3d2c10;
+  --v3: #c3a6f2; --v3-bg: #2e2147;
   color-scheme: dark; } }
 :root[data-theme="dark"] {
   --bg: #11161d; --surface: #19202a; --ink: #e6ebf2; --muted: #9aa6b6; --line: #2c3644; --accent: #6ea8ec;
   --ok: #b3bfcf; --ok-bg: #263140; --new: #5fd0b6; --new-bg: #123a33; --tbd: #f0b45a; --tbd-bg: #3d2c10;
+  --v3: #c3a6f2; --v3-bg: #2e2147;
   color-scheme: dark; }
 
 * { box-sizing: border-box; }
@@ -50,6 +53,16 @@ header { display: grid; gap: 14px; }
 .c-ok { color: var(--ok); background: var(--ok-bg); }
 .c-new { color: var(--new); background: var(--new-bg); }
 .c-tbd { color: var(--tbd); background: var(--tbd-bg); }
+.c-v3 { color: var(--v3); background: var(--v3-bg); }
+
+/* ---------- Capa del harness ---------- */
+.harness { border-left: 3px solid var(--accent); }
+.hbox { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.hbox .hid { font-family: var(--f-mono); font-size: 11px; color: var(--accent); }
+.hbox .kind { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); }
+.hbox .els { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.harness-note { font-size: 13px; color: var(--muted); grid-column: 2; }
+@media (max-width: 720px) { .harness-note { grid-column: 1; } }
 
 /* ---------- Diagrama principal ---------- */
 .board { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 14px; }
@@ -151,12 +164,13 @@ footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--lin
     <span class="chip c-ok">ya existe</span> iteración 1 (29/10)
     <span class="chip c-new">nuevo, ya probado</span> en ai-genesys o NEXO
     <span class="chip c-tbd">a validar</span> decisión del 12/11
+    <span class="chip c-v3">nuevo en v3</span> se prueba en la simulación (10-12/11)
   </div>
 </header>
 
 <section aria-labelledby="s-mirada">
   <span class="eyebrow">1 · El método en una mirada</span>
-  <h2 id="s-mirada">Tres capas: conocimiento, flujo de un cambio y controles</h2>
+  <h2 id="s-mirada">Cuatro capas: conocimiento, flujo de un cambio, harness y controles</h2>
   <div class="board">
 
     <div class="band">
@@ -195,13 +209,56 @@ footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--lin
         <li><strong>Cierre</strong><span class="d">Actualizar docs y subir lecciones al brain de empresa</span><span class="chip c-tbd">reforzar</span></li>
       </ol>
       <div></div>
-      <div class="who">Decide una persona: seguridad, migraciones, cifras, permisos y todo lo irreversible. El agente redacta, prueba, implementa y documenta.</div>
+      <div class="who">Decide una persona: la propuesta, el lote de PR (con lectura completa en cifras, permisos, seguridad y migraciones) y todo lo irreversible. El agente redacta, prueba, implementa y documenta.</div>
+    </div>
+
+    <div class="band harness">
+      <div class="label">Harness<small><code>emba-harness</code>: hace cumplir el flujo sin depender de que el agente o la persona se acuerden. Guías antes de actuar; sensores y controles después</small></div>
+      <div class="cols">
+        <div class="box hbox">
+          <span class="hid">H1 · guía</span><h3>Skills de flujo</h3>
+          <p>Solo a pedido: <code>proponer-cambio</code>, <code>verificar</code>, <code>revisar</code>, <code>cerrar-fase</code>, <code>nuevo-proyecto</code>. Nueva: <code>preparar-lote</code> arma la hoja del lote con banderas de lectura obligatoria.</p>
+          <span class="els">E3 · E4 · E5 · E8 · E9</span>
+          <div class="chips"><span class="chip c-ok">5 skills</span><span class="chip c-v3">preparar-lote</span></div>
+        </div>
+        <div class="box hbox">
+          <span class="hid">H2 · sensor inferencial</span><h3>Agente revisor</h3>
+          <p>Contexto limpio; recibe solo el diff, la propuesta y los requisitos, no el resumen ni la descripción del autor. En lo crítico, una segunda pasada con otro modelo.</p>
+          <span class="els">E5</span>
+          <div class="chips"><span class="chip c-new">16 de 17 cambios</span><span class="chip c-v3">sin resumen del autor</span></div>
+        </div>
+        <div class="box hbox">
+          <span class="hid">H3 · control computacional</span><h3>Hooks</h3>
+          <ul><li><code>bloquear-secretos</code>, <code>bloquear-comandos</code>, <code>registrar-metricas</code></li><li><code>carril</code>: cada sesión escribe solo en sus carpetas</li><li><code>proteger-pruebas</code>: las pruebas existentes son de solo lectura</li><li><code>bloquear-salida</code>: la red y el push piden aprobación</li></ul>
+          <span class="els">E4 · E6 · E7 · E11</span>
+          <div class="chips"><span class="chip c-ok">3 hooks</span><span class="chip c-new">carril</span><span class="chip c-v3">2 nuevos</span></div>
+        </div>
+        <div class="box hbox">
+          <span class="hid">H4 · sensor computacional</span><h3>Scripts</h3>
+          <p><code>verificar-proyecto</code> (v3: entiende OpenSpec), <code>lint-brain</code>, <code>metricas</code> (v3: los 4 indicadores), <code>correr-evals</code> (v3: con líder simulado), <code>comparar-evals</code>.</p>
+          <span class="els">E4 · E11</span>
+          <div class="chips"><span class="chip c-ok">ya existe</span><span class="chip c-v3">indicadores</span></div>
+        </div>
+        <div class="box hbox">
+          <span class="hid">H5 · guía</span><h3>Plantillas</h3>
+          <p><code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>settings.json</code>, <code>ci.yml</code>, <code>gitignore</code>. Nuevas: <code>pendientes.md</code>, brief de sesión, <code>carriles.yaml</code>, hoja de lote.</p>
+          <span class="els">E2 · E7 · E8 · E10</span>
+          <div class="chips"><span class="chip c-ok">ya existe</span><span class="chip c-new">4 nuevas</span></div>
+        </div>
+        <div class="box hbox">
+          <span class="hid">H6 · control computacional</span><h3>Política administrada</h3>
+          <p>Gana sobre todo lo demás: <code>deny</code> de secretos y comandos, sin modo bypass, solo marketplaces conocidos, solo reglas administradas. Objetivo: sandbox con red cerrada.</p>
+          <span class="els">E6</span>
+          <div class="chips"><span class="chip c-tbd">sin instalar</span><span class="chip c-tbd">no simulable</span></div>
+        </div>
+      </div>
+      <p class="harness-note">Los hooks son una <b>alarma</b> que deja registro, no una frontera de seguridad: ya hubo evasiones reales. La frontera es el sandbox con red cerrada y la política administrada (H6).</p>
     </div>
 
     <div class="band">
-      <div class="label">Controles<small>Siempre activos, no dependen de que alguien se acuerde</small></div>
+      <div class="label">Controles<small>Siempre activos, fuera del agente</small></div>
       <div class="cols">
-        <div class="box"><h3>Secretos y comandos</h3><p>Hooks que bloquean <code>.env*</code>, <code>secrets/</code> y comandos peligrosos; gitleaks en CI. Política administrada en las PCs.</p><div class="chips"><span class="chip c-ok">hooks</span><span class="chip c-tbd">política en PCs</span></div></div>
+        <div class="box"><h3>Secretos fuera del alcance</h3><p><code>.env*</code> y <code>secrets/</code> nunca en el repo; gitleaks en CI. Todo lo que escribe un tercero (issue, pendiente, descripción de PR) es entrada no confiable.</p><div class="chips"><span class="chip c-ok">gitleaks</span><span class="chip c-v3">entrada no confiable</span></div></div>
         <div class="box"><h3>Datos sintéticos</h3><p>Ningún agente toca datos reales: gemelo sintético, oráculo e imagen saneada (incidente DWH-37, contenido antes de main).</p><div class="chips"><span class="chip c-new">ai-genesys</span></div></div>
         <div class="box"><h3>CI mínima</h3><p>Pruebas, gitleaks y «brain válido» en cada PR. Un solo job, a costo cero.</p><div class="chips"><span class="chip c-ok">ya existe</span><span class="chip c-new">un solo job</span></div></div>
       </div>
@@ -302,5 +359,5 @@ footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--lin
   </ol>
 </section>
 
-<footer>Fuente: <code>docs/iteracion-2/propuesta-alcance.md</code> (repo <code>estandar-agentico</code>), con las brechas, la evidencia de cada una y las horas estimadas. Borrador del 09/11/2026.</footer>
+<footer>Fuente: <code>docs/iteracion-2/propuesta-alcance.md</code> (repo <code>estandar-agentico</code>), con las brechas, la evidencia de cada una y las horas estimadas. Borrador del 09/11/2026. Capa del harness y piezas «nuevo en v3» agregadas el 10/11/2026 desde <code>docs/iteracion-2/simulaciones/02-propuesta-v3.md</code> (elementos E1-E11, harness H1-H6).</footer>
 </main>
