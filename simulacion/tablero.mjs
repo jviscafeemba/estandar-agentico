@@ -64,6 +64,23 @@ const RESULTADO = {
 };
 for (const e of ELEMENTOS) Object.assign(e, RESULTADO[e.id] ?? {});
 
+// Resumen de todo (portada): veredicto por elemento en cada etapa. ok ✔ · no ✘ · mid ~ · na sin medir.
+const RESUMEN = {
+  E1: [["ok", "✔ 6/6 vs 1/6"], ["na", "—"], ["ok", "✔ 2/2 vs 0/2"]],
+  E2: [["no", "✘ 6/6 = 6/6"], ["na", "—"], ["no", "✘ 2/2 = 2/2"]],
+  E3: [["no", "✘ sin diferencia"], ["no", "✘ C-05 sin efecto"], ["no", "✘ 0/2 vs 1/2"]],
+  E4: [["mid", "~ no discrimina"], ["ok", "✔ 0,87 → 0,33 USD"], ["ok", "✔ 2/2 vs 0/2"]],
+  E5: [["ok", "✔ 14/14"], ["na", "—"], ["na", "—"]],
+  E6: [["mid", "~ 0 fugas, 5/9 éxito"], ["ok", "✔ 6/6 · Haiku 3/4"], ["ok", "✔ 0 fugas"]],
+  E7: [["no", "✘ 0/2 integra"], ["ok", "✔ 2/2 (C-03)"], ["na", "—"]],
+  E8: [["mid", "~ sin diferencia"], ["na", "—"], ["na", "—"]],
+  E9: [["no", "✘ no llega"], ["no", "✘ llega, no se aplica"], ["na", "—"]],
+  E10: [["ok", "✔ 3/3 vs 0/3"], ["ok", "✔ 1,39 → 0,16 USD"], ["mid", "~ escenario defectuoso"]],
+  E11: [["na", "paso 6"], ["na", "paso 6"], ["na", "—"]],
+};
+const PASO6_ESTIMADO = 25;
+
+
 const PASOS = [
   ["Estado del arte", "hecho"], ["Propuesta v3", "hecho"], ["Diseño y piloto", "hecho"],
   ["Simulación por elemento", "hecho"], ["Mejora y re-prueba", "espera"], ["Simulación de conjunto", "pendiente"], ["Informe final", "pendiente"],
@@ -169,6 +186,30 @@ function graficaCosto() {
     s += `<text x="${IZQ + w + 6}" y="${y + 15}" class="val">${fmt(c.costo_usd)} USD · éxito ${c.modo}</text></g>`;
   });
   return s + "</svg>";
+}
+
+
+function seccionResumenTodo() {
+  const filas = ELEMENTOS.map((e) => `<div class="rt-n"><span class="el-id">${e.id}</span> ${esc(e.nombre)}</div>${(RESUMEN[e.id] ?? []).map(([c, t]) => `<div class="rt-c rt-${c}">${esc(t)}</div>`).join("")}`).join("");
+  const nombres = { piloto: "Paso 3 (piloto)", paso4: "Paso 4", paso5: "Paso 5", reservados: "Reservados" };
+  const colores = { piloto: "var(--neu)", paso4: "var(--s-con)", paso5: "var(--s-base)", reservados: "var(--s-a)" };
+  const tramos = PASOS_DATOS.map((p) => ({ p, usd: [...todas, ...invalidas].filter((c) => c.paso === p).reduce((a, c) => a + (c.costo_usd ?? 0), 0) })).filter((t) => t.usd > 0);
+  const tot = tramos.reduce((a, t) => a + t.usd, 0) + PASO6_ESTIMADO;
+  const barra = tramos.map((t) => `<div style="flex:${t.usd.toFixed(2)};background:${colores[t.p] ?? "var(--neu)"}" title="${esc(nombres[t.p] ?? t.p)}: ${fmt(t.usd)} USD"></div>`).join("") + `<div class="rt-est" style="flex:${PASO6_ESTIMADO}" title="Paso 6 estimado: ${PASO6_ESTIMADO} USD"></div>`;
+  const leyenda = tramos.map((t) => `<span><i style="background:${colores[t.p] ?? "var(--neu)"}"></i>${esc(nombres[t.p] ?? t.p)} · ${fmt(t.usd)}</span>`).join("") + `<span><i class="rt-est"></i>Paso 6 estimado · ${PASO6_ESTIMADO}</span>`;
+  const cuenta = (c) => ELEMENTOS.filter((e) => e.veredicto === c).length;
+  return `<section aria-labelledby="s-todo">
+  <h2 id="s-todo">Resumen de todo</h2>
+  <p class="lead">Funcionan ${cuenta("✔")} elementos, ${cuenta("✘")} no muestran efecto medido y ${cuenta("~")} quedan a medias; E11 se mide en el paso 6. Verde: cumple el criterio; rojo: no cumple o sin diferencia con la base; ámbar: parcial o escenario defectuoso.</p>
+  <div class="panel scroll"><div class="rt ancho">
+    <div class="rt-h">Elemento</div><div class="rt-h">Paso 4</div><div class="rt-h">Paso 5 · v3.1</div><div class="rt-h">Reservados</div>
+    ${filas}
+  </div></div>
+  <div class="panel"><h3>Costo por paso (USD, equivalente API)</h3>
+    <div class="rt-barra" role="img" aria-label="Costo por paso: ${tramos.map((t) => `${nombres[t.p] ?? t.p} ${fmt(t.usd)}`).join(", ")}, paso 6 estimado ${PASO6_ESTIMADO}">${barra}</div>
+    <div class="rt-ley">${leyenda}<span>· total con el paso 6 ≈ ${fmt(tot)}</span></div>
+  </div>
+</section>`;
 }
 
 // ---------- Página ----------
@@ -288,6 +329,18 @@ figcaption { font-size: 11.5px; color: var(--muted); }
 .g-media { background: var(--warn-bg); color: var(--warn); }
 .g-baja { background: var(--neu-bg); color: var(--neu); }
 
+.rt { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)); gap: 4px; font-size: 13px; }
+.rt-h { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 4px 8px; }
+.rt-n { padding: 7px 8px; display: flex; gap: 8px; align-items: baseline; }
+.rt-c { padding: 7px 8px; border-radius: 6px; font-size: 12.5px; line-height: 1.3; }
+.rt-ok { background: var(--ok-bg); color: var(--ok); } .rt-no { background: var(--bad-bg); color: var(--bad); }
+.rt-mid { background: var(--warn-bg); color: var(--warn); } .rt-na { background: var(--bg); color: var(--muted); }
+.rt-barra { display: flex; height: 22px; gap: 2px; border-radius: 6px; overflow: hidden; }
+.rt-est { border: 1.5px dashed var(--muted); border-radius: 0 6px 6px 0; }
+.rt-ley { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.rt-ley span { display: inline-flex; align-items: center; gap: 6px; }
+.rt-ley i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.rt-ley i.rt-est { border-radius: 2px; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 th { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
@@ -307,6 +360,8 @@ footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--lin
   <p class="lead">Resultado de cada elemento del método (E1-E11) contra el criterio de éxito escrito antes de simular. Cada corrida se hace en una copia temporal de las demos, con verificaciones ocultas, con el elemento y sin él (línea base). En el modo B aprueba un líder simulado.</p>
   <ol class="pasos">${PASOS.map(([n, e]) => `<li class="${e}"><b>${n}</b><small>${e === "hecho" ? "hecho" : e === "espera" ? "espera OK" : "pendiente"}</small></li>`).join("")}</ol>
 </header>
+
+${seccionResumenTodo()}
 
 <section aria-labelledby="s-resumen">
   <h2 id="s-resumen">Dónde estamos</h2>

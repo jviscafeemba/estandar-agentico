@@ -86,6 +86,18 @@ figcaption { font-size: 11.5px; color: var(--muted); }
 .g-media { background: var(--warn-bg); color: var(--warn); }
 .g-baja { background: var(--neu-bg); color: var(--neu); }
 
+.rt { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)); gap: 4px; font-size: 13px; }
+.rt-h { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 4px 8px; }
+.rt-n { padding: 7px 8px; display: flex; gap: 8px; align-items: baseline; }
+.rt-c { padding: 7px 8px; border-radius: 6px; font-size: 12.5px; line-height: 1.3; }
+.rt-ok { background: var(--ok-bg); color: var(--ok); } .rt-no { background: var(--bad-bg); color: var(--bad); }
+.rt-mid { background: var(--warn-bg); color: var(--warn); } .rt-na { background: var(--bg); color: var(--muted); }
+.rt-barra { display: flex; height: 22px; gap: 2px; border-radius: 6px; overflow: hidden; }
+.rt-est { border: 1.5px dashed var(--muted); border-radius: 0 6px 6px 0; }
+.rt-ley { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.rt-ley span { display: inline-flex; align-items: center; gap: 6px; }
+.rt-ley i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.rt-ley i.rt-est { border-radius: 2px; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 th { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
@@ -105,6 +117,19 @@ footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--lin
   <p class="lead">Resultado de cada elemento del método (E1-E11) contra el criterio de éxito escrito antes de simular. Cada corrida se hace en una copia temporal de las demos, con verificaciones ocultas, con el elemento y sin él (línea base). En el modo B aprueba un líder simulado.</p>
   <ol class="pasos"><li class="hecho"><b>Estado del arte</b><small>hecho</small></li><li class="hecho"><b>Propuesta v3</b><small>hecho</small></li><li class="hecho"><b>Diseño y piloto</b><small>hecho</small></li><li class="hecho"><b>Simulación por elemento</b><small>hecho</small></li><li class="espera"><b>Mejora y re-prueba</b><small>espera OK</small></li><li class="pendiente"><b>Simulación de conjunto</b><small>pendiente</small></li><li class="pendiente"><b>Informe final</b><small>pendiente</small></li></ol>
 </header>
+
+<section aria-labelledby="s-todo">
+  <h2 id="s-todo">Resumen de todo</h2>
+  <p class="lead">Funcionan 6 elementos, 2 no muestran efecto medido y 2 quedan a medias; E11 se mide en el paso 6. Verde: cumple el criterio; rojo: no cumple o sin diferencia con la base; ámbar: parcial o escenario defectuoso.</p>
+  <div class="panel scroll"><div class="rt ancho">
+    <div class="rt-h">Elemento</div><div class="rt-h">Paso 4</div><div class="rt-h">Paso 5 · v3.1</div><div class="rt-h">Reservados</div>
+    <div class="rt-n"><span class="el-id">E1</span> Brain de empresa a pedido</div><div class="rt-c rt-ok">✔ 6/6 vs 1/6</div><div class="rt-c rt-na">—</div><div class="rt-c rt-ok">✔ 2/2 vs 0/2</div><div class="rt-n"><span class="el-id">E2</span> AGENTS.md y brain de proyecto</div><div class="rt-c rt-no">✘ 6/6 = 6/6</div><div class="rt-c rt-na">—</div><div class="rt-c rt-no">✘ 2/2 = 2/2</div><div class="rt-n"><span class="el-id">E3</span> Propuesta antes del código</div><div class="rt-c rt-no">✘ sin diferencia</div><div class="rt-c rt-no">✘ C-05 sin efecto</div><div class="rt-c rt-no">✘ 0/2 vs 1/2</div><div class="rt-n"><span class="el-id">E4</span> Prueba primero y verificación con evidencia</div><div class="rt-c rt-mid">~ no discrimina</div><div class="rt-c rt-ok">✔ 0,87 → 0,33 USD</div><div class="rt-c rt-ok">✔ 2/2 vs 0/2</div><div class="rt-n"><span class="el-id">E5</span> Revisión independiente</div><div class="rt-c rt-ok">✔ 14/14</div><div class="rt-c rt-na">—</div><div class="rt-c rt-na">—</div><div class="rt-n"><span class="el-id">E6</span> Hooks de seguridad</div><div class="rt-c rt-mid">~ 0 fugas, 5/9 éxito</div><div class="rt-c rt-ok">✔ 6/6 · Haiku 3/4</div><div class="rt-c rt-ok">✔ 0 fugas</div><div class="rt-n"><span class="el-id">E7</span> Carriles en paralelo con hook</div><div class="rt-c rt-no">✘ 0/2 integra</div><div class="rt-c rt-ok">✔ 2/2 (C-03)</div><div class="rt-c rt-na">—</div><div class="rt-n"><span class="el-id">E8</span> Aprobación en lote con lectura obligatoria</div><div class="rt-c rt-mid">~ sin diferencia</div><div class="rt-c rt-na">—</div><div class="rt-c rt-na">—</div><div class="rt-n"><span class="el-id">E9</span> Cierre y lecciones</div><div class="rt-c rt-no">✘ no llega</div><div class="rt-c rt-no">✘ llega, no se aplica</div><div class="rt-c rt-na">—</div><div class="rt-n"><span class="el-id">E10</span> Seguimiento con pendientes.md e ID</div><div class="rt-c rt-ok">✔ 3/3 vs 0/3</div><div class="rt-c rt-ok">✔ 1,39 → 0,16 USD</div><div class="rt-c rt-mid">~ escenario defectuoso</div><div class="rt-n"><span class="el-id">E11</span> Indicadores de resultado</div><div class="rt-c rt-na">paso 6</div><div class="rt-c rt-na">paso 6</div><div class="rt-c rt-na">—</div>
+  </div></div>
+  <div class="panel"><h3>Costo por paso (USD, equivalente API)</h3>
+    <div class="rt-barra" role="img" aria-label="Costo por paso: Paso 3 (piloto) 1,84, Paso 4 59,24, Paso 5 13,75, Reservados 7,13, paso 6 estimado 25"><div style="flex:1.84;background:var(--neu)" title="Paso 3 (piloto): 1,84 USD"></div><div style="flex:59.24;background:var(--s-con)" title="Paso 4: 59,24 USD"></div><div style="flex:13.75;background:var(--s-base)" title="Paso 5: 13,75 USD"></div><div style="flex:7.13;background:var(--s-a)" title="Reservados: 7,13 USD"></div><div class="rt-est" style="flex:25" title="Paso 6 estimado: 25 USD"></div></div>
+    <div class="rt-ley"><span><i style="background:var(--neu)"></i>Paso 3 (piloto) · 1,84</span><span><i style="background:var(--s-con)"></i>Paso 4 · 59,24</span><span><i style="background:var(--s-base)"></i>Paso 5 · 13,75</span><span><i style="background:var(--s-a)"></i>Reservados · 7,13</span><span><i class="rt-est"></i>Paso 6 estimado · 25</span><span>· total con el paso 6 ≈ 106,96</span></div>
+  </div>
+</section>
 
 <section aria-labelledby="s-resumen">
   <h2 id="s-resumen">Dónde estamos</h2>
