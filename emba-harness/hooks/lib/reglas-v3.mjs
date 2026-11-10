@@ -34,9 +34,10 @@ export function escrituraProtegida({ rel, existe, protegidos, autorizadas = [], 
   return {
     regla: "prueba-existente",
     motivo:
-      `Bloqueado por emba-harness (E4): ${rel} es una prueba que ya existía y es de solo lectura mientras ` +
-      "implementás. Si contradice el pedido o hay que cambiarla, no la esquives: frená, explicá cuál y por qué, " +
-      "y cerrá con ESPERA para que una persona decida (si lo autoriza, la agrega a .emba/pruebas-autorizadas.txt).",
+      `Bloqueado por emba-harness (E4): la edición cambia o borra una aserción de ${rel}, una prueba que ya existía. ` +
+      "Agregar pruebas, imports o helpers está permitido; debilitar una prueba existente no. Si contradice el pedido " +
+      "o hay que cambiarla, no la esquives: explicá cuál y por qué, y cerrá con ESPERA. Una aprobación en el chat no " +
+      "alcanza: si la persona lo autoriza, ejecuta ella misma `! node <harness>/scripts/autorizar-prueba.mjs " + rel + "`.",
   };
 }
 
@@ -52,12 +53,31 @@ export function soloAgrega(herramienta, entrada = {}, contenidoActual = "") {
   return false;
 }
 
+// v3.2 (C-01, F-04-05): lo que se protege son las aserciones y las declaraciones de prueba, no el archivo entero.
+// Una edición pasa si ninguna línea de aserción o de prueba del texto viejo desaparece o cambia; así se pueden
+// agregar imports, helpers y pruebas nuevas, pero no debilitar una prueba existente.
+const LINEA_DE_PRUEBA = /\b(assert(\.\w+)?|expect|test|it|describe|t\.\w+)\s*\(|\bassert\b/;
+const lineasDePrueba = (texto) => sinCR(texto).split("\n").map((l) => l.trim()).filter((l) => LINEA_DE_PRUEBA.test(l));
+export function conservaAserciones(herramienta, entrada = {}, contenidoActual = "") {
+  const conserva = (viejo, nuevo) => {
+    const quedan = new Set(lineasDePrueba(nuevo));
+    return lineasDePrueba(viejo).every((l) => quedan.has(l));
+  };
+  if (herramienta === "Edit") return typeof entrada.old_string === "string" && conserva(entrada.old_string, entrada.new_string ?? "");
+  if (herramienta === "MultiEdit") return Array.isArray(entrada.edits) && entrada.edits.length > 0 && entrada.edits.every((e) => conserva(e.old_string ?? "", e.new_string ?? ""));
+  if (herramienta === "Write") return conserva(contenidoActual, entrada.content ?? "");
+  return false;
+}
+
 // Comandos de shell que modifican o borran algo bajo una ruta protegida.
 const VERBOS_ESCRITURA =
   /(\brm\b|\bdel\b|\bmv\b|\bcp\b|\bRemove-Item\b|\bMove-Item\b|\bCopy-Item\b|\bSet-Content\b|\bAdd-Content\b|\bOut-File\b|\bNew-Item\b|\bsed\s+-i|\btee\b|\btruncate\b|\bgit\s+(checkout|restore|rm)\b|>>?)/i;
 export function comandoSobreProtegidos(comando, protegidos) {
   if (typeof comando !== "string") return null;
   const cmd = normalizar(comando).replaceAll("\\", "/");
+  // C-02: el script de autorización lo ejecuta la persona (con «!» en Claude Code), nunca el agente.
+  if (/autorizar-prueba/i.test(cmd))
+    return { regla: "autorizar-prueba", motivo: "Bloqueado por emba-harness (E4): autorizar una prueba lo hace una persona, no el agente. Pedíselo y cerrá con ESPERA." };
   if (!VERBOS_ESCRITURA.test(cmd)) return null;
   const objetivos = [...protegidos, ...CONTROL];
   const tocado = objetivos.find((p) => new RegExp(`(^|[\\s'"=:(/.])${p.replace(/[.+^${}()|[\]]/g, "\\$&")}`, "i").test(cmd));

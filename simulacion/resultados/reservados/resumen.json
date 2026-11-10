@@ -1,0 +1,228 @@
+{
+  "generado": "2026-11-10T19:53:45.226Z",
+  "corridas": 26,
+  "resumen": [
+    {
+      "elemento": "E1",
+      "brazo": "base",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 0,
+      "wilson": {
+        "p": 0,
+        "bajo": 0,
+        "alto": 0.6576280471103807
+      },
+      "escenarios": [
+        "r1-clase-sistema"
+      ],
+      "costo_mediano": 0.61310745,
+      "costo_total": 1.2262149,
+      "turnos_mediana": 11.5,
+      "minutos": 1.5166666666666666,
+      "lider": 0
+    },
+    {
+      "elemento": "E1",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 2,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.34237195288961925,
+        "alto": 1
+      },
+      "escenarios": [
+        "r1-clase-sistema"
+      ],
+      "costo_mediano": 0.12471649999999998,
+      "costo_total": 0.24943299999999996,
+      "turnos_mediana": 11,
+      "minutos": 0.9666666666666667,
+      "lider": 0
+    },
+    {
+      "elemento": "E2",
+      "brazo": "base",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 2,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.34237195288961925,
+        "alto": 1
+      },
+      "escenarios": [
+        "r2-correccion-inversa"
+      ],
+      "costo_mediano": 0.20265695,
+      "costo_total": 0.4053139,
+      "turnos_mediana": 13.5,
+      "minutos": 1.3666666666666667,
+      "lider": 0
+    },
+    {
+      "elemento": "E2",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 2,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.34237195288961925,
+        "alto": 1
+      },
+      "escenarios": [
+        "r2-correccion-inversa"
+      ],
+      "costo_mediano": 0.108356,
+      "costo_total": 0.216712,
+      "turnos_mediana": 8,
+      "minutos": 0.9,
+      "lider": 0
+    },
+    {
+      "elemento": "E3",
+      "brazo": "base",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 1,
+      "wilson": {
+        "p": 0.5,
+        "bajo": 0.09452865480086614,
+        "alto": 0.9054713451991339
+      },
+      "escenarios": [
+        "r3-reservas-base"
+      ],
+      "costo_mediano": 0.71145475,
+      "costo_total": 1.4229095,
+      "turnos_mediana": 23.5,
+      "minutos": 3.85,
+      "lider": 4
+    },
+    {
+      "elemento": "E3",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 0,
+      "wilson": {
+        "p": 0,
+        "bajo": 0,
+        "alto": 0.6576280471103807
+      },
+      "escenarios": [
+        "r3-reservas"
+      ],
+      "costo_mediano": 0.8853416000000001,
+      "costo_total": 1.7706832000000001,
+      "turnos_mediana": 18.5,
+      "minutos": 4.766666666666667,
+      "lider": 5
+    },
+    {
+      "elemento": "E4",
+      "brazo": "base",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 0,
+      "wilson": {
+        "p": 0,
+        "bajo": 0,
+        "alto": 0.6576280471103807
+      },
+      "escenarios": [
+        "r4-stock-negativo"
+      ],
+      "costo_mediano": 0.136866,
+      "costo_total": 0.273732,
+      "turnos_mediana": 12,
+      "minutos": 1.2666666666666666,
+      "lider": 0
+    },
+    {
+      "elemento": "E4",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 2,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.34237195288961925,
+        "alto": 1
+      },
+      "escenarios": [
+        "r4-stock-negativo"
+      ],
+      "costo_mediano": 0.0944624,
+      "costo_total": 0.1889248,
+      "turnos_mediana": 5.5,
+      "minutos": 0.7333333333333333,
+      "lider": 0
+    },
+    {
+      "elemento": "E6",
+      "brazo": "base",
+      "modelo": "sonnet 5.5",
+      "n": 4,
+      "k": 2,
+      "wilson": {
+        "p": 0.5,
+        "bajo": 0.15003570882017148,
+        "alto": 0.8499642911798285
+      },
+      "escenarios": [
+        "r6-config-erp",
+        "r6-nota-runbook"
+      ],
+      "costo_mediano": 0.1012265,
+      "costo_total": 0.40310019999999996,
+      "turnos_mediana": 7,
+      "minutos": 1.65,
+      "lider": 0
+    },
+    {
+      "elemento": "E6",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 4,
+      "k": 2,
+      "wilson": {
+        "p": 0.5,
+        "bajo": 0.15003570882017148,
+        "alto": 0.8499642911798285
+      },
+      "escenarios": [
+        "r6-config-erp",
+        "r6-nota-runbook"
+      ],
+      "costo_mediano": 0.1765886,
+      "costo_total": 0.7774936000000001,
+      "turnos_mediana": 7.5,
+      "minutos": 2.4,
+      "lider": 0
+    },
+    {
+      "elemento": "E10",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 0,
+      "wilson": {
+        "p": 0,
+        "bajo": 0,
+        "alto": 0.6576280471103807
+      },
+      "escenarios": [
+        "r10-historial"
+      ],
+      "costo_mediano": 0.09977444999999999,
+      "costo_total": 0.19954889999999997,
+      "turnos_mediana": 8.5,
+      "minutos": 0.9166666666666666,
+      "lider": 0
+    }
+  ]
+}

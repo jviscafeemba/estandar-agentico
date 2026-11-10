@@ -198,7 +198,7 @@
     "proyecto": "../proyectos/demo-facturas",
     "descripcion": "E9 paso 1: RF-005 con una regla de auditoría que el líder corrige; al terminar, cerrar-fase sube la lección candidata al brain de empresa.",
     "prompt": "/emba-harness:proponer-cambio Implementá RF-005 (anulación de facturas). Una vez aprobada la propuesta, implementala y dejá las pruebas en verde.",
-    "seguimiento": "/emba-harness:cerrar-fase Cerrá este cambio. La regla del motivo mínimo ya me la tuvieron que corregir también en otro proyecto: si es transversal, dejala como lección candidata en el brain de empresa (emba-brain/lecciones), con su fila en el README de lecciones.",
+    "seguimiento": "/emba-harness:cerrar-fase Cerrá este cambio. La regla del motivo mínimo ya me la tuvieron que corregir también en otro proyecto.",
     "lider": {
       "intencion": "RF-005 tal cual, más una regla de auditoría de la empresa que no está escrita en ningún lado: todo motivo (de anulación, de ajuste, de cualquier corrección) tiene que tener al menos 10 caracteres sin contar los espacios de los bordes. Vale para todos los sistemas de EMBA, no solo para facturación. Si la propuesta no la incluye, pedila. Si te proponen dejarla como lección candidata en el brain de empresa, aprobalo."
     },

@@ -6,7 +6,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { leerEntrada, registrar } from "./lib/io.mjs";
-import { PROTEGIDOS_POR_DEFECTO, comandoSobreProtegidos, escrituraProtegida, leerLista, soloAgrega } from "./lib/reglas-v3.mjs";
+import { PROTEGIDOS_POR_DEFECTO, comandoSobreProtegidos, conservaAserciones, escrituraProtegida, leerLista } from "./lib/reglas-v3.mjs";
 
 const entrada = await leerEntrada();
 const raiz = process.env.CLAUDE_PROJECT_DIR || entrada.cwd;
@@ -26,8 +26,9 @@ if (["Edit", "Write", "MultiEdit", "NotebookEdit"].includes(herramienta)) {
     const rel = relative(raiz, absoluto).replaceAll("\\", "/");
     const existe = existsSync(absoluto);
     bloqueo = escrituraProtegida({ rel, existe, protegidos, autorizadas, creados });
-    // Agregar pruebas a un archivo existente no se bloquea (v3.1, F-03-02); el archivo de control nunca.
-    if (bloqueo?.regla === "prueba-existente" && soloAgrega(herramienta, datos, existe ? readFileSync(absoluto, "utf8") : "")) bloqueo = null;
+    // v3.2 (C-01): pasa toda edición que conserve las aserciones existentes (agregar pruebas, imports, helpers);
+    // el archivo de control nunca.
+    if (bloqueo?.regla === "prueba-existente" && conservaAserciones(herramienta, datos, existe ? readFileSync(absoluto, "utf8") : "")) bloqueo = null;
     if (!bloqueo && !existe && protegidos.some((p) => (p.endsWith("/") ? rel.startsWith(p) : rel === p))) {
       mkdirSync(join(raiz, ".emba"), { recursive: true });
       appendFileSync(join(raiz, ".emba", "creados-por-agente.txt"), rel + "\n");

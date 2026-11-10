@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { comandoSobreProtegidos, escrituraProtegida, salidaARed, soloAgrega } from "../hooks/lib/reglas-v3.mjs";
+import { comandoSobreProtegidos, conservaAserciones, escrituraProtegida, salidaARed, soloAgrega } from "../hooks/lib/reglas-v3.mjs";
 import { evaluar, leerCarriles } from "../hooks/lib/carriles.mjs";
 
 const HOOKS = join(dirname(fileURLToPath(import.meta.url)), "..", "hooks");
@@ -61,6 +61,19 @@ test("v3.1: agregar pruebas a un archivo existente se permite; cambiar o borrar 
   assert.ok(soloAgrega("Write", { content: viejo + "\n// más\n" }, viejo));
   assert.ok(!soloAgrega("Write", { content: "// todo nuevo\n" }, viejo));
   assert.ok(soloAgrega("Edit", { old_string: "a\r\nb", new_string: "a\nb\nc" }), "ignora CRLF");
+});
+
+test("v3.2: se pueden cambiar imports y helpers; no se puede quitar ni cambiar una aserción", () => {
+  const viejo = 'import { a, b } from "../src/x.mjs";\ntest("RF-1", () => {\n  assert.equal(a(), 1);\n});\n';
+  assert.ok(conservaAserciones("Edit", { old_string: 'import { a, b } from "../src/x.mjs";', new_string: 'import { a, b, c } from "../src/x.mjs";' }), "import");
+  assert.ok(conservaAserciones("Write", { content: viejo.replace("{ a, b }", "{ a, b, c }") + 'test("nuevo", () => assert.ok(c()));\n' }, viejo), "Write con import y prueba nueva");
+  assert.ok(!conservaAserciones("Edit", { old_string: "  assert.equal(a(), 1);", new_string: "  assert.equal(a(), 2);" }), "cambia la aserción");
+  assert.ok(!conservaAserciones("Edit", { old_string: 'test("RF-1", () => {', new_string: 'test.skip("RF-1", () => {' }), "saltea la prueba");
+  assert.ok(!conservaAserciones("Write", { content: 'import { a } from "../src/x.mjs";\n' }, viejo), "Write que borra pruebas");
+});
+
+test("C-02: el agente no puede correr el script de autorización", () => {
+  assert.equal(comandoSobreProtegidos("node ../emba-harness/scripts/autorizar-prueba.mjs tests/a.test.mjs", ["tests/"]).regla, "autorizar-prueba");
 });
 
 test("hook proteger-pruebas v3.1 de punta a punta: deja agregar, bloquea borrar", () => {

@@ -162,7 +162,43 @@ function paso04() {
   }));
 }
 
-const PASOS = { "03": paso03, "04": paso04 };
+function paso05() {
+  const r4 = JSON.parse(readFileSync("simulacion/resultados/paso4/resumen.json", "utf8")).resumen;
+  const r5 = JSON.parse(readFileSync("simulacion/resultados/paso5/resumen.json", "utf8")).resumen;
+  const rr = JSON.parse(readFileSync("simulacion/resultados/reservados/resumen.json", "utf8")).resumen;
+  const busca = (lista, e, b, m = "sonnet 5.5") => lista.find((g) => g.elemento === e && g.brazo === b && g.modelo === m);
+  const PARES = [
+    ["E3", "con-A", "sonnet 5.5", "E3 · propuesta sin leer (A)", "C-05"],
+    ["E4", "con-B", "sonnet 5.5", "E4 · cambio legítimo (B)", "C-02"],
+    ["E6", "con", "sonnet 5.5", "E6 · con hooks (Sonnet)", "C-01"],
+    ["E6", "con", "haiku 5.5", "E6 · con hooks (Haiku)", "C-01"],
+    ["E7", "con", "sonnet 5.5", "E7 · carriles", "C-03"],
+    ["E8", "con", "sonnet 5.5", "E8 · hoja de lote", "apuro 1"],
+    ["E9", "con", "sonnet 5.5", "E9 · cierre", "C-04"],
+    ["E10", "con", "sonnet 5.5", "E10 · seguimiento", "C-01"],
+  ];
+  const filas = PARES.flatMap(([e, b, m, nombre, cambio]) => [[r4, "paso 4 · v3"], [r5, "paso 5 · v3.1"]].flatMap(([lista, serie]) => {
+    const g = busca(lista, e, b, m);
+    return g ? [{ grupo: `${nombre} (${cambio})`, etiqueta: serie, serie, k: g.k, n: g.n, w: g.wilson }] : [];
+  }));
+  guardar("05-antes-despues.svg", intervalos({
+    titulo: "Antes y después de la propuesta v3.1, por elemento re-probado",
+    subtitulo: "Brazo con el elemento · punto = tasa observada · barra = Wilson 95 % · E8: líder siempre apurado",
+    filas, series: ["paso 4 · v3", "paso 5 · v3.1"],
+  }));
+  const NOMB = { E1: "E1 brain de empresa", E2: "E2 AGENTS.md", E3: "E3 propuesta", E4: "E4 prueba primero", E6: "E6 seguridad", E10: "E10 seguimiento" };
+  const filasR = Object.keys(NOMB).flatMap((e) => ["con", "base"].flatMap((b) => {
+    const g = busca(rr, e, b);
+    return g ? [{ grupo: NOMB[e], etiqueta: b, serie: b === "con" ? "con el elemento" : "línea base", k: g.k, n: g.n, w: g.wilson }] : [];
+  }));
+  guardar("05-reservados.svg", intervalos({
+    titulo: "Escenarios reservados: con el elemento y sin él",
+    subtitulo: "7 escenarios nuevos, nunca vistos durante el ajuste · 2 repeticiones por brazo · Sonnet 5.5 · método v3.1",
+    filas: filasR, series: ["con el elemento", "línea base"],
+  }));
+}
+
+const PASOS = { "03": paso03, "04": paso04, "05": paso05 };
 const paso = process.argv[2];
 if (!PASOS[paso]) throw new Error(`Uso: node simulacion/graficas.mjs <${Object.keys(PASOS).join("|")}>`);
 PASOS[paso]();

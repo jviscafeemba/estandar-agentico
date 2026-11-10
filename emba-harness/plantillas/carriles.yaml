@@ -2,6 +2,9 @@
 # sin EMBA_CARRIL no se limita nada. Rutas relativas a la raíz del repo: "x/" = esa carpeta y todo lo de adentro;
 # "/*" = archivos sueltos de la raíz. "nunca" gana sobre "escribe". Cada contrato compartido tiene UN solo carril
 # dueño; los demás lo piden con ESPERA. Formato acotado a propósito: clave, lista "escribe", lista "nunca".
+# Contrato primero (v3.1, C-03): si un cambio necesita tocar un contrato compartido, el carril dueño lo hace
+# primero y la orquestadora une esa rama a main ANTES de lanzar los carriles que dependen de él, que parten de ese
+# main. Sin esto, cada carril cumple lo suyo y la integración se rompe igual (simulación del 10/11/2026, F-04-06).
 A:
   escribe:
     - modulos/a/

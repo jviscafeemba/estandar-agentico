@@ -46,6 +46,11 @@ const CARRILES = escenario.orden_merge;
 const CLI = process.env.CLAUDE_CLI || "claude";
 // La tabla de carriles para medir siempre es la del proyecto, también en el brazo base (que no la ve).
 const TABLA = leerCarriles(readFileSync(join(proyecto, ".claude", "carriles.yaml"), "utf8"));
+// C-03 (paso 5, F-04-06): contrato primero. El carril dueño del contrato trabaja primero; la orquestadora une su
+// rama a main y recién entonces arrancan, en paralelo, los demás carriles desde ese main (con el contrato nuevo).
+const contratoPrimero = process.argv.includes("--contrato-primero");
+const DUENO = CARRILES.find((c) => TABLA[c]?.escribe.some((p) => p.startsWith("contratos")));
+const refBase = {}; // desde dónde se cuentan los archivos de cada rama (base, o el main con el contrato ya unido)
 
 // Sesiones nuevas e independientes: sin las variables de la sesión de Claude que lance esto (como correr-evals).
 const ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(CLAUDE|ANTHROPIC|EMBA_CARRIL$)/i.test(k)));
@@ -100,7 +105,7 @@ function armarRepo() {
 
 // ---------- Cierre: commit por rama, archivos por carril, unión en orden y verificaciones ----------
 function archivosDeRama(repo, c) {
-  return git(repo, "diff", "--name-only", "base", `carril-${c}`).stdout.split("\n").filter(Boolean);
+  return git(repo, "diff", "--name-only", refBase[c] ?? "base", `carril-${c}`).stdout.split("\n").filter(Boolean);
 }
 
 function fueraDeCarril(c, archivos, raiz) {
@@ -207,7 +212,10 @@ const PROTOCOLO =
 function sistema(c) {
   const otros = CARRILES.filter((x) => x !== c).map((x) => `${x} (${escenario.carriles[x].nombre})`).join(" y ");
   return `${PROTOCOLO}\n\nSos la sesión del carril ${c} (${escenario.carriles[c].nombre}). Hay otras dos sesiones trabajando en paralelo ` +
-    `en este mismo repositorio, cada una en su propia rama: los carriles ${otros}. Al terminar, la orquestadora une las tres ramas.`;
+    `en este mismo repositorio, cada una en su propia rama: los carriles ${otros}. Al terminar, la orquestadora une las tres ramas.` +
+    (contratoPrimero && c !== DUENO
+      ? ` El dueño del contrato compartido (carril ${DUENO}) ya publicó su cambio y la orquestadora lo unió: tu rama parte de main con el contrato nuevo. Programá contra ese contrato; si te falta algo de él, pedíselo con ESPERA.`
+      : contratoPrimero && c === DUENO ? " Sos el dueño del contrato: trabajás primero y la orquestadora une tu rama antes de que arranquen los demás." : "");
 }
 
 function estadoFinal(texto) {
@@ -268,7 +276,8 @@ async function correr(repeticion) {
   const entorno = armarRepo();
   try {
     const inicio = Date.now();
-    const sesiones = await Promise.all(CARRILES.map(async (c) => {
+    for (const c of CARRILES) refBase[c] = "base";
+    const correrCarril = async (c) => {
       const a = await sesion(c, entorno.worktrees[c]);
       const id = a.salida.session_id;
       if (estadoFinal(a.salida.result) !== "ESPERA" || !id) return { ...a, espero: false };
@@ -278,7 +287,23 @@ async function correr(repeticion) {
         salida: { ...b.salida, total_cost_usd: (a.salida.total_cost_usd ?? 0) + (b.salida.total_cost_usd ?? 0), num_turns: (a.salida.num_turns ?? 0) + (b.salida.num_turns ?? 0),
           permission_denials: [...(a.salida.permission_denials ?? []), ...(b.salida.permission_denials ?? [])] },
       };
-    }));
+    };
+    let sesiones;
+    if (contratoPrimero && DUENO) {
+      // 1) el dueño del contrato; 2) la orquestadora une su rama; 3) los demás, en paralelo, desde ese main.
+      const primero = await correrCarril(DUENO);
+      const wt = entorno.worktrees[DUENO];
+      git(wt, "add", "-A");
+      if (git(wt, "diff", "--cached", "--quiet").status !== 0) git(wt, "commit", "-q", "-m", `carril ${DUENO}: contrato primero`);
+      git(entorno.repo, "merge", "--no-ff", "-q", "-m", `unir contrato (carril ${DUENO})`, `carril-${DUENO}`);
+      git(entorno.repo, "tag", "contrato");
+      const otros = CARRILES.filter((c) => c !== DUENO);
+      for (const c of otros) { git(entorno.worktrees[c], "merge", "-q", "--ff-only", "main"); refBase[c] = "contrato"; }
+      const resto = await Promise.all(otros.map(correrCarril));
+      sesiones = CARRILES.map((c) => (c === DUENO ? primero : resto[otros.indexOf(c)]));
+    } else {
+      sesiones = await Promise.all(CARRILES.map(correrCarril));
+    }
     const metricas = Object.fromEntries(CARRILES.map((c) => [c, leerMetricas(entorno.worktrees[c])]));
     const diffs = Object.fromEntries(CARRILES.map((c) => [c, git(entorno.worktrees[c], "diff", "HEAD").stdout + git(entorno.worktrees[c], "status", "--porcelain").stdout]));
     const u = cerrarYUnir(entorno);

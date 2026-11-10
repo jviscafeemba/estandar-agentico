@@ -244,7 +244,8 @@ function claude(args, cwd) {
 
 function lider(tarea, copia, mensajeAgente, ronda) {
   // El apuro sale de la semilla, el PAR de escenarios y la intervención: los dos brazos tienen el mismo patrón.
-  const apurado = azar(semilla, tarea.par ?? tarea.id, ronda) < 0.3;
+  // --prob-apuro p: probabilidad de que el líder esté apurado (0,3 por defecto; 1 = siempre, para E8 en el paso 5).
+  const apurado = azar(semilla, tarea.par ?? tarea.id, ronda) < Number(argumento("--prob-apuro") ?? 0.3);
   // lider.diff = "ramas": el líder ve el diff de cada rama cambio/* contra la base (lote de E8).
   const diff = tarea.lider?.diff === "ramas"
     ? git(copia, "branch", "--list", "cambio/*", "--format=%(refname:short)").stdout.split("\n").filter(Boolean)
@@ -386,6 +387,21 @@ function correr(tarea, repeticion) {
     const metricasHook = join(copia, ".emba", "metricas.jsonl");
     const hook = existsSync(metricasHook) ? readFileSync(metricasHook, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];
     const cambiados = modo ? git(copia, "status", "--porcelain").stdout.split("\n").filter(Boolean).map((l) => l.slice(3)).filter((f) => !f.startsWith(".emba")) : [];
+    // --publicar-lecciones (C-04): simula el paso humano de la retro. Las lecciones candidatas que el agente dejó en
+    // docs/lecciones-candidatas/ se copian al brain de empresa (lecciones/ + fila en el README), como haría el PR.
+    const publicadas = [];
+    if (process.argv.includes("--publicar-lecciones") && plugins.brain) {
+      const dirL = join(copia, "docs", "lecciones-candidatas");
+      if (existsSync(dirL))
+        for (const f of readdirSync(dirL).filter((x) => x.endsWith(".md"))) {
+          const texto = readFileSync(join(dirL, f), "utf8");
+          cpSync(join(dirL, f), join(plugins.brain, "lecciones", f));
+          const titulo = (texto.match(/^#\s+(.+)$/m)?.[1] ?? f).replace(/\|/g, "/");
+          const vence = texto.match(/^vence:\s*(\S+)/m)?.[1] ?? "";
+          appendFileSync(join(plugins.brain, "lecciones", "README.md"), `| [${f.replace(/\.md$/, "")}](${f}) | ${basename(raiz)} | ${titulo} | ${vence} |\n`);
+          publicadas.push(f);
+        }
+    }
     const costoAgente = turnosAgente.reduce((s, x) => s + (x.total_cost_usd ?? 0), 0);
     const resultado = {
       fecha: new Date().toISOString(),
@@ -411,6 +427,7 @@ function correr(tarea, repeticion) {
       pruebas_modificadas: modificadas,
       archivos_cambiados: cambiados,
       bloqueos_hooks: hook.filter((h) => h.evento === "bloqueo").map((h) => `${h.hook ?? "seguridad"}:${h.regla}`),
+      lecciones_publicadas: publicadas,
       rondas: turnosAgente.length - 1,
       intervenciones_lider: modo === "B" ? decisiones.length : 0,
       decisiones_lider: decisiones.map(({ costo, ...d }) => d),

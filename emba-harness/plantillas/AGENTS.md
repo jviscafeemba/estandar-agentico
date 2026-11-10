@@ -14,8 +14,9 @@
 
 ## Reglas que no se negocian
 
-<Solo lo que el agente no puede deducir del código. Cada regla cita su ADR o requerimiento, y si existe una
-prueba o hook que la impone, se nombra.>
+<Solo lo que el agente no puede deducir del código. Cada regla cita su ADR o requerimiento. Si la regla se puede
+imponer con una prueba, primero se escribe la prueba y acá solo se la nombra: en la simulación del 10/11/2026 el
+agente respetó igual las reglas impuestas por pruebas aunque no hubiera AGENTS.md (v3.1, C-06).>
 
 - <Regla> (ADR-0xx; la impone `tests/<archivo>`).
 

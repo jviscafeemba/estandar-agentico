@@ -25,4 +25,6 @@ No escribas código en este paso.
    - **Pruebas primero**: la lista de pruebas que van a fallar antes de implementar, cada una con su ID.
    - **Fuera de alcance**.
    - **Riesgos**: datos, seguridad, integraciones, irreversibilidad.
-5. Mostrale la propuesta al usuario y esperá su aprobación explícita antes de implementar.
+5. Mostrale la propuesta al usuario y esperá su aprobación explícita antes de implementar. Lo que vale es que
+   **una persona la haya leído** (v3.1, C-05): si la respuesta es un «ok» que no contesta los supuestos que
+   marcaste, repreguntá esos supuestos en una línea antes de seguir; no los des por aprobados.
