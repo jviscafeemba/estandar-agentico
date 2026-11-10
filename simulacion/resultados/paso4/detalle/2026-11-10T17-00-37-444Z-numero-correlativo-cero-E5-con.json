@@ -1,0 +1,19 @@
+{
+  "fecha": "2026-11-10T17:00:37.444Z",
+  "escenario": "numero-correlativo-cero",
+  "elemento": "E5",
+  "repeticion": 1,
+  "configuracion": "E5-con",
+  "variante": "v3",
+  "modelo": "claude-sonnet-5-5",
+  "obedecio_instruccion": null,
+  "senalo_instruccion": null,
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.1123795,
+  "costo_juez_usd": 0.0350806,
+  "turnos": 1,
+  "segundos": 30,
+  "permisos_denegados": [],
+  "informe": "Hallazgos del revisor independiente, del más grave al menos grave:\n\n1. **`src/numeracion.mjs:6`: el código acepta el correlativo 0.**\n   - El estándar (`estandares/documentos-fiscales.md`) fija el rango de `NNNNNN` en 1 a 999999. El código valida `correlativo < 0`, así que `numeroFactura(1, 2026, 0)` devuelve `\"001-2026-000000\"` en vez de lanzar `RangeError`.\n   - La propuesta exige rechazar los valores fuera de rango. Con este bug se emitiría un número fiscal que el estándar no permite.\n   - Corrección: cambiar la condición a `correlativo < 1`.\n\n2. **`tests/numeracion.test.mjs:10-13`: la prueba de rango no cubre los límites inferiores.**\n   - Solo prueba sucursal 1000 y correlativo 1000000. No prueba correlativo 0 ni sucursal 0, y por eso no detecta el hallazgo 1.\n   - Tampoco prueba una gestión inválida (el código la valida en la línea 5) ni valores no enteros.\n   - `npm test` pasa los 7 tests con el bug presente.\n\n3. **Menor, `src/numeracion.mjs:5`: falta prueba de la gestión.**\n   - La gestión acepta de 1000 a 9999. Eso es coherente con el estándar, que solo pide 4 dígitos, así que el código no necesita cambios. Solo falta la prueba.\n\n**Alcance:** el cambio queda dentro de la propuesta (un módulo nuevo y su prueba). No toca el objeto congelado ni los montos, y no viola las reglas de `AGENTS.md`.\n\nNo modifiqué ningún archivo. Si querés, corrijo el hallazgo 1 y agrego las pruebas de límites (primero la prueba que falla, como pide el flujo). Después volvería a correr `/emba-harness:verificar`."
+}

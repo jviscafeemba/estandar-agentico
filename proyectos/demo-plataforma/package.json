@@ -1,0 +1,10 @@
+{
+  "name": "demo-plataforma",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Proyecto de prueba del estándar agéntico EMBA (nivel 3): ventas, stock y reportes sobre un contrato de eventos compartido.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { comandoSobreProtegidos, escrituraProtegida, salidaARed } from "../hooks/lib/reglas-v3.mjs";
+import { comandoSobreProtegidos, escrituraProtegida, salidaARed, soloAgrega } from "../hooks/lib/reglas-v3.mjs";
 import { evaluar, leerCarriles } from "../hooks/lib/carriles.mjs";
 
 const HOOKS = join(dirname(fileURLToPath(import.meta.url)), "..", "hooks");
@@ -50,6 +50,28 @@ test("hook proteger-pruebas de punta a punta: bloquea, registra y anota lo cread
   const nueva = correr("proteger-pruebas.mjs", { tool_name: "Write", tool_input: { file_path: join(proyecto, "tests", "b.test.mjs") }, cwd: proyecto }, proyecto);
   assert.equal(nueva.status, 0);
   assert.match(readFileSync(join(proyecto, ".emba", "creados-por-agente.txt"), "utf8"), /tests\/b\.test\.mjs/);
+});
+
+test("v3.1: agregar pruebas a un archivo existente se permite; cambiar o borrar una aserción no", () => {
+  const viejo = 'test("a", () => {\n  assert.ok(Object.isFrozen(f));\n});\n';
+  assert.ok(soloAgrega("Edit", { old_string: viejo, new_string: viejo + '\ntest("b", () => {});\n' }));
+  assert.ok(!soloAgrega("Edit", { old_string: "  assert.ok(Object.isFrozen(f));\n", new_string: "" }));
+  assert.ok(!soloAgrega("Edit", { old_string: "Object.isFrozen(f)", new_string: "true" }));
+  assert.ok(soloAgrega("MultiEdit", { edits: [{ old_string: "x", new_string: "x\ny" }] }));
+  assert.ok(soloAgrega("Write", { content: viejo + "\n// más\n" }, viejo));
+  assert.ok(!soloAgrega("Write", { content: "// todo nuevo\n" }, viejo));
+  assert.ok(soloAgrega("Edit", { old_string: "a\r\nb", new_string: "a\nb\nc" }), "ignora CRLF");
+});
+
+test("hook proteger-pruebas v3.1 de punta a punta: deja agregar, bloquea borrar", () => {
+  const proyecto = realpathSync.native(mkdtempSync(join(tmpdir(), "emba-pp31-")));
+  mkdirSync(join(proyecto, "tests"));
+  const archivo = join(proyecto, "tests", "a.test.mjs");
+  writeFileSync(archivo, "assert.ok(1);\n");
+  const agrega = correr("proteger-pruebas.mjs", { tool_name: "Edit", tool_input: { file_path: archivo, old_string: "assert.ok(1);", new_string: "assert.ok(1);\nassert.ok(2);" }, cwd: proyecto }, proyecto);
+  assert.equal(agrega.status, 0);
+  const borra = correr("proteger-pruebas.mjs", { tool_name: "Edit", tool_input: { file_path: archivo, old_string: "assert.ok(1);", new_string: "" }, cwd: proyecto }, proyecto);
+  assert.equal(borra.status, 2);
 });
 
 // ---------- bloquear-salida ----------

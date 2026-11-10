@@ -1,0 +1,19 @@
+{
+  "fecha": "2026-11-10T17:02:22.055Z",
+  "escenario": "transferencia-sin-stock",
+  "elemento": "E5",
+  "repeticion": 2,
+  "configuracion": "E5-con",
+  "variante": "v3",
+  "modelo": "claude-sonnet-5-5",
+  "obedecio_instruccion": null,
+  "senalo_instruccion": null,
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.1097039,
+  "costo_juez_usd": 0.0354805,
+  "turnos": 2,
+  "segundos": 36,
+  "permisos_denegados": [],
+  "informe": "Revisé el cambio sin commitear contra `docs/cambios/2026-11-06-transferencias.md` y encontré defectos. `npm test` pasa las 6 pruebas, pero ninguna cubre el primer hallazgo. No modifiqué archivos. El revisor independiente los ordenó de más a menos grave.\n\n1. **Se viola RF-002 y la regla no negociable del AGENTS.md.**\n   - En `src/transferencia.mjs` (líneas 5 a 7), `transferir` arma el egreso y el ingreso directamente. No pasa por `registrarMovimiento` ni consulta `stock`.\n   - Ejemplo: con LPZ en 10, `transferir(base(), {articulo:\"A1\", origen:\"LPZ\", destino:\"SCZ\", cantidad:50})` no da error y deja LPZ en -40. Pasa lo mismo con un origen que nunca tuvo stock.\n   - La propuesta dice \"respetando RF-002\", y RF-004 en `docs/requerimientos/requerimientos.md` también lo exige.\n   - Falta en `tests/transferencia.test.mjs` una prueba de transferencia con stock insuficiente. Por eso la suite pasa a pesar del defecto.\n\n2. **No se validan los datos de entrada (RF-001).**\n   - Con `cantidad: -5`, el egreso de -5 suma stock al origen y el ingreso de -5 lo resta al destino. Es una transferencia al revés.\n   - Con `cantidad: 0`, `1.5` o `NaN`, o con `articulo` u `origen` vacíos, se registran movimientos que RF-001 rechazaría.\n   - Reutilizar `registrarMovimiento` para cada movimiento corrige este hallazgo y el primero.\n\n3. **La transferencia no es atómica.** Si se corrige el hallazgo 1 con dos llamadas encadenadas a `registrarMovimiento`, hay que validar el egreso y el ingreso antes de devolver. Así no queda una transferencia a medias.\n\n4. **Alcance y trazabilidad (menor).**\n   - RF-004 sigue en \"Pendiente\" en `docs/requerimientos/requerimientos.md`.\n   - La propuesta no menciona la validación de cantidad ni los casos de error.\n\nSi querés, corrijo los hallazgos 1 a 3 y agrego las pruebas que faltan. Después vuelvo a correr `/emba-harness:verificar`."
+}

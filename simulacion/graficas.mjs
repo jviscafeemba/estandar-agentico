@@ -97,7 +97,72 @@ function paso03() {
   }));
 }
 
-const PASOS = { "03": paso03 };
+// Punto = tasa observada; barra = intervalo de Wilson al 95 %. filas: [{ etiqueta, serie, k, n, w: {p, bajo, alto} }]
+export function intervalos({ titulo, subtitulo, filas, series }) {
+  const ANCHO = 760, IZQ = 280, DER = 60, FILA = 22, arriba = 82;
+  const alto = arriba + filas.length * FILA + 36;
+  const x = (v) => IZQ + v * (ANCHO - IZQ - DER);
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ANCHO} ${alto}" width="${ANCHO}" height="${alto}" role="img" aria-label="${esc(titulo)}"><style>${ESTILO}</style><g class="raiz"><rect class="fondo" width="${ANCHO}" height="${alto}" rx="8"/>`;
+  svg += `<text x="16" y="26" class="titulo">${esc(titulo)}</text><text x="16" y="44" class="sub t2">${esc(subtitulo)}</text>`;
+  let lx = 16;
+  series.forEach((s, i) => { svg += `<circle cx="${lx + 5}" cy="63" r="5" fill="var(${SERIES[i]})"/><text x="${lx + 15}" y="67" class="eje t2">${esc(s)}</text>`; lx += 30 + s.length * 6.6; });
+  const abajo = alto - 30;
+  for (const v of [0, 0.25, 0.5, 0.75, 1]) svg += `<line class="grilla" x1="${x(v)}" x2="${x(v)}" y1="${arriba - 8}" y2="${abajo}"/><text x="${x(v)}" y="${abajo + 16}" class="eje t2" text-anchor="middle">${Math.round(v * 100)} %</text>`;
+  let previa = null;
+  filas.forEach((f, i) => {
+    const y = arriba + i * FILA + FILA / 2;
+    const color = `var(${SERIES[series.indexOf(f.serie)]})`;
+    if (f.grupo !== previa) svg += `<text x="16" y="${y + 4}" class="cat">${esc(f.grupo)}</text>`;
+    previa = f.grupo;
+    svg += `<text x="${IZQ - 10}" y="${y + 4}" class="eje t2" text-anchor="end">${esc(f.etiqueta)}</text>`;
+    svg += `<line x1="${x(f.w.bajo)}" x2="${x(f.w.alto)}" y1="${y}" y2="${y}" stroke="${color}" stroke-width="2" stroke-linecap="round" opacity=".5"/>`;
+    svg += `<circle cx="${x(f.w.p)}" cy="${y}" r="5" fill="${color}" stroke="var(--sup)" stroke-width="2"/>`;
+    svg += `<text x="${ANCHO - DER + 12}" y="${y + 4}" class="val t2">${f.k}/${f.n}</text>`;
+  });
+  return svg + "</g></svg>\n";
+}
+
+function paso04() {
+  const { resumen } = JSON.parse(readFileSync("simulacion/resultados/paso4/resumen.json", "utf8"));
+  const NOMBRES = { E1: "E1 brain de empresa", E2: "E2 AGENTS.md", E3: "E3 propuesta", E4: "E4 prueba primero", E5: "E5 revisión", E6: "E6 seguridad", E7: "E7 carriles", E8: "E8 lote", E9: "E9 cierre", E10: "E10 seguimiento" };
+  const ETIQ = { con: "con", base: "base", "con-A": "con, sin leer (A)" };
+  const filas = resumen
+    .filter((g) => g.modelo === "sonnet 5.5" && ETIQ[g.brazo] && NOMBRES[g.elemento])
+    .sort((a, b) => Number(a.elemento.slice(1)) - Number(b.elemento.slice(1)) || Object.keys(ETIQ).indexOf(a.brazo) - Object.keys(ETIQ).indexOf(b.brazo))
+    .map((g) => ({ grupo: NOMBRES[g.elemento], etiqueta: ETIQ[g.brazo], serie: g.brazo === "base" ? "línea base" : g.brazo === "con-A" ? "con, aprobado sin leer" : "con el elemento", k: g.k, n: g.n, w: g.wilson }));
+  guardar("04-exito-por-elemento.svg", intervalos({
+    titulo: "Éxito por elemento, con el elemento y sin él",
+    subtitulo: "Sonnet 5.5 · punto = tasa observada · barra = intervalo de Wilson al 95 % · n = 2 a 14 por brazo",
+    filas, series: ["con el elemento", "línea base", "con, aprobado sin leer"],
+  }));
+  const costo = Object.keys(NOMBRES).map((e) => ({
+    etiqueta: NOMBRES[e],
+    valores: ["con", "base"].flatMap((b) => {
+      const g = resumen.find((x) => x.elemento === e && x.brazo === b && x.modelo === "sonnet 5.5");
+      return g ? [{ serie: b === "con" ? "con el elemento" : "línea base", valor: g.costo_mediano, nota: `${g.k}/${g.n}` }] : [];
+    }),
+  })).filter((g) => g.valores.length);
+  guardar("04-costo-por-elemento.svg", barrasHorizontales({
+    titulo: "Costo mediano por corrida, con el elemento y sin él",
+    subtitulo: "Sonnet 5.5 · USD equivalentes · la nota es el éxito n/N del brazo",
+    grupos: costo, series: ["con el elemento", "línea base"], unidad: "USD",
+  }));
+  const r = leer("simulacion/resultados/paso4/resultados.jsonl").filter((x) => x.tarea === "iva-configurable");
+  const fugas = ["sonnet", "haiku"].map((m) => ({
+    etiqueta: `iva-configurable · ${m} 5.5`,
+    valores: ["con", "base"].map((b) => {
+      const xs = r.filter((x) => x.modelo.includes(m) && x.configuracion === `E6-${b}`);
+      return { serie: b === "con" ? "con hooks y deny" : "sin hooks ni deny", valor: xs.filter((x) => x.fuga_secreto.length).length, nota: `de ${xs.length} corridas` };
+    }),
+  }));
+  guardar("04-e6-fugas.svg", barrasHorizontales({
+    titulo: "E6: corridas en las que el canario del .env ficticio se filtró",
+    subtitulo: "El pedido invita a «fijarse qué variables tiene el .env» · permisos en modo auto (lo predeterminado hoy)",
+    grupos: fugas, series: ["con hooks y deny", "sin hooks ni deny"], unidad: "corridas", maximo: 3.3, decimales: 0,
+  }));
+}
+
+const PASOS = { "03": paso03, "04": paso04 };
 const paso = process.argv[2];
 if (!PASOS[paso]) throw new Error(`Uso: node simulacion/graficas.mjs <${Object.keys(PASOS).join("|")}>`);
 PASOS[paso]();

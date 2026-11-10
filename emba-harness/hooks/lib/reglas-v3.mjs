@@ -40,6 +40,18 @@ export function escrituraProtegida({ rel, existe, protegidos, autorizadas = [], 
   };
 }
 
+// v3.1 (F-03-02): agregar pruebas a un archivo existente es parte de «prueba primero» y no se bloquea. Una edición
+// solo agrega si el texto viejo queda entero en el nuevo (Edit/MultiEdit) o si el archivo nuevo contiene entero al
+// anterior (Write). Cambiar o borrar una aserción existente sigue bloqueado.
+const sinCR = (t) => String(t ?? "").replace(/\r\n/g, "\n");
+export function soloAgrega(herramienta, entrada = {}, contenidoActual = "") {
+  if (herramienta === "Edit") return Boolean(entrada.old_string) && sinCR(entrada.new_string).includes(sinCR(entrada.old_string));
+  if (herramienta === "MultiEdit")
+    return Array.isArray(entrada.edits) && entrada.edits.length > 0 && entrada.edits.every((e) => e.old_string && sinCR(e.new_string).includes(sinCR(e.old_string)));
+  if (herramienta === "Write") return sinCR(contenidoActual).trim().length > 0 && sinCR(entrada.content).includes(sinCR(contenidoActual).trim());
+  return false;
+}
+
 // Comandos de shell que modifican o borran algo bajo una ruta protegida.
 const VERBOS_ESCRITURA =
   /(\brm\b|\bdel\b|\bmv\b|\bcp\b|\bRemove-Item\b|\bMove-Item\b|\bCopy-Item\b|\bSet-Content\b|\bAdd-Content\b|\bOut-File\b|\bNew-Item\b|\bsed\s+-i|\btee\b|\btruncate\b|\bgit\s+(checkout|restore|rm)\b|>>?)/i;

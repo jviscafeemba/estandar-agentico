@@ -58,12 +58,15 @@ const quitar = (argumento("--quitar") ?? "").split(",").filter(Boolean);
 const permisosArg = argumento("--permisos");
 const etiqueta = argumento("--etiqueta");
 const liderModelo = argumento("--lider-modelo") ?? "claude-haiku-5-5";
+const elementoArg = argumento("--elemento"); // etiqueta el elemento cuando la tarea no lo trae (tareas de evals/)
 const RAIZ_HARNESS = join(dirname(fileURLToPath(import.meta.url)), "..");
 const RAIZ_REPO = join(RAIZ_HARNESS, "..");
 const GUION = join(RAIZ_REPO, "docs", "iteracion-2", "simulaciones", "humano-lider.md");
 // --variante liviano: solo hooks de seguridad y métricas (variantes/emba-harness-liviano), sin skills ni revisor.
 const variante = argumento("--variante");
-const PLUGIN_HARNESS = variante ? join(RAIZ_REPO, "variantes", `emba-harness-${variante}`) : RAIZ_HARNESS;
+// --harness-dir: copia congelada del harness para toda una tanda (F-04-02: editar el harness con una tanda en curso
+// mezcla versiones entre corridas del mismo brazo).
+const PLUGIN_HARNESS = argumento("--harness-dir") ? resolve(argumento("--harness-dir")) : variante ? join(RAIZ_REPO, "variantes", `emba-harness-${variante}`) : RAIZ_HARNESS;
 if (!existsSync(PLUGIN_HARNESS)) throw new Error(`No existe la variante ${variante} (${PLUGIN_HARNESS})`);
 // CLI de Claude Code: la del PATH, o la indicada en CLAUDE_CLI (p. ej. la que trae la app de escritorio).
 const CLI = process.env.CLAUDE_CLI || "claude";
@@ -82,18 +85,21 @@ const configuracion = etiqueta ?? (sinHarness ? "sin-harness" : variante ? `harn
 // (la de la app de escritorio redirige la autenticación a la app).
 const ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(CLAUDE|ANTHROPIC)/i.test(k)));
 
-// ---------- Plugins: completos, o una copia sin los elementos que se quitan (línea base) ----------
+// ---------- Plugins: siempre una copia temporal (el agente no escribe en el repo real), sin lo que se quita ----------
+// Hasta el paso 3, el harness y el brain se pasaban con --add-dir apuntando al repo: un agente con acceptEdits
+// podía escribir fuera de la copia temporal (F-04-01; el piloto no lo hizo). Ahora cada corrida usa copias.
+const brainOrigen = argumento("--brain-dir") ? resolve(argumento("--brain-dir")) : join(RAIZ_REPO, "emba-brain");
+const guardarBrain = argumento("--guardar-brain") ? resolve(argumento("--guardar-brain")) : null;
 function armarPlugins() {
   if (sinHarness) return { args: [], limpiar: () => {} };
-  const brain = join(RAIZ_REPO, "emba-brain");
   const conBrain = !quitar.includes("brain-empresa");
   const quitaHarness = quitar.filter((q) => /^(hook|skill|agente):/.test(q));
-  let harness = PLUGIN_HARNESS;
-  let temporal = null;
+  const temporal = mkdtempSync(join(realpathSync.native(tmpdir()), "emba-plugins-"));
+  const harness = join(temporal, "emba-harness");
+  const brain = join(temporal, "emba-brain");
+  cpSync(PLUGIN_HARNESS, harness, { recursive: true, filter: (r) => !/[\\/](tests|node_modules)([\\/]|$)/.test(r.slice(PLUGIN_HARNESS.length)) });
+  if (conBrain) cpSync(brainOrigen, brain, { recursive: true });
   if (quitaHarness.length) {
-    temporal = mkdtempSync(join(realpathSync.native(tmpdir()), "emba-variante-"));
-    harness = join(temporal, "emba-harness");
-    cpSync(PLUGIN_HARNESS, harness, { recursive: true, filter: (r) => !/[\\/](tests|node_modules)([\\/]|$)/.test(r.slice(PLUGIN_HARNESS.length)) });
     const hooksJson = join(harness, "hooks", "hooks.json");
     const h = JSON.parse(readFileSync(hooksJson, "utf8"));
     for (const q of quitaHarness) {
@@ -110,7 +116,13 @@ function armarPlugins() {
   }
   const args = ["--plugin-dir", harness, "--add-dir", harness];
   if (conBrain) args.push("--plugin-dir", brain, "--add-dir", brain);
-  return { args, harness, limpiar: () => temporal && rmSync(temporal, { recursive: true, force: true }) };
+  return {
+    args, harness, brain: conBrain ? brain : null,
+    limpiar: () => {
+      if (guardarBrain && conBrain) { rmSync(guardarBrain, { recursive: true, force: true }); cpSync(brain, guardarBrain, { recursive: true }); }
+      rmSync(temporal, { recursive: true, force: true });
+    },
+  };
 }
 
 function copiaLimpia(tarea) {
@@ -151,6 +163,11 @@ function copiaLimpia(tarea) {
     git(destino, "init", "-q");
     git(destino, "add", "-A");
     git(destino, "commit", "-q", "-m", "base");
+    // preparar_script: arma estado de git que un overlay no puede (ramas con cambios para un lote, E8).
+    if (tarea.preparar_script) {
+      const r = spawnSync(process.execPath, [resolve(dirTareas, tarea.preparar_script)], { cwd: destino, encoding: "utf8" });
+      if (r.status !== 0) throw new Error(`preparar_script de ${tarea.id} falló: ${r.stderr}`);
+    }
   }
   return destino;
 }
@@ -226,8 +243,13 @@ function claude(args, cwd) {
 }
 
 function lider(tarea, copia, mensajeAgente, ronda) {
-  const apurado = azar(semilla, tarea.id, ronda) < 0.3;
-  const diff = git(copia, "diff", "HEAD").stdout + git(copia, "status", "--porcelain").stdout;
+  // El apuro sale de la semilla, el PAR de escenarios y la intervención: los dos brazos tienen el mismo patrón.
+  const apurado = azar(semilla, tarea.par ?? tarea.id, ronda) < 0.3;
+  // lider.diff = "ramas": el líder ve el diff de cada rama cambio/* contra la base (lote de E8).
+  const diff = tarea.lider?.diff === "ramas"
+    ? git(copia, "branch", "--list", "cambio/*", "--format=%(refname:short)").stdout.split("\n").filter(Boolean)
+        .map((r) => `### Rama ${r}\n${git(copia, "diff", `master...${r}`).stdout || git(copia, "diff", `main...${r}`).stdout}`).join("\n")
+    : git(copia, "diff", "HEAD").stdout + git(copia, "status", "--porcelain").stdout;
   const prompt =
     guionModelo +
     `\n\n## Contexto del escenario\n\nIntención privada: ${tarea.lider?.intencion ?? "(ninguna en particular: decidí con las reglas)"}\n` +
@@ -299,7 +321,10 @@ function correr(tarea, repeticion) {
       // En Windows el shell es PowerShell: van las dos reglas.
       "--allowedTools", "Edit", "Write", "Skill", "Task",
       "Bash(node:*)", "Bash(npm test:*)", "Bash(npm run:*)", "PowerShell(node:*)", "PowerShell(npm test:*)", "PowerShell(npm run:*)",
-      ...(modo ? ["Bash(git diff:*)", "Bash(git status:*)", "Bash(git log:*)", "PowerShell(git diff:*)", "PowerShell(git status:*)", "PowerShell(git log:*)"] : []),
+      ...(modo ? ["Bash(git diff:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(git show:*)",
+        "PowerShell(git diff:*)", "PowerShell(git status:*)", "PowerShell(git log:*)", "PowerShell(git branch:*)", "PowerShell(git show:*)",
+        // F-03-04: el agente filtra la salida de las pruebas con Select-String; sin esto, la orden compuesta se negaba.
+        "PowerShell(Select-String:*)"] : []),
     ];
     if (modelo) comunes.push("--model", modelo);
     if (modo) comunes.push("--append-system-prompt", PROTOCOLO);
@@ -312,7 +337,17 @@ function correr(tarea, repeticion) {
     const decisiones = [];
     let costoLider = 0;
     const maxRondas = tarea.max_rondas ?? 4;
-    for (let ronda = 1; modo && ronda <= maxRondas; ronda++) {
+    // seguimiento: al terminar, el runner retoma la sesión con otro pedido (p. ej. /emba-harness:cerrar-fase en E9)
+    // y el líder vuelve a contestar si el agente espera.
+    let seguimientoPendiente = tarea.seguimiento ?? null;
+    for (let ronda = 1; modo && ronda <= maxRondas + (tarea.seguimiento ? 3 : 0); ronda++) {
+      if (seguimientoPendiente && estadoFinal(salida.result) !== "ESPERA" && sesion) {
+        ({ salida, stderr } = claude(["--resume", sesion, "-p", seguimientoPendiente, ...comunes], copia));
+        turnosAgente.push(salida);
+        respuestas.push(salida.result ?? "");
+        seguimientoPendiente = null;
+        continue;
+      }
       if (estadoFinal(salida.result) !== "ESPERA" || tarea.espera === "fin" || !sesion) break;
       let mensaje;
       if (modo === "A") {
@@ -342,7 +377,9 @@ function correr(tarea, repeticion) {
     cpSync(join(dirTareas, "verificaciones"), join(copia, "evals", "verificaciones"), { recursive: true });
     const archivoRespuestas = join(copia, ".emba-respuestas.txt");
     writeFileSync(archivoRespuestas, textoRespuestas);
-    const envCheck = { ...process.env, EVAL_ORIGINAL: raiz, EVAL_ESTADO: estado ?? "", EVAL_RESPUESTAS: archivoRespuestas };
+    const archivoDecisiones = join(copia, ".emba-decisiones.json");
+    writeFileSync(archivoDecisiones, JSON.stringify(decisiones.map(({ costo, ...d }) => d)));
+    const envCheck = { ...process.env, EVAL_ORIGINAL: raiz, EVAL_ESTADO: estado ?? "", EVAL_RESPUESTAS: archivoRespuestas, EVAL_DECISIONES: archivoDecisiones };
     const rutaVerificacion = join("evals", "verificaciones", basename(tarea.verificacion));
     const verificacionOk = nodeTest(copia, [rutaVerificacion], envCheck);
     const suiteOk = nodeTest(copia);
@@ -353,7 +390,7 @@ function correr(tarea, repeticion) {
     const resultado = {
       fecha: new Date().toISOString(),
       tarea: tarea.id,
-      elemento: tarea.elemento ?? null,
+      elemento: tarea.elemento ?? elementoArg ?? null,
       nivel: tarea.nivel ?? null,
       repeticion,
       harness: versionHarness(),
@@ -364,7 +401,8 @@ function correr(tarea, repeticion) {
       guion: modo === "B" ? guionHash : null,
       harness_activo: hook.some((h) => h.evento === "turno"), // el hook Stop solo escribe si el plugin cargó
       modelo: modelo ?? "predeterminado",
-      exito: verificacionOk && suiteOk && !tocoVerificaciones && fuga.length === 0,
+      // suite: false en escenarios donde lo correcto es dejar una prueba ajena fallando (E10: no se arregla de paso).
+      exito: verificacionOk && (tarea.suite === false || suiteOk) && !tocoVerificaciones && fuga.length === 0,
       verificacion: verificacionOk,
       suite: suiteOk,
       estado_final: estado,

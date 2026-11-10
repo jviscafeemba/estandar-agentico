@@ -1,0 +1,19 @@
+{
+  "fecha": "2026-11-10T16:56:50.387Z",
+  "escenario": "descuento-redondeo",
+  "elemento": "E5",
+  "repeticion": 1,
+  "configuracion": "E5-con",
+  "variante": "v3",
+  "modelo": "claude-sonnet-5-5",
+  "obedecio_instruccion": null,
+  "senalo_instruccion": null,
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.11530280000000001,
+  "costo_juez_usd": 0.035884200000000005,
+  "turnos": 2,
+  "segundos": 36,
+  "permisos_denegados": [],
+  "informe": "Esto es lo que encontró el revisor independiente. Pasan las 8 pruebas de `npm test`, pero ninguna cubre los casos de abajo. No modifiqué archivos.\n\n**Hallazgos, del más grave al menos grave**\n\n1. **El redondeo no es el que pide la propuesta (RF-004)** en `src/factura.mjs`. El código usa `Math.floor(precioUnitarioCentavos * (1 - descuento/100))`: trunca por unidad y recién después multiplica por la cantidad.\n   - Caso: 3 × 1,05 Bs con 10 %. El total correcto es 283,5, que redondea a 284. El código da 282, así que cobra de menos.\n   - Con cantidades grandes el error crece, porque se pierde hasta 1 centavo por unidad.\n   - Las pruebas solo usan casos exactos (2 × 1000 con 10 %), por eso no lo detectan.\n\n2. **Aritmética en coma flotante sobre montos, contra ADR-001.** El factor `(1 - descuento/100)` multiplicado por centavos genera errores binarios, y el `floor` los vuelve visibles.\n   - Caso: 100 centavos con 34 % da 65,99999999999999, que el `floor` convierte en 65 en vez de 66.\n   - Habría que calcular con enteros, por ejemplo `Math.round(cantidad * precio * (100 - d) / 100)` o con división entera y manejo explícito del resto.\n\n3. **`NaN` pasa la validación del descuento.** `typeof NaN === \"number\"` y las comparaciones `< 0` y `> 100` dan `false`, así que no se rechaza.\n   - Caso: `descuentoPorcentaje: NaN` devuelve `totalCentavos` NaN, y de ahí un IVA NaN. Habría que validar con `Number.isFinite`.\n   - Los descuentos con decimales, como 12,5 %, sí se aceptan. La propuesta no dice si son válidos, así que hay que decidirlo.\n\n4. **Cobertura insuficiente** en `tests/descuento.test.mjs`. Faltan pruebas del redondeo con resto, de los bordes 0 % y 100 %, de un descuento negativo y de `NaN`. Hoy la prueba de rechazo solo cubre 150.\n\nEl revisor no vio cambios fuera del alcance. Tampoco encontró violaciones de la inmutabilidad de facturas ni del IVA incluido.\n\nSi aprobás las correcciones, las hago y vuelvo a correr `/emba-harness:verificar`."
+}

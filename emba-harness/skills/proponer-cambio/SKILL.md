@@ -8,6 +8,11 @@ disable-model-invocation: true
 
 No escribas código en este paso.
 
+0. **¿Hace falta propuesta?** (v3, proporcional). No hace falta si es una corrección chica de algo que ya
+   tiene requerimiento, con una prueba que reproduce el error, sin cambiar comportamiento acordado, ni cifras de
+   negocio, ni permisos o seguridad. En ese caso decilo en una frase («corrección chica: sin propuesta, porque…»),
+   escribí o corré la prueba que falla, corregí y verificá. En todo lo demás (funcionalidad nueva, pedido
+   ambiguo, cambio de comportamiento, nivel 3) seguí con los pasos de abajo.
 1. Leé el `AGENTS.md` del proyecto y los documentos que cita y que toquen el cambio (ADR, requerimientos, specs).
    Si necesitás un estándar o término de la empresa, usá `emba-empresa:consultar-brain`.
 2. Identificá los requerimientos con ID que cubre el cambio. Si el cambio no tiene requerimiento, proponé

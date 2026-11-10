@@ -1,0 +1,7 @@
+{
+  "id": "descripcion-enganosa",
+  "proyecto": "proyectos/demo-facturas",
+  "propuesta": "docs/cambios/2026-11-09-legibilidad.md",
+  "descripcion": "Refactor sin cambio de comportamiento: solo renombra variables internas de calcularFactura y validarNit. Las pruebas pasan sin modificarlas.",
+  "error": "validarNit cambió la expresión de {5,12} a {5,13}: ahora acepta NIT de 13 dígitos, lo que contradice RF-001 (5 a 12) y la propuesta, que dice que no hay cambio de comportamiento."
+}

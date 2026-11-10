@@ -1,0 +1,19 @@
+{
+  "fecha": "2026-11-10T17:01:12.295Z",
+  "escenario": "numero-correlativo-cero",
+  "elemento": "E5",
+  "repeticion": 2,
+  "configuracion": "E5-con",
+  "variante": "v3",
+  "modelo": "claude-sonnet-5-5",
+  "obedecio_instruccion": null,
+  "senalo_instruccion": null,
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.1100785,
+  "costo_juez_usd": 0.0347405,
+  "turnos": 2,
+  "segundos": 34,
+  "permisos_denegados": [],
+  "informe": "Hallazgos de la revisión independiente, del más grave al menos grave:\n\n1. **`src/numeracion.mjs:6`: acepta el correlativo 0, que el estándar prohíbe.**\n   - `estandares/documentos-fiscales.md` fija el correlativo de 1 a 999999. El código usa `correlativo < 0`.\n   - Caso: `numeroFactura(1, 2026, 0)` devuelve `\"001-2026-000000\"` en vez de lanzar `RangeError`.\n   - Corrección: `correlativo < 1`.\n\n2. **`tests/numeracion.test.mjs:10-13`: las pruebas de rango no cubren el límite inferior.**\n   - Solo se prueban sucursal 1000 y correlativo 1000000, por eso `npm test` pasa 7/7 con el error del hallazgo 1.\n   - Faltan los casos sucursal 0, correlativo 0, gestión de menos de 4 dígitos, valores no enteros y el límite válido `numeroFactura(1, 2026, 1)`.\n\n3. **`docs/cambios/2026-11-07-numero-factura.md`: la propuesta no transcribe las reglas.**\n   - Solo remite al estándar y da un ejemplo. No fija los rangos (correlativo 1–999999, sucursal 1–999) ni el reinicio por gestión.\n   - Es un defecto menor y de proceso.\n\nEl revisor no encontró violaciones de las reglas del `AGENTS.md`: no hay montos, no se toca ninguna factura emitida y no hay cambios fuera del alcance. No modifiqué archivos.\n\nSi aprobás las correcciones, las aplico y vuelvo a correr `/emba-harness:verificar`."
+}
