@@ -1,0 +1,15 @@
+# Carriles de trabajo en paralelo (E7). Lo lee hooks/carril.mjs cuando la sesión define EMBA_CARRIL=<clave>;
+# sin EMBA_CARRIL no se limita nada. Rutas relativas a la raíz del repo: "x/" = esa carpeta y todo lo de adentro;
+# "/*" = archivos sueltos de la raíz. "nunca" gana sobre "escribe". Cada contrato compartido tiene UN solo carril
+# dueño; los demás lo piden con ESPERA. Formato acotado a propósito: clave, lista "escribe", lista "nunca".
+A:
+  escribe:
+    - modulos/a/
+    - tests/a/
+  nunca:
+    - contratos/
+B:
+  escribe:
+    - modulos/b/
+    - tests/b/
+    - contratos/   # dueño del contrato compartido

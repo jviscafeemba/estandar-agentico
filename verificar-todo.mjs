@@ -12,6 +12,8 @@ const pasos = [
   ["Brain y pruebas de demo-inventario", [join(raiz, "emba-harness/scripts/verificar-proyecto.mjs"), "proyectos/demo-inventario", "--pruebas"], raiz],
   ["Evals (simulación) de demo-facturas", [join(raiz, "emba-harness/scripts/correr-evals.mjs"), "proyectos/demo-facturas", "--simular"], raiz],
   ["Evals (simulación) de demo-inventario", [join(raiz, "emba-harness/scripts/correr-evals.mjs"), "proyectos/demo-inventario", "--simular"], raiz],
+  // Escenarios de la simulación del método v2: fallan sin el cambio, pasan con la referencia, fallan con el erróneo.
+  ["Escenarios de simulación (ajuste)", [join(raiz, "emba-harness/scripts/correr-evals.mjs"), ".", "--tareas", "simulacion/escenarios.json", "--simular"], raiz],
 ];
 
 let fallas = 0;
