@@ -1,6 +1,6 @@
 ---
 name: preparar-lote
-description: Arma la hoja del lote de aprobación del flujo EMBA. Usar cuando hay varios cambios listos (verificados y revisados) esperando la aprobación de una persona. Marca qué cambios exigen lectura completa del diff y cuáles alcanzan con el resumen del revisor.
+description: RETIRADA en la v3.3 (D-06-06), se conserva solo para reproducir la simulación. Arma la hoja del lote de aprobación del flujo EMBA. Usar cuando hay varios cambios listos (verificados y revisados) esperando la aprobación de una persona. Marca qué cambios exigen lectura completa del diff y cuáles alcanzan con el resumen del revisor.
 disable-model-invocation: true
 ---
 

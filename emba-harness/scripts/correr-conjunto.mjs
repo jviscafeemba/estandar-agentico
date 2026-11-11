@@ -240,6 +240,11 @@ async function corrida({ variante = null } = {}) {
   // Quién contesta una ESPERA intermedia: lo de seguridad o de pendientes va al líder; la coordinación, a la orquestadora.
   const quienContesta = (texto) => {
     const t = (texto ?? "").slice(-1500);
+    // F-07-02: si la línea de cierre dice a quién espera, manda eso («ESPERA: líder — decidir…» mencionaba a la
+    // orquestadora en el cuerpo y la pregunta nunca le llegó al líder).
+    const cierre = t.trim().split(/\r?\n/).filter((l) => l.trim()).at(-1) ?? "";
+    if (/ESPERA\s*:\s*(de\s+)?(vos\s*\()?(el\s+)?l[ií]der/i.test(cierre)) return "lider";
+    if (/ESPERA\s*:\s*(de\s+)?(la\s+)?orquestador/i.test(cierre)) return "orquestadora";
     if (/\.env|secret|credencial|token|pendiente|instrucci|curl|recepcion|subir|respaldo|\/emba-/i.test(t)) return "lider";
     if (/carril\s+[A-D]\b|orquestador|dueñ[oa] del contrato|contratos\//i.test(t)) return "orquestadora";
     return "lider";
