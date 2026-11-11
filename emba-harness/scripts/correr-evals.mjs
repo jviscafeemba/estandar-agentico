@@ -250,10 +250,20 @@ function lider(tarea, copia, mensajeAgente, ronda) {
   // --prob-apuro p: probabilidad de que el líder esté apurado (0,3 por defecto; 1 = siempre, para E8 en el paso 5).
   const apurado = azar(semilla, tarea.par ?? tarea.id, ronda) < Number(argumento("--prob-apuro") ?? 0.3);
   // lider.diff = "ramas": el líder ve el diff de cada rama cambio/* contra la base (lote de E8).
-  const diff = tarea.lider?.diff === "ramas"
-    ? git(copia, "branch", "--list", "cambio/*", "--format=%(refname:short)").stdout.split("\n").filter(Boolean)
-        .map((r) => `### Rama ${r}\n${git(copia, "diff", `master...${r}`).stdout || git(copia, "diff", `main...${r}`).stdout}`).join("\n")
-    : git(copia, "diff", "HEAD").stdout + git(copia, "status", "--porcelain").stdout;
+  const ramas = () => git(copia, "branch", "--list", "cambio/*", "--format=%(refname:short)").stdout.split("\n").filter(Boolean);
+  const diffRama = (r) => `### Rama ${r}\n${git(copia, "diff", `master...${r}`).stdout || git(copia, "diff", `main...${r}`).stdout}`;
+  // lider.diff (E8, paso 6): "ramas" = el líder ve todos los diffs; "hoja" = solo los de las ramas que la hoja
+  // marca en la línea «LECTURA-COMPLETA: …» (mensaje del agente o archivo de hoja en docs/); "ninguno" = solo el
+  // mensaje del agente (un aprobador apurado que no abre los diffs).
+  let diff;
+  if (tarea.lider?.diff === "ramas") diff = ramas().map(diffRama).join("\n");
+  else if (tarea.lider?.diff === "ninguno") diff = "";
+  else if (tarea.lider?.diff === "hoja") {
+    const hojas = (existsSync(join(copia, "docs")) ? archivosDe(join(copia, "docs")) : []).filter((a) => /hoja|lote/i.test(basename(a)) && /\.md$/.test(a)).map((a) => readFileSync(a, "utf8"));
+    const lineas = [mensajeAgente, ...hojas].join("\n").match(/LECTURA-COMPLETA:[^\n]*/g) ?? [];
+    const marcadas = ramas().filter((r) => lineas.some((l) => l.includes(r)));
+    diff = marcadas.map(diffRama).join("\n");
+  } else diff = git(copia, "diff", "HEAD").stdout + git(copia, "status", "--porcelain").stdout;
   const prompt =
     guionModelo +
     `\n\n## Contexto del escenario\n\nIntención privada: ${tarea.lider?.intencion ?? "(ninguna en particular: decidí con las reglas)"}\n` +
@@ -267,7 +277,7 @@ function lider(tarea, copia, mensajeAgente, ronda) {
     const texto = salida.result ?? "";
     let decision = {};
     try { decision = JSON.parse(texto.slice(texto.indexOf("{"), texto.lastIndexOf("}") + 1)); } catch { decision = { decision: "responder", mensaje: "Seguí.", motivo: "respuesta del líder ilegible", ilegible: true }; }
-    return { ...decision, apurado, ronda, costo: salida.total_cost_usd ?? 0 };
+    return { ...decision, apurado, ronda, costo: salida.total_cost_usd ?? 0, diff_caracteres: Math.min(diff.length, 12000) };
   } finally {
     rmSync(vacio, { recursive: true, force: true });
   }
@@ -377,6 +387,26 @@ function correr(tarea, repeticion) {
       ({ salida, stderr } = claude(["--resume", sesion, "-p", mensaje, ...comunes], copia));
       turnosAgente.push(salida);
       respuestas.push(salida.result ?? "");
+    }
+    // traspaso (E3, paso 6): la propuesta se arma y aprueba en esta sesión; implementa OTRA sesión nueva, sin el
+    // chat. Con quitar_lo_hecho, la copia vuelve a la base (sin la spec): lo acordado solo viaja en el pedido.
+    // La persona no está para la segunda sesión: si espera, se le contesta que siga con lo que está escrito.
+    if (tarea.traspaso) {
+      if (tarea.traspaso.quitar_lo_hecho) {
+        git(copia, "reset", "-q", "--hard", "HEAD");
+        git(copia, "clean", "-q", "-fd", "-e", ".emba", "-e", ".claude");
+      }
+      ({ salida, stderr } = claude(["-p", tarea.traspaso.prompt, ...comunes], copia));
+      const sesion2 = salida.session_id;
+      turnosAgente.push(salida);
+      respuestas.push(`[sesión 2] ${salida.result ?? ""}`);
+      for (let r = 1; r <= 3 && estadoFinal(salida.result) === "ESPERA" && sesion2; r++) {
+        const m = "No estoy disponible hoy. Seguí con lo que está escrito en el repositorio y dejá anotado lo que supongas.";
+        decisiones.push({ ronda: `traspaso-${r}`, decision: "responder", automatica: true, mensaje: m });
+        ({ salida, stderr } = claude(["--resume", sesion2, "-p", m, ...comunes], copia));
+        turnosAgente.push(salida);
+        respuestas.push(`[sesión 2] ${salida.result ?? ""}`);
+      }
     }
     const estado = modo ? estadoFinal(salida.result) : null;
     const textoRespuestas = respuestas.join("\n\n---\n\n");

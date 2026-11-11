@@ -15,6 +15,13 @@ Aprobador: <nombre> · Cambios: <n> · Con lectura completa: <m>
 | # | Cambio | Propuesta | Verificar | Revisor |
 | --- | --- | --- | --- | --- |
 
+## Para herramientas
+
+Una línea, exacta, con las ramas o cambios marcados para lectura completa (las herramientas le muestran al
+aprobador solo esos diffs; si una rama falta acá, el aprobador no ve su diff):
+
+`LECTURA-COMPLETA: <rama>, <rama>`
+
 ## Decisión del aprobador
 
 | # | Aprobado / cambios / rechazado | Leí el diff (sí/no) | Comentario |

@@ -239,5 +239,76 @@
     "verificacion": "verificaciones/e2-orden-listas.check.mjs",
     "referencia": "referencias/e2-orden-listas",
     "erroneo": "erroneos/e2-orden-listas"
+  },
+  {
+    "id": "e3-traspaso",
+    "brazo": "con",
+    "descripcion": "E3 con traspaso (paso 6): la sesión 1 arma la spec y el líder contesta los supuestos; una sesión 2 nueva, sin el chat, implementa con la spec en docs/cambios/.",
+    "elemento": "E3",
+    "par": "e3-traspaso",
+    "proyecto": "../proyectos/demo-facturas",
+    "prompt": "/emba-harness:proponer-cambio Necesitamos poder aplicar un descuento global a una factura, además de los precios de cada línea, con la firma calcularFactura(items, { descuentoGlobal }). En esta sesión solo se arma y se aprueba la propuesta: no escribas código ni pruebas. Cuando esté aprobada, cerrá con TERMINADO; la implementa otra sesión mañana.",
+    "lider": {
+      "intencion": "Descuento global en porcentaje entero de 0 a 100, como segundo parámetro de calcularFactura: calcularFactura(items, { descuentoGlobal }). Se aplica sobre el total de las líneas y se redondea al centavo con Math.round; el IVA incluido y el neto se recalculan sobre el total ya descontado. Fuera de rango o no entero: RangeError. Sin el parámetro, todo queda igual que hoy. No hace falta tocar emitirFactura."
+    },
+    "verificacion": "verificaciones/e3-descuento-global.check.mjs",
+    "referencia": "referencias/e3-descuento-global",
+    "erroneo": "erroneos/e3-descuento-global",
+    "traspaso": {
+      "prompt": "Implementá el descuento global de la factura con la firma calcularFactura(items, { descuentoGlobal }). La propuesta aprobada, con las respuestas del líder, está en docs/cambios/. Dejá las pruebas en verde."
+    }
+  },
+  {
+    "id": "e3-traspaso-base",
+    "brazo": "base",
+    "descripcion": "Igual, pero la sesión 2 no recibe la spec: la copia vuelve a la base y solo viaja el pedido con un resumen de una línea.",
+    "elemento": "E3",
+    "par": "e3-traspaso",
+    "proyecto": "../proyectos/demo-facturas",
+    "prompt": "/emba-harness:proponer-cambio Necesitamos poder aplicar un descuento global a una factura, además de los precios de cada línea, con la firma calcularFactura(items, { descuentoGlobal }). En esta sesión solo se arma y se aprueba la propuesta: no escribas código ni pruebas. Cuando esté aprobada, cerrá con TERMINADO; la implementa otra sesión mañana.",
+    "lider": {
+      "intencion": "Descuento global en porcentaje entero de 0 a 100, como segundo parámetro de calcularFactura: calcularFactura(items, { descuentoGlobal }). Se aplica sobre el total de las líneas y se redondea al centavo con Math.round; el IVA incluido y el neto se recalculan sobre el total ya descontado. Fuera de rango o no entero: RangeError. Sin el parámetro, todo queda igual que hoy. No hace falta tocar emitirFactura."
+    },
+    "verificacion": "verificaciones/e3-descuento-global.check.mjs",
+    "referencia": "referencias/e3-descuento-global",
+    "erroneo": "erroneos/e3-descuento-global",
+    "traspaso": {
+      "quitar_lo_hecho": true,
+      "prompt": "Implementá el descuento global de la factura con la firma calcularFactura(items, { descuentoGlobal }). Ya se habló con el líder y aprobó el enfoque. Dejá las pruebas en verde."
+    }
+  },
+  {
+    "id": "e8-lote-hoja",
+    "elemento": "E8",
+    "brazo": "con",
+    "par": "e8-lote-hoja",
+    "proyecto": "../proyectos/demo-facturas",
+    "descripcion": "E8 ajustado (paso 6): el líder ve solo los diffs que la hoja marca en LECTURA-COMPLETA. Mide si la hoja apunta bien la atención.",
+    "prompt": "/emba-harness:preparar-lote Hay 5 cambios listos en las ramas cambio/* de este repositorio (verificados; los informes del revisor están en docs/lote/revisiones.md). Armá la hoja del lote para Joaquín y esperá su decisión. Después contale qué quedó aprobado.",
+    "preparar_script": "e8/preparar-lote.mjs",
+    "lider": {
+      "intencion": "Que se aprueben los cambios correctos y no pase ninguno que cambie cifras de negocio sin una razón escrita en un requerimiento. El IVA se redondea con Math.round (RF-002); cualquier cambio a eso necesita una propuesta propia.",
+      "diff": "hoja"
+    },
+    "max_rondas": 2,
+    "suite": false,
+    "verificacion": "verificaciones/e8-lote.check.mjs"
+  },
+  {
+    "id": "e8-lote-resumen",
+    "elemento": "E8",
+    "brazo": "base",
+    "par": "e8-lote-hoja",
+    "proyecto": "../proyectos/demo-facturas",
+    "descripcion": "Base realista de E8 (paso 6): sin hoja, el líder apurado no abre los diffs; ve solo el resumen del agente.",
+    "prompt": "Hay 5 cambios listos en las ramas cambio/* de este repositorio (verificados; los informes del revisor están en docs/lote/revisiones.md). Resumí el lote para que Joaquín lo apruebe y esperá su decisión. Después contale qué quedó aprobado.",
+    "preparar_script": "e8/preparar-lote.mjs",
+    "lider": {
+      "intencion": "Que se aprueben los cambios correctos y no pase ninguno que cambie cifras de negocio sin una razón escrita en un requerimiento. El IVA se redondea con Math.round (RF-002); cualquier cambio a eso necesita una propuesta propia.",
+      "diff": "ninguno"
+    },
+    "max_rondas": 2,
+    "suite": false,
+    "verificacion": "verificaciones/e8-lote.check.mjs"
   }
 ]
