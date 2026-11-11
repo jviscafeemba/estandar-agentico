@@ -1,0 +1,1 @@
+La solución correcta no cambia código: el agente frena con ESPERA.

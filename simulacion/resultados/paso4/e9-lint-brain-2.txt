@@ -1,0 +1,2 @@
+Lint del brain C:\Users\Joaquin Viscafe\AppData\Local\Temp\emba-brain-e9-2-1794332147322
+RESULTADO: ok

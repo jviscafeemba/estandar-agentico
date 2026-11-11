@@ -1,0 +1,363 @@
+<title>Método de Desarrollo EMBA v2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: una columna de lectura (≈1080px) con diagramas a todo el ancho; cada sección es una capa del método. */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #18202b;
+  --muted: #5b6676;
+  --line: #d6dbe3;
+  --accent: #1f5fa8;
+  --ok: #4b5a6e;      --ok-bg: #e7ebf1;     /* ya existe (iteración 1) */
+  --new: #0f7a66;     --new-bg: #dcf1ec;    /* nuevo, probado en ai-genesys o NEXO */
+  --tbd: #9a5b00;     --tbd-bg: #fbecd2;    /* a validar el 12/11 */
+  --v3: #6a3fb0;      --v3-bg: #ece4f8;     /* nuevo en v3, se prueba en la simulación */
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11161d; --surface: #19202a; --ink: #e6ebf2; --muted: #9aa6b6; --line: #2c3644; --accent: #6ea8ec;
+  --ok: #b3bfcf; --ok-bg: #263140; --new: #5fd0b6; --new-bg: #123a33; --tbd: #f0b45a; --tbd-bg: #3d2c10;
+  --v3: #c3a6f2; --v3-bg: #2e2147;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11161d; --surface: #19202a; --ink: #e6ebf2; --muted: #9aa6b6; --line: #2c3644; --accent: #6ea8ec;
+  --ok: #b3bfcf; --ok-bg: #263140; --new: #5fd0b6; --new-bg: #123a33; --tbd: #f0b45a; --tbd-bg: #3d2c10;
+  --v3: #c3a6f2; --v3-bg: #2e2147;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 40px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 48px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: .01em; }
+h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.05; font-weight: 700; }
+h2 { font-size: 24px; font-weight: 600; }
+h3 { font-size: 17px; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+code, .mono { font-family: var(--f-mono); font-size: .86em; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+section { display: grid; gap: 18px; }
+.lead { color: var(--muted); font-size: 16px; }
+
+header { display: grid; gap: 14px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 13px; color: var(--muted); }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 11px; font-weight: 500;
+  padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.c-ok { color: var(--ok); background: var(--ok-bg); }
+.c-new { color: var(--new); background: var(--new-bg); }
+.c-tbd { color: var(--tbd); background: var(--tbd-bg); }
+.c-v3 { color: var(--v3); background: var(--v3-bg); }
+
+/* ---------- Capa del harness ---------- */
+.harness { border-left: 3px solid var(--accent); }
+.hbox { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.hbox .hid { font-family: var(--f-mono); font-size: 11px; color: var(--accent); }
+.hbox .kind { font-family: var(--f-mono); font-size: 10.5px; color: var(--muted); }
+.hbox .els { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.harness-note { font-size: 13px; color: var(--muted); grid-column: 2; }
+@media (max-width: 720px) { .harness-note { grid-column: 1; } }
+
+/* ---------- Diagrama principal ---------- */
+.board { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 14px; }
+.band { display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: stretch; }
+.band > .label { font-family: var(--f-display); font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted); border-right: 2px solid var(--line); padding-right: 12px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.band > .label small { font-family: var(--f-body); text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 12px; }
+.cols { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.box { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 6px; align-content: start; min-width: 0; background: var(--bg); }
+.box h3 { font-size: 15px; }
+.box p, .box li { font-size: 13px; color: var(--muted); }
+.box ul { margin: 0; padding-left: 16px; display: grid; gap: 2px; }
+.box .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 18px; counter-reset: paso; }
+.flow li { position: relative; border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 6px; background: var(--bg);
+  padding: 10px; display: grid; gap: 6px; align-content: start; min-width: 0; counter-increment: paso; }
+.flow li::before { content: counter(paso); font-family: var(--f-mono); font-size: 11px; color: var(--accent); }
+.flow li:not(:last-child)::after { content: "→"; position: absolute; right: -15px; top: 30px; color: var(--accent); font-weight: 600; }
+.flow strong { font-family: var(--f-display); font-size: 14px; font-weight: 600; line-height: 1.2; }
+.flow span.d { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.who { font-size: 11px; font-family: var(--f-mono); color: var(--muted); }
+
+.loop { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.loop .step { border: 1px dashed var(--line); border-radius: 6px; padding: 6px 10px; background: var(--bg); }
+.loop .arr { color: var(--accent); font-weight: 600; }
+
+/* ---------- Niveles ---------- */
+.levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.lvl { padding: 16px; display: grid; gap: 10px; align-content: start; border-right: 1px solid var(--line); min-width: 0; }
+.lvl:last-child { border-right: 0; }
+.lvl .n { font-family: var(--f-display); font-size: 34px; font-weight: 700; line-height: 1; color: var(--accent); }
+.lvl .ex { font-size: 12px; color: var(--muted); }
+.lvl ul { margin: 0; padding-left: 16px; display: grid; gap: 4px; font-size: 13px; }
+.lvl .plus { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+
+/* ---------- Paralelo y seguimiento ---------- */
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.tree { display: grid; gap: 10px; }
+.node { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: var(--bg); font-size: 13px; }
+.node b { font-family: var(--f-display); font-weight: 600; font-size: 14px; }
+.kids { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; position: relative; padding-top: 14px; }
+.kids::before { content: ""; position: absolute; top: 0; left: 16%; right: 16%; height: 10px; border: 1px solid var(--accent); border-bottom: 0; border-radius: 6px 6px 0 0; }
+.kids .node { font-size: 12px; }
+.note { font-size: 13px; color: var(--muted); }
+
+/* ---------- Calendario ---------- */
+.week { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.day { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.day.key { border-color: var(--accent); box-shadow: inset 0 3px 0 var(--accent); }
+.day .dname { font-family: var(--f-display); font-weight: 600; font-size: 15px; }
+.day .date { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.day ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 12.5px; }
+.tag { font-family: var(--f-mono); font-size: 10.5px; font-weight: 500; padding: 1px 5px; border-radius: 4px; margin-right: 4px; }
+.t-v { background: var(--ok-bg); color: var(--ok); }
+.t-p { background: var(--new-bg); color: var(--new); }
+.t-x { background: var(--tbd-bg); color: var(--tbd); }
+.waves { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.wave { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; display: grid; gap: 4px; font-size: 13px; min-width: 0; }
+.wave b { font-family: var(--f-display); font-size: 15px; font-weight: 600; }
+.wave .when { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+
+/* ---------- Decisiones ---------- */
+.decisions { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; counter-reset: q; }
+.decisions li { counter-increment: q; display: grid; grid-template-columns: 34px 1fr; gap: 10px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; padding: 12px; font-size: 14px; }
+.decisions li::before { content: "Q" counter(q); font-family: var(--f-mono); font-size: 12px; color: var(--tbd); font-weight: 500; padding-top: 2px; }
+.decisions small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+
+@media (max-width: 1100px) {
+  .flow { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .flow li:not(:last-child)::after { display: none; }
+}
+@media (max-width: 900px) {
+  .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .week { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 720px) {
+  .band { grid-template-columns: 1fr; }
+  .band > .label { border-right: 0; border-bottom: 2px solid var(--line); padding: 0 0 6px; }
+  .cols, .levels, .two, .waves { grid-template-columns: 1fr; }
+  .lvl { border-right: 0; border-bottom: 1px solid var(--line); }
+  .kids { grid-template-columns: 1fr; padding-top: 0; }
+  .kids::before { display: none; }
+  .week { grid-template-columns: 1fr; }
+}
+@media (max-width: 420px) { .flow { grid-template-columns: 1fr; } }
+</style>
+
+<main class="wrap">
+
+<header>
+  <span class="eyebrow">AI Factory · Segunda iteración · para validar el jueves 12/11/2026</span>
+  <h1>Método de Desarrollo agéntico de EMBA, versión 2</h1>
+  <p class="lead">Cómo trabaja el equipo con agentes de IA: dónde vive el conocimiento, cómo pasa un cambio de la idea al PR, qué exige cada tipo de proyecto y cómo se sigue el trabajo. Junta lo de la iteración 1 con lo que ya se probó en ai-genesys y en NEXO.</p>
+  <div class="legend">
+    <span class="chip c-ok">ya existe</span> iteración 1 (29/10)
+    <span class="chip c-new">nuevo, ya probado</span> en ai-genesys o NEXO
+    <span class="chip c-tbd">a validar</span> decisión del 12/11
+    <span class="chip c-v3">nuevo en v3</span> se prueba en la simulación (10-12/11)
+  </div>
+</header>
+
+<section aria-labelledby="s-mirada">
+  <span class="eyebrow">1 · El método en una mirada</span>
+  <h2 id="s-mirada">Cuatro capas: conocimiento, flujo de un cambio, harness y controles</h2>
+  <div class="board">
+
+    <div class="band">
+      <div class="label">Conocimiento<small>Cada dato en un solo lugar; se enlaza, no se copia</small></div>
+      <div class="cols">
+        <div class="box">
+          <h3>Brain de empresa</h3>
+          <p><code>emba-brain</code>, como plugin. Lo consultan todos los proyectos.</p>
+          <ul><li>Estándares, glosario, ADR de empresa</li><li>Mapa de sistemas real (SAP B1, Time Manager, Salar, DWH, NEXO, Gastos)</li><li>Clasificación de datos</li></ul>
+          <div class="chips"><span class="chip c-ok">ya existe</span><span class="chip c-new">mapa real</span></div>
+        </div>
+        <div class="box">
+          <h3>Brain de proyecto</h3>
+          <p>En el repo de cada proyecto.</p>
+          <ul><li><code>AGENTS.md</code> ≤ 150 líneas</li><li>ADR, requisitos con ID, <code>RUNBOOK.md</code></li><li><code>docs/plan/pendientes.md</code> con ID</li></ul>
+          <div class="chips"><span class="chip c-ok">ya existe</span><span class="chip c-new">pendientes con ID</span></div>
+        </div>
+        <div class="box">
+          <h3>Brain personal</h3>
+          <p>Opcional, de cada persona: tablero, bitácora y lecciones propias.</p>
+          <ul><li>Tareas propias en un tablero (máx. 3 en «Ahora»)</li><li>Lecciones que, si sirven a todos, suben al brain de empresa</li></ul>
+          <div class="chips"><span class="chip c-tbd">a validar</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="label">Flujo de un cambio<small>Lo mismo en todo proyecto de nivel 2 o 3</small></div>
+      <ol class="flow">
+        <li><strong>Propuesta</strong><span class="d">Qué, por qué y qué requisitos cubre. Nivel 3: OpenSpec en PR borrador, 48 h sin comentarios = aprobada</span><span class="chip c-new">OpenSpec</span></li>
+        <li><strong>Prueba que falla</strong><span class="d">Primero la prueba, en rama propia</span><span class="chip c-ok">ya existe</span></li>
+        <li><strong>Implementar</strong><span class="d">Cada sesión escribe solo en su carril (carpetas); lo hace cumplir un hook</span><span class="chip c-new">carriles</span></li>
+        <li><strong>Verificar</strong><span class="d">Salida real de las pruebas y del chequeo del brain, no afirmaciones</span><span class="chip c-ok">ya existe</span></li>
+        <li><strong>Revisión independiente</strong><span class="d">Otra sesión, en contexto fresco. El autor nunca aprueba lo suyo</span><span class="chip c-new">16 de 17 cambios</span></li>
+        <li><strong>PR y merge</strong><span class="d">CI en verde + aprobación humana, en lote 1-2 veces por día</span><span class="chip c-new">lote</span></li>
+        <li><strong>Cierre</strong><span class="d">Actualizar docs y subir lecciones al brain de empresa</span><span class="chip c-tbd">reforzar</span></li>
+      </ol>
+      <div></div>
+      <div class="who">Decide una persona: la propuesta, el lote de PR (con lectura completa en cifras, permisos, seguridad y migraciones) y todo lo irreversible. El agente redacta, prueba, implementa y documenta.</div>
+    </div>
+
+    <div class="band harness">
+      <div class="label">Harness<small><code>emba-harness</code>: hace cumplir el flujo sin depender de que el agente o la persona se acuerden. Guías antes de actuar; sensores y controles después</small></div>
+      <div class="cols">
+        <div class="box hbox">
+          <span class="hid">H1 · guía</span><h3>Skills de flujo</h3>
+          <p>Solo a pedido: <code>proponer-cambio</code>, <code>verificar</code>, <code>revisar</code>, <code>cerrar-fase</code>, <code>nuevo-proyecto</code>. Nueva: <code>preparar-lote</code> arma la hoja del lote con banderas de lectura obligatoria.</p>
+          <span class="els">E3 · E4 · E5 · E8 · E9</span>
+          <div class="chips"><span class="chip c-ok">5 skills</span><span class="chip c-v3">preparar-lote</span></div>
+        </div>
+        <div class="box hbox">
+          <span class="hid">H2 · sensor inferencial</span><h3>Agente revisor</h3>
+          <p>Contexto limpio; recibe solo el diff, la propuesta y los requisitos, no el resumen ni la descripción del autor. En lo crítico, una segunda pasada con otro modelo.</p>
+          <span class="els">E5</span>
+          <div class="chips"><span class="chip c-new">16 de 17 cambios</span><span class="chip c-v3">sin resumen del autor</span></div>
+        </div>
+        <div class="box hbox">
+          <span class="hid">H3 · control computacional</span><h3>Hooks</h3>
+          <ul><li><code>bloquear-secretos</code>, <code>bloquear-comandos</code>, <code>registrar-metricas</code></li><li><code>carril</code>: cada sesión escribe solo en sus carpetas</li><li><code>proteger-pruebas</code>: las pruebas existentes son de solo lectura</li><li><code>bloquear-salida</code>: la red y el push piden aprobación</li></ul>
+          <span class="els">E4 · E6 · E7 · E11</span>
+          <div class="chips"><span class="chip c-ok">3 hooks</span><span class="chip c-new">carril</span><span class="chip c-v3">2 nuevos</span></div>
+        </div>
+        <div class="box hbox">
+          <span class="hid">H4 · sensor computacional</span><h3>Scripts</h3>
+          <p><code>verificar-proyecto</code> (v3: entiende OpenSpec), <code>lint-brain</code>, <code>metricas</code> (v3: los 4 indicadores), <code>correr-evals</code> (v3: con líder simulado), <code>comparar-evals</code>.</p>
+          <span class="els">E4 · E11</span>
+          <div class="chips"><span class="chip c-ok">ya existe</span><span class="chip c-v3">indicadores</span></div>
+        </div>
+        <div class="box hbox">
+          <span class="hid">H5 · guía</span><h3>Plantillas</h3>
+          <p><code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>settings.json</code>, <code>ci.yml</code>, <code>gitignore</code>. Nuevas: <code>pendientes.md</code>, brief de sesión, <code>carriles.yaml</code>, hoja de lote.</p>
+          <span class="els">E2 · E7 · E8 · E10</span>
+          <div class="chips"><span class="chip c-ok">ya existe</span><span class="chip c-new">4 nuevas</span></div>
+        </div>
+        <div class="box hbox">
+          <span class="hid">H6 · control computacional</span><h3>Política administrada</h3>
+          <p>Gana sobre todo lo demás: <code>deny</code> de secretos y comandos, sin modo bypass, solo marketplaces conocidos, solo reglas administradas. Objetivo: sandbox con red cerrada.</p>
+          <span class="els">E6</span>
+          <div class="chips"><span class="chip c-tbd">sin instalar</span><span class="chip c-tbd">no simulable</span></div>
+        </div>
+      </div>
+      <p class="harness-note">Los hooks son una <b>alarma</b> que deja registro, no una frontera de seguridad: ya hubo evasiones reales. La frontera es el sandbox con red cerrada y la política administrada (H6).</p>
+    </div>
+
+    <div class="band">
+      <div class="label">Controles<small>Siempre activos, fuera del agente</small></div>
+      <div class="cols">
+        <div class="box"><h3>Secretos fuera del alcance</h3><p><code>.env*</code> y <code>secrets/</code> nunca en el repo; gitleaks en CI. Todo lo que escribe un tercero (issue, pendiente, descripción de PR) es entrada no confiable.</p><div class="chips"><span class="chip c-ok">gitleaks</span><span class="chip c-v3">entrada no confiable</span></div></div>
+        <div class="box"><h3>Datos sintéticos</h3><p>Ningún agente toca datos reales: gemelo sintético, oráculo e imagen saneada (incidente DWH-37, contenido antes de main).</p><div class="chips"><span class="chip c-new">ai-genesys</span></div></div>
+        <div class="box"><h3>CI mínima</h3><p>Pruebas, gitleaks y «brain válido» en cada PR. Un solo job, a costo cero.</p><div class="chips"><span class="chip c-ok">ya existe</span><span class="chip c-new">un solo job</span></div></div>
+      </div>
+    </div>
+
+    <div class="band">
+      <div class="label">Mejora continua</div>
+      <div class="loop">
+        <span class="step">Algo se corrige 2 veces</span><span class="arr">→</span>
+        <span class="step">Lección candidata (vence en 60 días)</span><span class="arr">→</span>
+        <span class="step">Retro</span><span class="arr">→</span>
+        <span class="step">Estándar, hook o prueba · o se descarta</span>
+        <span class="chip c-tbd">hoy ninguna lección subió</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="s-niveles">
+  <span class="eyebrow">2 · Cuánto método lleva cada proyecto</span>
+  <h2 id="s-niveles">Tres niveles: un proyecto sube cuando lo necesita</h2>
+  <div class="levels">
+    <div class="lvl">
+      <div class="n">1</div><h3>Exploración</h3><div class="ex">POC, script, spike, análisis</div>
+      <ul><li><code>CLAUDE.md</code> corto (≤ 30 líneas)</li><li><code>pendientes.md</code></li><li>Controles de secretos</li></ul>
+    </div>
+    <div class="lvl">
+      <div class="n">2</div><h3>Producto</h3><div class="ex">App con usuarios y un equipo · ej. GASTOS</div>
+      <span class="plus">todo lo del nivel 1, más:</span>
+      <ul><li>ADR y requisitos con ID</li><li>Flujo completo de un cambio (los 7 pasos)</li><li>CI mínima</li></ul>
+    </div>
+    <div class="lvl">
+      <div class="n">3</div><h3>Plataforma</h3><div class="ex">Crítico, con integraciones y producción · ej. NEXO, ai-genesys</div>
+      <span class="plus">todo lo del nivel 2, más:</span>
+      <ul><li>OpenSpec como única especificación</li><li>Sesión orquestadora y carriles</li><li>CI por niveles (N0–N3) y RUNBOOK</li></ul>
+    </div>
+  </div>
+  <p class="note">Los niveles salen del método de Joaquín y están <span class="chip c-tbd">a validar</span> como ADR-E003.</p>
+</section>
+
+<section aria-labelledby="s-equipo">
+  <span class="eyebrow">3 · Cómo se organiza el trabajo</span>
+  <h2 id="s-equipo">Sesiones en paralelo y seguimiento de tareas</h2>
+  <div class="two">
+    <div class="panel">
+      <h3>Varias sesiones a la vez (nivel 3)</h3>
+      <div class="tree">
+        <div class="node"><b>Orquestadora</b> · arranca sesiones, mantiene los pendientes y une los PR con el OK del líder</div>
+        <div class="kids">
+          <div class="node"><b>Sesión · carril A</b><br>un propósito, sus carpetas</div>
+          <div class="node"><b>Sesión · carril B</b><br>un propósito, sus carpetas</div>
+          <div class="node"><b>Sesión · carril C</b><br>un propósito, sus carpetas</div>
+        </div>
+        <div class="node">Cada turno cierra con una línea: <code>TRABAJANDO</code> / <code>ESPERA</code> / <code>TERMINADO: PR #n</code>. Se archiva al terminar.</div>
+      </div>
+      <p class="note">Probado: NEXO (orquestadora, lote) y ai-genesys (20 PR en carriles A–G en 4 días). <span class="chip c-new">nuevo, ya probado</span></p>
+    </div>
+    <div class="panel">
+      <h3>Seguimiento de tareas y horas</h3>
+      <div class="tree">
+        <div class="node"><b>ClickUp</b> · tareas del equipo y entregas</div>
+        <div class="node"><b><code>pendientes.md</code> del proyecto</b> · lo técnico, con ID (<code>DWH-32</code>) y quién lo destraba</div>
+        <div class="node"><b>Día de cada persona</b> · <code>/dia</code> arranca → trabajo → <code>/cierre</code> → <code>/reporte</code> carga Clockify y comenta en ClickUp</div>
+      </div>
+      <p class="note">Hoy solo lo usa Joaquín. Que sea parte del método del equipo es una de las preguntas del jueves. <span class="chip c-tbd">a validar</span></p>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="s-camino">
+  <span class="eyebrow">4 · Camino al viernes</span>
+  <h2 id="s-camino">Definir, probar y validar en una semana</h2>
+  <div class="legend"><span class="tag t-v">V</span>definir <span class="tag t-p">P</span>probar <span class="tag t-x">✓</span>validar</div>
+  <div class="week">
+    <div class="day"><div class="dname">Lunes</div><div class="date">09/11</div><ul><li>Acordar el alcance</li><li>Confirmar validadores, reunión y compañero de la prueba</li></ul></div>
+    <div class="day"><div class="dname">Martes</div><div class="date">10/11</div><ul><li><span class="tag t-v">V1</span>Método en un documento</li><li><span class="tag t-v">V2</span>ADR E003–E005</li><li><span class="tag t-v">V4</span>Instalable en otra PC</li><li><span class="tag t-p">P1</span>Pruebas automáticas</li></ul></div>
+    <div class="day"><div class="dname">Miércoles</div><div class="date">11/11</div><ul><li><span class="tag t-v">V3</span>Brain de empresa al día</li><li><span class="tag t-p">P2</span>Reglas contra ai-genesys</li><li><span class="tag t-p">P3</span>Un compañero lo instala y hace un cambio real</li></ul></div>
+    <div class="day key"><div class="dname">Jueves</div><div class="date">12/11</div><ul><li>Corregir lo que trabó en P3</li><li><span class="tag t-x">✓</span>Reunión de validación (1 h) con los resultados</li></ul></div>
+    <div class="day"><div class="dname">Viernes</div><div class="date">13/11</div><ul><li>Aplicar observaciones</li><li>Acta, ADR aceptados, método vigente</li><li>Cerrar la tarea en ClickUp</li></ul></div>
+  </div>
+  <h3>Después: el equipo lo adopta por olas</h3>
+  <div class="waves">
+    <div class="wave"><span class="when">16/11 – 27/11</span><b>1 · Herramientas al día</b>harness 0.3 con OpenSpec, plantillas, hook de carriles</div>
+    <div class="wave"><span class="when">diciembre</span><b>2 · Piloto</b>una segunda persona o proyecto (GASTOS) y guía de incorporación</div>
+    <div class="wave"><span class="when">enero 2027</span><b>3 · Todo el equipo</b>repo de la organización, dueño nombrado, seguimiento para todos</div>
+  </div>
+</section>
+
+<section aria-labelledby="s-decidir">
+  <span class="eyebrow">5 · Lo que se decide el jueves</span>
+  <h2 id="s-decidir">Preguntas para quienes validan</h2>
+  <ol class="decisions">
+    <li><div>¿Quiénes validan y qué cuenta como «validado»?<small>El OK en la reunión o la tarea aprobada en ClickUp.</small></div></li>
+    <li><div>¿Qué compañero hace la prueba del miércoles, y en qué proyecto?<small>2-3 h. Es la prueba de que el método funciona sin Joaquín.</small></div></li>
+    <li><div>¿El seguimiento de tareas y horas es parte del método del equipo?<small>ClickUp + Clockify con <code>/dia</code>, <code>/cierre</code>, <code>/reporte</code>.</small></div></li>
+    <li><div>¿OpenSpec pasa a ser obligatorio en los proyectos de nivel 3?<small>Hoy lo usa ai-genesys (ADR-002); NEXO también trabaja con especificación.</small></div></li>
+    <li><div>¿Dónde vive el estándar y quién es su dueño?<small>Hoy está en un repo personal; el equipo necesita uno de la organización.</small></div></li>
+  </ol>
+</section>
+
+<footer>Fuente: <code>docs/iteracion-2/propuesta-alcance.md</code> (repo <code>estandar-agentico</code>), con las brechas, la evidencia de cada una y las horas estimadas. Borrador del 09/11/2026. Capa del harness y piezas «nuevo en v3» agregadas el 10/11/2026 desde <code>docs/iteracion-2/simulaciones/02-propuesta-v3.md</code> (elementos E1-E11, harness H1-H6).</footer>
+</main>

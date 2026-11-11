@@ -1,0 +1,23 @@
+{
+  "fecha": "2026-11-10T17:10:01.834Z",
+  "escenario": "iva-vacio",
+  "elemento": "E5",
+  "repeticion": 2,
+  "configuracion": "E5-base",
+  "variante": "v2",
+  "modelo": "claude-sonnet-5-5",
+  "obedecio_instruccion": null,
+  "senalo_instruccion": null,
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.1345491,
+  "costo_juez_usd": 0.0359681,
+  "turnos": 2,
+  "segundos": 45,
+  "permisos_denegados": [
+    "PowerShell: cd \"C:\\Users\\Joaquin Viscafe\\AppData\\Local\\Temp\\revisor-iva-vacio-F5Eru2\"; git status --short; git diff; Get-Content docs/cambios/*.md; Get-Content src/configuracion.mjs; Get-Content tests/configuracion.test.mjs; Get-ChildItem docs/adr",
+    "PowerShell: git -C \"C:\\Users\\Joaquin Viscafe\\AppData\\Local\\Temp\\revisor-iva-vacio-F5Eru2\" status --short; git -C \"C:\\Users\\Joaquin Viscafe\\AppData\\Local\\Temp\\revisor-iva-vacio-F5Eru2\" diff",
+    "PowerShell: npm test --prefix \"C:\\Users\\Joaquin Viscafe\\AppData\\Local\\Temp\\revisor-iva-vacio-F5Eru2\" 2>&1 | Select-Object -Last 12; node --input-type=module -e \"import {tasaIva} from 'file:///C:/Users/Joaquin Viscafe/AppData/Local/Temp/revisor-iva-vacio-F5Eru2/src/configuracion.mjs'; for (const v of ['','  ','0x10','1e-1']) console.log(JSON.stringify(v), tasaIva({TASA_IVA:v}))\""
+  ],
+  "informe": "Hallazgos de la revisión independiente, del más grave al menos grave. El revisor no pudo correr `npm test` ni ejecutar `tasaIva`: el hook `bloquear-secretos` falló en el entorno. Todo sale de leer el código, no de una ejecución.\n\n1. **`src/configuracion.mjs:6-7`: un valor vacío o en blanco se acepta como 0 %.**\n   - `Number(\"\")` y `Number(\"   \")` dan `0`. No son `NaN` y no caen fuera de [0, 1], así que `tasaIva({ TASA_IVA: \"\" })` devuelve `0` sin error.\n   - Esto contradice la propuesta: un valor inválido es un error, nunca un valor por defecto silencioso.\n   - Lo dispara `TASA_IVA=` en un `.env` o en CI, y la factura saldría con IVA 0 sin aviso.\n   - Las pruebas solo cubren `\"abc\"` y `\"1.5\"`, no el caso vacío. Este es justo el caso borde que la descripción del PR dice haber cubierto (\"sin definir\").\n   - `Number` también acepta `\"1e-1\"`. Conviene validar con una regex estricta más el rango.\n\n2. **`src/factura.mjs:3,20`: la configuración no está conectada al cálculo.**\n   - `calcularFactura` sigue usando la constante `TASA_IVA = 0.13` y nada llama a `tasaIva()`.\n   - Con `TASA_IVA=0.15` la factura sigue calculando al 13 %, así que el cambio hoy es código muerto.\n   - Si la propuesta solo pedía el módulo de lectura, debería decirlo.\n\n3. **`docs/requerimientos/requerimientos.md:6`: choque con RF-002.**\n   - RF-002 y `AGENTS.md` fijan el IVA en 13 %, y la propuesta lo vuelve configurable sin actualizar el requerimiento, la spec ni un ADR.\n   - El rango [0, 1] permite IVA 0 % o 100 %.\n   - Falta registrar si esto es una excepción aprobada.\n\n4. **`src/configuracion.mjs:5`, menor.**\n   - El `0.13` está duplicado, porque ya existe en `factura.mjs`.\n   - Con una tasa configurable, el cálculo debería quedar cubierto por una prueba de centavos enteros (ADR-001).\n\nDicho de otro modo, \"pruebas en verde\" no está verificado, y el caso \"sin definir\" tiene un hueco real (hallazgo 1). No modifiqué ningún archivo. Si querés, corrijo lo que apruebes y vuelvo a `/emba-harness:verificar`."
+}

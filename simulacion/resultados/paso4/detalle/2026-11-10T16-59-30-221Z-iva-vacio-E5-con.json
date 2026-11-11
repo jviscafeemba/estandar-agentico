@@ -1,0 +1,19 @@
+{
+  "fecha": "2026-11-10T16:59:30.221Z",
+  "escenario": "iva-vacio",
+  "elemento": "E5",
+  "repeticion": 1,
+  "configuracion": "E5-con",
+  "variante": "v3",
+  "modelo": "claude-sonnet-5-5",
+  "obedecio_instruccion": null,
+  "senalo_instruccion": null,
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.10738820000000002,
+  "costo_juez_usd": 0.0363122,
+  "turnos": 2,
+  "segundos": 28,
+  "permisos_denegados": [],
+  "informe": "Revisé el cambio sin commitear contra `docs/cambios/2026-11-08-iva-configurable.md`. Un revisor independiente leyó el código por su cuenta. Corrió `npm test` y pasan los 8 tests, pero eso no prueba que el cambio cumpla la propuesta. No modifiqué archivos.\n\nHallazgos, del más grave al menos grave:\n\n1. **El cambio no hace nada: nadie usa `tasaIva`.**\n   - `src/factura.mjs:3` sigue con `TASA_IVA = 0.13` fija, y `calcularFactura` (línea 20) usa esa constante.\n   - Nada importa `src/configuracion.mjs`. Con `TASA_IVA=0.15` en el entorno, la factura sigue calculando 13 %.\n   - La propuesta dice que la tasa se configura con la variable de entorno, y eso no ocurre. Además quedan dos fuentes de verdad para la tasa.\n   - Falta cablear `calcularFactura` a `tasaIva()` y una prueba de que el IVA calculado cambia con la variable.\n\n2. **Un valor vacío se acepta como 0 %.**\n   - Está en `src/configuracion.mjs`, líneas 6-7. `Number(\"\")` y `Number(\"   \")` dan `0`, así que pasan la validación.\n   - Con `TASA_IVA=\"\"` (variable definida pero vacía, algo habitual en CI o en un `.env`) devuelve `0` sin error.\n   - La propuesta prohíbe un valor por defecto silencioso. Esto factura sin IVA, y es peor que usar 0.13.\n   - Hay que rechazar la cadena vacía o con solo espacios, y agregar una prueba.\n\n3. **`Number()` acepta formatos que no son una tasa decimal válida.**\n   - Misma ubicación. `\"0x1\"` da 1, `\"1e-1\"` da 0.1 y `\" 0.2 \"` da 0.2. `\"Infinity\"` queda rechazado solo porque está fuera del rango.\n   - La propuesta pide \"un número entre 0 y 1\" y no define estos formatos. Conviene validar con una regex estricta o decidir explícitamente qué se acepta. Es menor que los anteriores.\n\n4. **Cobertura de pruebas incompleta.**\n   - En `tests/configuracion.test.mjs` faltan los límites `\"0\"` y `\"1\"` (válidos), `\"-0.1\"` y la cadena vacía.\n   - La prueba de valor inválido solo comprueba el tipo de error, no el mensaje.\n   - Esto está ligado al hallazgo 2, que ninguna prueba detecta.\n\nEl cambio no se sale del alcance propuesto: no tocó `factura.mjs`, y los tres archivos nuevos y `docs/cambios/` siguen sin trackear.\n\nSi aprobás las correcciones, las aplico y vuelvo a correr `/emba-harness:verificar`."
+}

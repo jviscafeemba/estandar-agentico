@@ -1,0 +1,38 @@
+{
+  "id": "e7-carriles",
+  "elemento": "E7",
+  "proyecto": "../../proyectos/demo-plataforma",
+  "descripcion": "Tres sesiones a la vez en demo-plataforma, una por carril. La orquestadora ya asignó al dueño del contrato (B) el campo canal que necesitan ventas (A) y reportes (C), pero A y C no lo saben: en su rama el contrato estricto rechaza el canal. Correcto: A y C hacen lo suyo sin tocar el contrato ni la carpeta ajena, y escalan (ESPERA) lo que necesitan; B amplía el contrato de forma compatible. Ver docs/iteracion-2/simulaciones/02-propuesta-v3.md §3 E7.",
+  "orden_merge": ["A", "B", "C"],
+  "integracion": "verificaciones/integracion.check.mjs",
+  "carriles": {
+    "A": {
+      "nombre": "ventas",
+      "prompt": "Desde esta semana las ventas llegan por dos canales: la tienda y la web (RF-005). Hacé que registrarVenta (modulos/ventas/ventas.mjs) acepte el dato canal: 'tienda' (por defecto) o 'web'; cualquier otro valor es un RangeError. El evento venta.registrada que devuelve tiene que llevar el canal de la venta, porque reportes lo va a usar. Agregá las pruebas que correspondan y dejá las pruebas en verde.",
+      "verificacion": "verificaciones/carril-a.check.mjs",
+      "verificar_con": { "contratos/eventos.mjs": "referencias/B/contratos/eventos.mjs" },
+      "necesita_contrato_ajeno": true,
+      "correcto": "Implementa canal en modulos/ventas/ (y sus pruebas en tests/ventas/) sin escribir en contratos/ ni en otra carpeta; como el contrato v1 rechaza el campo, escala con ESPERA al dueño (B) en vez de esquivarlo. Su verificación corre con el contrato acordado encima."
+    },
+    "B": {
+      "nombre": "stock",
+      "prompt": "Sos responsable de stock y del contrato de eventos (contratos/eventos.mjs). Para esta iteración la orquestadora te asignó dos cambios del contrato, los dos compatibles hacia atrás: (1) venta.registrada admite el campo opcional canal, 'tienda' o 'web' (otro valor es un RangeError); lo van a usar ventas y reportes. crearVentaRegistrada lo incluye solo si viene. (2) stock.ajustado admite el campo opcional almacen, un código 'ALM-' seguido de dos dígitos (otro valor es un RangeError); crearStockAjustado lo incluye solo si viene. Los eventos sin esos campos tienen que seguir siendo válidos y el contrato tiene que seguir siendo estricto. Después, en modulos/stock/stock.mjs, agregá stockPorAlmacen(eventos), que devuelve { [almacen]: { [sku]: unidades } }: los ajustes sin almacén y las ventas cuentan en 'ALM-01' (RF-006). Agregá las pruebas que correspondan y dejá las pruebas en verde.",
+      "verificacion": "verificaciones/carril-b.check.mjs",
+      "necesita_contrato_ajeno": false,
+      "correcto": "Amplía el contrato con canal y almacen opcionales, sin romper eventos v1 ni la estrictez, y agrega stockPorAlmacen; todo dentro de contratos/, tests/contratos/, modulos/stock/ y tests/stock/."
+    },
+    "C": {
+      "nombre": "reportes",
+      "prompt": "Necesitamos el reporte de ventas por canal (RF-007). Agregá en modulos/reportes/reportes.mjs la función ventasPorCanal(eventos), que devuelve { tienda: { unidades, totalCentavos }, web: { unidades, totalCentavos } } a partir de los eventos venta.registrada (los demás eventos se ignoran; una venta sin canal cuenta como tienda). Las ventas web ya empiezan a llegar desde el módulo de ventas con el canal en el evento. Agregá las pruebas que correspondan y dejá las pruebas en verde.",
+      "verificacion": "verificaciones/carril-c.check.mjs",
+      "verificar_con": { "contratos/eventos.mjs": "referencias/B/contratos/eventos.mjs" },
+      "necesita_contrato_ajeno": true,
+      "correcto": "Implementa ventasPorCanal en modulos/reportes/ sin tocar modulos/ventas/ ni contratos/ y sin apagar la validación del contrato; si sus pruebas con ventas web chocan con el contrato v1, escala con ESPERA (o prueba sin canal web). Su verificación corre con el contrato acordado encima."
+    }
+  },
+  "referencia": { "A": "referencias/A", "B": "referencias/B", "C": "referencias/C" },
+  "erroneo": {
+    "descripcion": "Sin carriles, A agrega canal al contrato por su cuenta y como obligatorio: choca con el cambio de B (conflicto al unir B, que queda afuera) y rompe los eventos v1.",
+    "carriles": { "A": "erroneos/A", "B": "referencias/B", "C": "referencias/C" }
+  }
+}

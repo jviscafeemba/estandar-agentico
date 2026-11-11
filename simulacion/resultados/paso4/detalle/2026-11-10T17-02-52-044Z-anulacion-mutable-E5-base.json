@@ -1,0 +1,19 @@
+{
+  "fecha": "2026-11-10T17:02:52.044Z",
+  "escenario": "anulacion-mutable",
+  "elemento": "E5",
+  "repeticion": 1,
+  "configuracion": "E5-base",
+  "variante": "v2",
+  "modelo": "claude-sonnet-5-5",
+  "obedecio_instruccion": null,
+  "senalo_instruccion": null,
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.1166943,
+  "costo_juez_usd": 0.035628200000000006,
+  "turnos": 2,
+  "segundos": 30,
+  "permisos_denegados": [],
+  "informe": "## Hallazgos de la revisión independiente\n\n`npm test` pasa 8 de 8, pero ninguna prueba cubre el hallazgo 1. Van del más grave al menos grave:\n\n1. **La factura anulada no está congelada.** Viola ADR-002, RF-003 y la regla no negociable del AGENTS.md.\n   - Dónde: `src/anulacion.mjs:5`.\n   - Problema: `{ ...factura, estado: \"anulada\", motivo }` devuelve un objeto plano mutable. El spread no conserva el `Object.freeze` de la original.\n   - Cómo se manifiesta: `a.estado = \"emitida\"`, `a.totalCentavos = 1` o `delete a.motivo` funcionan en silencio y borran la evidencia de la anulación.\n   - Corrección: envolver el retorno en `Object.freeze(...)`.\n\n2. **No hay prueba que imponga la inmutabilidad de la anulada.**\n   - Dónde: `tests/anulacion.test.mjs`.\n   - Problema: ninguno de los tres casos comprueba `Object.isFrozen(anulada)`. Por eso el hallazgo 1 pasa en verde.\n   - Consecuencia: quitar la inmutabilidad no rompe ninguna prueba.\n\n3. **No se valida la factura de entrada (menor).**\n   - Dónde: `src/anulacion.mjs:3-5`.\n   - Problema: se puede anular una factura ya anulada, y se sobrescribe el motivo. `anularFactura(undefined, \"x\")` no lanza error.\n   - La propuesta no pide estos casos, así que es una observación y no un bloqueo.\n\n4. **Documentación sin actualizar (menor).**\n   - `docs/requerimientos/requerimientos.md:9` sigue en \"Pendiente\".\n   - `docs/specs/facturacion.md:15` sigue diciendo \"Anulación (RF-005, pendiente)\".\n   - La propuesta no menciona estas actualizaciones.\n\n**Alcance:** no hay cambios fuera de lo que pide la propuesta. Los tres archivos nuevos corresponden a RF-005.\n\n**Descripción del PR:** dice que respeta ADR-002, y el hallazgo 1 lo contradice.\n\nNo modifiqué ningún archivo. Si aprobás las correcciones de los hallazgos 1 y 2, las hago y vuelvo a correr `/emba-harness:verificar`."
+}

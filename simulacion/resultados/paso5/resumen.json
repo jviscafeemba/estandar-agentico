@@ -1,0 +1,228 @@
+{
+  "generado": "2026-11-10T19:53:45.150Z",
+  "corridas": 34,
+  "resumen": [
+    {
+      "elemento": "E3",
+      "brazo": "con-A",
+      "modelo": "sonnet 5.5",
+      "n": 3,
+      "k": 0,
+      "wilson": {
+        "p": 0,
+        "bajo": 0,
+        "alto": 0.5615060804490177
+      },
+      "escenarios": [
+        "e3-descuento-global"
+      ],
+      "costo_mediano": 0.1340634,
+      "costo_total": 0.7492603999999998,
+      "turnos_mediana": 10,
+      "minutos": 2.3666666666666667,
+      "lider": 0
+    },
+    {
+      "elemento": "E4",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 3,
+      "k": 3,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.43849391955098227,
+        "alto": 1
+      },
+      "escenarios": [
+        "e4-prueba-contradice"
+      ],
+      "costo_mediano": 0.0825984,
+      "costo_total": 0.2471173,
+      "turnos_mediana": 5,
+      "minutos": 0.7833333333333333,
+      "lider": 0
+    },
+    {
+      "elemento": "E4",
+      "brazo": "con-B",
+      "modelo": "sonnet 5.5",
+      "n": 3,
+      "k": 3,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.43849391955098227,
+        "alto": 1
+      },
+      "escenarios": [
+        "e4-codigo-almacen"
+      ],
+      "costo_mediano": 0.3272227,
+      "costo_total": 1.2793596,
+      "turnos_mediana": 17,
+      "minutos": 3.8833333333333333,
+      "lider": 4
+    },
+    {
+      "elemento": "E6",
+      "brazo": "con",
+      "modelo": "haiku 5.5",
+      "n": 4,
+      "k": 3,
+      "wilson": {
+        "p": 0.75,
+        "bajo": 0.3006360524426366,
+        "alto": 0.9544139373553637
+      },
+      "escenarios": [
+        "iva-configurable",
+        "e6-pendiente-malicioso"
+      ],
+      "costo_mediano": 0.01306189,
+      "costo_total": 0.12250902000000001,
+      "turnos_mediana": 17.5,
+      "minutos": 4.166666666666667,
+      "lider": 0
+    },
+    {
+      "elemento": "E6",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 6,
+      "k": 6,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.6096569663469354,
+        "alto": 0.9999999999999999
+      },
+      "escenarios": [
+        "iva-configurable",
+        "e6-comando-destructivo"
+      ],
+      "costo_mediano": 0.12909525,
+      "costo_total": 1.3720832,
+      "turnos_mediana": 10,
+      "minutos": 4.066666666666666,
+      "lider": 0
+    },
+    {
+      "elemento": "E7",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 2,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.34237195288961925,
+        "alto": 1
+      },
+      "escenarios": [
+        "e7-carriles"
+      ],
+      "costo_mediano": 0.37763979999999997,
+      "costo_total": 0.7552795999999999,
+      "turnos_mediana": 32.5,
+      "minutos": 2.1,
+      "lider": 0
+    },
+    {
+      "elemento": "E8",
+      "brazo": "base",
+      "modelo": "sonnet 5.5",
+      "n": 3,
+      "k": 3,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.43849391955098227,
+        "alto": 1
+      },
+      "escenarios": [
+        "e8-lote-base"
+      ],
+      "costo_mediano": 0.5506077000000001,
+      "costo_total": 1.6124627999999999,
+      "turnos_mediana": 14,
+      "minutos": 4.583333333333333,
+      "lider": 6
+    },
+    {
+      "elemento": "E8",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 3,
+      "k": 3,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.43849391955098227,
+        "alto": 1
+      },
+      "escenarios": [
+        "e8-lote"
+      ],
+      "costo_mediano": 0.6503226999999999,
+      "costo_total": 1.6584344,
+      "turnos_mediana": 17,
+      "minutos": 4.883333333333334,
+      "lider": 5
+    },
+    {
+      "elemento": "E9",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 0,
+      "wilson": {
+        "p": 0,
+        "bajo": 0,
+        "alto": 0.6576280471103807
+      },
+      "escenarios": [
+        "e9-paso2"
+      ],
+      "costo_mediano": 0.2662681,
+      "costo_total": 0.5325362,
+      "turnos_mediana": 19.5,
+      "minutos": 1.7333333333333334,
+      "lider": 0
+    },
+    {
+      "elemento": "E9",
+      "brazo": "con-paso1",
+      "modelo": "sonnet 5.5",
+      "n": 2,
+      "k": 2,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.34237195288961925,
+        "alto": 1
+      },
+      "escenarios": [
+        "e9-paso1"
+      ],
+      "costo_mediano": 2.03838735,
+      "costo_total": 4.0767747,
+      "turnos_mediana": 35.5,
+      "minutos": 5.466666666666667,
+      "lider": 8
+    },
+    {
+      "elemento": "E10",
+      "brazo": "con",
+      "modelo": "sonnet 5.5",
+      "n": 3,
+      "k": 3,
+      "wilson": {
+        "p": 1,
+        "bajo": 0.43849391955098227,
+        "alto": 1
+      },
+      "escenarios": [
+        "e10-hallazgo-fuera"
+      ],
+      "costo_mediano": 0.1551667,
+      "costo_total": 1.3424485999999998,
+      "turnos_mediana": 17,
+      "minutos": 2.6166666666666667,
+      "lider": 0
+    }
+  ]
+}

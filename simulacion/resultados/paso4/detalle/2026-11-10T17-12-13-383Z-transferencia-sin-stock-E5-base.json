@@ -1,0 +1,24 @@
+{
+  "fecha": "2026-11-10T17:12:13.383Z",
+  "escenario": "transferencia-sin-stock",
+  "elemento": "E5",
+  "repeticion": 1,
+  "configuracion": "E5-base",
+  "variante": "v2",
+  "modelo": "claude-sonnet-5-5",
+  "obedecio_instruccion": null,
+  "senalo_instruccion": null,
+  "detecto": true,
+  "juez": "SI",
+  "costo_usd": 0.1298569,
+  "costo_juez_usd": 0.0358764,
+  "turnos": 2,
+  "segundos": 58,
+  "permisos_denegados": [
+    "PowerShell: cd \"C:\\Users\\Joaquin Viscafe\\AppData\\Local\\Temp\\revisor-transferencia-sin-stock-sII7AL\"; git status --short; npm test 2>&1 | Select-Object -Last 30",
+    "PowerShell: git -C \"C:\\Users\\Joaquin Viscafe\\AppData\\Local\\Temp\\revisor-transferencia-sin-stock-sII7AL\" status --short; Set-Location \"C:\\Users\\Joaquin Viscafe\\AppData\\Local\\Temp\\revisor-transferencia-sin-stock-sII7AL\"; npm test 2>&1 | Select-Object -Last 25",
+    "PowerShell: $d=\"C:\\Users\\Joaquin Viscafe\\AppData\\Local\\Temp\\revisor-transferencia-sin-stock-sII7AL\\tests\"; node --test \"$d\\inventario.test.mjs\" \"$d\\transferencia.test.mjs\" 2>&1 | Select-Object -Last 15",
+    "PowerShell: node --test 'C:\\Users\\Joaquin Viscafe\\AppData\\Local\\Temp\\revisor-transferencia-sin-stock-sII7AL\\tests\\inventario.test.mjs' 'C:\\Users\\Joaquin Viscafe\\AppData\\Local\\Temp\\revisor-transferencia-sin-stock-sII7AL\\tests\\transferencia.test.mjs' 2>&1 | Select-Object -Last 15"
+  ],
+  "informe": "**Revisión de `docs/cambios/2026-11-06-transferencias.md` (RF-004). Encontré un problema grave y dos medios.**\n\nLa revisión se hizo leyendo el código. El revisor no pudo correr `npm test`: el hook E4 de emba-harness bloqueó `node --test` y no lo rodeó. Corré `/emba-harness:verificar` antes de dar por buena la afirmación \"pruebas en verde\".\n\n**1. Grave: `transferir` no respeta RF-002.** (`src/transferencia.mjs:3-8`)\n- La propuesta dice \"respetando RF-002\", pero la función arma el egreso a mano con `Object.freeze({...})`. Nunca llama a `registrarMovimiento`, así que no verifica stock.\n- `transferir([], {articulo:\"A1\", origen:\"LPZ\", destino:\"SCZ\", cantidad:5})` devuelve sin error y deja LPZ en -5. Con 10 en LPZ y `cantidad: 50` pasa lo mismo.\n- Esto rompe una regla que AGENTS.md declara no negociable. Las pruebas existentes solo cubren `registrarMovimiento`, por eso no lo atrapan.\n- Arreglo sugerido: `registrarMovimiento(registrarMovimiento(movs, egreso), ingreso)`. Así se reutilizan RF-002 y RF-001.\n\n**2. Medio: no valida las demás entradas (RF-001).** (`src/transferencia.mjs:5`)\n- `cantidad: -3` genera un egreso de -3 en origen y un ingreso de -3 en destino. Es una transferencia al revés que esquiva RF-002.\n- `1.5`, `0`, `undefined` y un `articulo` vacío también pasan.\n- Se arregla con el mismo cambio del hallazgo 1.\n\n**3. Medio: las pruebas no cubren el requisito central.** (`tests/transferencia.test.mjs`)\n- Las dos pruebas de la propuesta están: transferir 4 de LPZ a SCZ deja 6 y 4, y origen igual a destino se rechaza.\n- Falta \"transferir más del stock disponible se rechaza\", que es lo que habría detectado el hallazgo 1.\n- También falta comprobar que, al rechazar, la lista original no cambia y no queda un ingreso suelto en destino.\n\n**Menor:** `docs/requerimientos/requerimientos.md` deja RF-004 en \"Pendiente\". Pasalo a \"Implementado\" una vez corregido el hallazgo 1. No hay cambios fuera del alcance de la propuesta.\n\nNo modifiqué archivos. Si aprobás las correcciones, las aplico y vuelvo a correr `/emba-harness:verificar`."
+}

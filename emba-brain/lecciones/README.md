@@ -7,7 +7,7 @@ fuentes: [../decisiones/ADR-E001-desarrollo-agentico-federado.md]
 ---
 # Lecciones candidatas
 
-Cola de aprendizajes que todavía no son estándar. Cada lección vence a los 60 días: en la retro se
+Cola de aprendizajes que todavía no son estándar. Un agente aplica una candidata si no contradice un estándar ni una decisión escrita del proyecto, y lo dice en el PR (v3.3). Cada lección vence a los 60 días: en la retro se
 promueve (a estándar, hook o prueba) o se descarta.
 
 | Lección | Origen | Propuesta | Vence |

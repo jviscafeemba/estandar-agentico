@@ -1,0 +1,22 @@
+# Carriles de trabajo en paralelo (E7). Lo lee hooks/carril.mjs cuando la sesión define EMBA_CARRIL=<clave>;
+# sin EMBA_CARRIL no se limita nada. Rutas relativas a la raíz del repo: "x/" = esa carpeta y todo lo de adentro;
+# "/*" = archivos sueltos de la raíz. "nunca" gana sobre "escribe". Cada contrato compartido tiene UN solo carril
+# dueño; los demás lo piden con ESPERA. Formato acotado a propósito: clave, lista "escribe", lista "nunca".
+# Contrato primero (v3.1, C-03): si un cambio necesita tocar un contrato compartido, el carril dueño lo hace
+# primero y la orquestadora une esa rama a main ANTES de lanzar los carriles que dependen de él, que parten de ese
+# main. Sin esto, cada carril cumple lo suyo y la integración se rompe igual (simulación del 10/11/2026, F-04-06).
+# Cada carril escribe también docs/cambios/: ahí deja su propuesta /emba-harness:proponer-cambio; sin eso el hook
+# bloquea la propuesta (v3.3, F-06-03).
+A:
+  escribe:
+    - modulos/a/
+    - tests/a/
+    - docs/cambios/
+  nunca:
+    - contratos/
+B:
+  escribe:
+    - modulos/b/
+    - tests/b/
+    - docs/cambios/
+    - contratos/   # dueño del contrato compartido
