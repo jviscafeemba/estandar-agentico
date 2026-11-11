@@ -80,7 +80,11 @@ export function comandoSobreProtegidos(comando, protegidos) {
     return { regla: "autorizar-prueba", motivo: "Bloqueado por emba-harness (E4): autorizar una prueba lo hace una persona, no el agente. Pedíselo y cerrá con ESPERA." };
   // F-06-08: «2>&1», «>$null» o «2>/dev/null» redirigen la salida, no escriben en tests/. Sin esto, correr
   // «node --test tests/ventas/ 2>&1 | Select-String …» se bloqueaba como escritura en una prueba.
-  const sinRedireccionDeSalida = cmd.replace(/\d?>&\d/g, " ").replace(/\d?>>?\s*(\/dev\/null|\$null|nul)\b/gi, " ");
+  // F-06-12: el texto de un mensaje de commit no es un comando («timeout del ERP» se leía como «del», borrar).
+  // (normalizar quita las comillas: el mensaje se saca del comando original, antes de normalizar).
+  const sinRedireccionDeSalida = normalizar(comando.replace(/\s(-m|--message)(\s+|=)("[^"]*"|'[^']*')/g, " ")).replaceAll("\\", "/")
+    .replace(/\d?>&\d/g, " ")
+    .replace(/\d?>>?\s*(\/dev\/null|\$null|nul)\b/gi, " ");
   if (!VERBOS_ESCRITURA.test(sinRedireccionDeSalida)) return null;
   const objetivos = [...protegidos, ...CONTROL];
   const tocado = objetivos.find((p) => new RegExp(`(^|[\\s'"=:(/.])${p.replace(/[.+^${}()|[\]]/g, "\\$&")}`, "i").test(cmd));
