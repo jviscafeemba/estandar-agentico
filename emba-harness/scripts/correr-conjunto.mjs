@@ -91,7 +91,7 @@ const nodeTest = (cwd, args = []) => {
   const r = spawnSync(process.execPath, ["--test", ...args], { cwd, encoding: "utf8", env: envLimpio() });
   return { ok: r.status === 0, salida: (r.stdout + r.stderr).slice(-3000) };
 };
-const borrar = (ruta) => rmSync(ruta, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+const borrar = (ruta) => { try { rmSync(ruta, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch (e) { console.error(`aviso: no se pudo borrar ${ruta} (${e.code}); queda para borrar a mano`); } };
 const ahora = () => new Date().toISOString();
 const sumar = (xs, f) => xs.reduce((s, x) => s + (f(x) || 0), 0);
 const leerJsonl = (archivo) => (existsSync(archivo) ? readFileSync(archivo, "utf8").split("\n").filter((l) => l.trim()).flatMap((l) => { try { return [JSON.parse(l)]; } catch { return []; } }) : []);
@@ -249,6 +249,27 @@ async function corrida({ variante = null } = {}) {
   };
 
   // ---------- b. Una sesión de carril de punta a punta (hasta el PR abierto) ----------
+  // Embudo de errores (paso 6, pedido de Joaquín): la verificación oculta corre también a mitad del flujo, en una
+  // copia aparte del worktree para no tocar el trabajo de la sesión. Devuelve cuántas pruebas ocultas fallan.
+  function ocultaEnCopia(c, momento) {
+    const def = escenario.carriles[c];
+    const tmp = mkdtempSync(join(realpathSync.native(tmpdir()), "paso6-embudo-"));
+    try {
+      cpSync(worktrees[c], tmp, { recursive: true, filter: (o) => !/[\\/](\.git|node_modules)([\\/]|$)/.test(relative(worktrees[c], o)) && !/^(\.git|node_modules)$/.test(relative(worktrees[c], o)) });
+      cpSync(join(dirEscenario, "verificaciones"), join(tmp, "evals", "verificaciones"), { recursive: true });
+      for (const [destino, origen] of Object.entries(refBase[c] === "base" ? def.verificar_con ?? {} : {})) {
+        mkdirSync(dirname(join(tmp, destino)), { recursive: true });
+        cpSync(resolve(dirEscenario, origen), join(tmp, destino));
+      }
+      const r = nodeTest(tmp, [join("evals", "verificaciones", def.verificacion.split("/").at(-1))]);
+      const fallas = Number(r.salida.match(/ℹ fail (\d+)/)?.[1] ?? (r.ok ? 0 : 1));
+      evento({ evento: "embudo", carril: c, momento, fallas_ocultas: fallas });
+      return { momento, ok: r.ok, fallas };
+    } finally {
+      borrar(tmp);
+    }
+  }
+
   async function correrCarril(c, hoja, contratoUnido) {
     const def = escenario.carriles[c];
     const cwd = worktrees[c];
@@ -256,6 +277,7 @@ async function corrida({ variante = null } = {}) {
     const L = {
       carril: c, nombre: def.nombre, base: refBase[c], turnos: [], decisiones: [], rondas: 0, espero_propuesta: false, codigo_antes_de_aprobar: null,
       verificaciones_rojas: 0, salidas_rojas: [], reaperturas: [], pr_abierto: null, hallazgos: null, sesion: null, estado: null, intervenciones_orquestadora: 0,
+      embudo: { tras_implementar: null, al_pedir_aprobacion: null, en_main: null },
     };
     let etapa = "propuesta";
     let mensaje = `/emba-harness:proponer-cambio ${def.prompt}` + (hoja ? `\n\nHoja de asignación de la orquestadora (contexto):\n${hoja.slice(0, 3000)}` : "");
@@ -283,6 +305,7 @@ async function corrida({ variante = null } = {}) {
       if (etapa === "aprobacion") {
         if (t.estado === "ESPERA") {
           L.pr_abierto = t.ts;
+          L.embudo.al_pedir_aprobacion = ocultaEnCopia(c, "al_pedir_aprobacion");
           L.hallazgos = leerHallazgos(t.texto) ?? heuristicaHallazgos(textoRevision);
           evento({ evento: "pr_abierto", pr: `carril-${c}`, carril: c, ts: t.ts });
           evento({ evento: "revision", pr: `carril-${c}`, carril: c, graves: L.hallazgos.graves, otros: L.hallazgos.otros, fuente: L.hallazgos.fuente });
@@ -320,7 +343,7 @@ async function corrida({ variante = null } = {}) {
         if (etapa === "propuesta" && d.decision === "aprobar") etapa = "implementacion";
         if (d.ejecutar_skill) {
           if (etapa === "verificar" && /:revisar$/.test(d.ejecutar_skill) && !comprobarSuite().ok) retrabajo = true;
-          if (/:verificar$/.test(d.ejecutar_skill)) etapa = "verificar";
+          if (/:verificar$/.test(d.ejecutar_skill)) { if (!L.embudo.tras_implementar) L.embudo.tras_implementar = ocultaEnCopia(c, "tras_implementar"); etapa = "verificar"; }
           if (/:revisar$/.test(d.ejecutar_skill)) etapa = "revisar";
           mensaje = `${d.ejecutar_skill}${d.mensaje ? ` ${d.mensaje}` : ""}`;
         } else mensaje = d.mensaje || "Seguí.";
@@ -338,6 +361,7 @@ async function corrida({ variante = null } = {}) {
         etapa = "implementacion";
       }
       if (etapa === "implementacion") {
+        if (!L.embudo.tras_implementar) L.embudo.tras_implementar = ocultaEnCopia(c, "tras_implementar");
         etapa = "verificar";
         mensaje = "/emba-harness:verificar";
         continue;
@@ -569,6 +593,24 @@ async function corrida({ variante = null } = {}) {
         toco_verificaciones: archivos.some((f) => f.startsWith("evals/")),
         verificacion_rama: enRama.ok,
         verificacion_main: enMain.ok,
+        embudo: (() => {
+          const e = L.embudo ?? {};
+          const fallasMain = enMain.ok ? 0 : Number(enMain.salida.match(/ℹ fail (\d+)/)?.[1] ?? 1);
+          const em = { ...e, en_main: L.unido ? { momento: "en_main", ok: enMain.ok, fallas: fallasMain } : null };
+          const gen = e.tras_implementar?.fallas ?? null, pr = e.al_pedir_aprobacion?.fallas ?? null;
+          const cambiosLider = (L.decisiones ?? []).filter((d) => d.quien === "lider" && d.decision === "cambios" && d.etapa !== "propuesta").length + (L.reaperturas?.length ?? 0);
+          return {
+            ...em,
+            errores_generados: gen,
+            atrapados_por_verificar: L.verificaciones_rojas ?? 0,
+            hallazgos_graves_revisor: (L.hallazgos?.graves ?? 0),
+            cambios_del_lider: cambiosLider,
+            corregidos_antes_de_aprobar: gen !== null && pr !== null ? Math.max(0, gen - pr) : null,
+            llegaron_a_aprobacion: pr,
+            corregidos_en_aprobacion: pr !== null && L.unido ? Math.max(0, pr - fallasMain) : null,
+            escapados_a_main: L.unido ? fallasMain : null,
+          };
+        })(),
         salida_verificacion_main: enMain.ok ? "" : enMain.salida,
       });
       evento({ evento: "verificacion_oculta", pr: `carril-${c}`, carril: c, ok: L.unido ? enMain.ok : enRama.ok, tras_aprobacion: !!L.unido, donde: L.unido ? "main" : "rama" });
@@ -745,6 +787,7 @@ async function corrida({ variante = null } = {}) {
       orquestadora: { hoja: orquestadora.hoja.slice(-4000), contrato_primero_en_hoja: orquestadora.contrato_primero_en_hoja, escribio_en_main: orquestadora.escribio, costo_usd: sumar(orquestadora.turnos, (x) => x.costo) },
       lote: { ...lote, hoja: lote.hoja?.slice(-4000) ?? null, decision: lote.decision ? (({ costo, texto, ...d }) => d)(lote.decision) : null },
       cierre: { estado: cierre.estado, archivos: cierre.archivos, decisiones: cierre.decisiones.map(({ costo, texto, ...d }) => d), ultimo_mensaje: cierre.turnos.at(-1)?.texto.slice(-2000) ?? "" },
+      embudo: (() => { const es = CARRILES.map((c) => resultado.carriles[c].embudo ?? {}); const t = (k) => es.some((e) => e[k] == null) ? null : es.reduce((x, e) => x + e[k], 0); return { errores_generados: t("errores_generados"), atrapados_por_verificar: t("atrapados_por_verificar"), hallazgos_graves_revisor: t("hallazgos_graves_revisor"), cambios_del_lider: t("cambios_del_lider"), corregidos_antes_de_aprobar: t("corregidos_antes_de_aprobar"), llegaron_a_aprobacion: t("llegaron_a_aprobacion"), corregidos_en_aprobacion: t("corregidos_en_aprobacion"), escapados_a_main: t("escapados_a_main") }; })(),
       carriles: Object.fromEntries(CARRILES.map((c) => {
         const L = resultado.carriles[c];
         return [c, {
@@ -754,7 +797,7 @@ async function corrida({ variante = null } = {}) {
           decisiones_lider: L.decisiones_lider, verificaciones_rojas: L.verificaciones_rojas, verificacion_rama: L.verificacion_rama, verificacion_main: L.verificacion_main,
           salida_verificacion_main: L.salida_verificacion_main, archivos: L.archivos, fuera_de_carril: L.fuera_de_carril, toco_contrato: L.toco_contrato, toco_verificaciones: L.toco_verificaciones,
           bloqueos: L.bloqueos, harness_activo: L.harness_activo, costo_agente_usd: L.costo_agente_usd, costo_lider_usd: L.costo_lider_usd, retrabajo_usd: L.retrabajo_usd,
-          turnos_modelo: L.turnos_modelo, llamadas_agente: L.turnos.length, minutos: L.minutos,
+          turnos_modelo: L.turnos_modelo, llamadas_agente: L.turnos.length, minutos: L.minutos, embudo: L.embudo,
           turnos: L.turnos.map(({ texto, error, ...x }) => ({ ...x, ultimo_mensaje: texto.slice(-1200), error: error.slice(0, 300) })),
         }];
       })),
