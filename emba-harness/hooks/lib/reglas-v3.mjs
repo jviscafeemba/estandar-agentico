@@ -78,7 +78,10 @@ export function comandoSobreProtegidos(comando, protegidos) {
   // C-02: el script de autorización lo ejecuta la persona (con «!» en Claude Code), nunca el agente.
   if (/autorizar-prueba/i.test(cmd))
     return { regla: "autorizar-prueba", motivo: "Bloqueado por emba-harness (E4): autorizar una prueba lo hace una persona, no el agente. Pedíselo y cerrá con ESPERA." };
-  if (!VERBOS_ESCRITURA.test(cmd)) return null;
+  // F-06-08: «2>&1», «>$null» o «2>/dev/null» redirigen la salida, no escriben en tests/. Sin esto, correr
+  // «node --test tests/ventas/ 2>&1 | Select-String …» se bloqueaba como escritura en una prueba.
+  const sinRedireccionDeSalida = cmd.replace(/\d?>&\d/g, " ").replace(/\d?>>?\s*(\/dev\/null|\$null|nul)\b/gi, " ");
+  if (!VERBOS_ESCRITURA.test(sinRedireccionDeSalida)) return null;
   const objetivos = [...protegidos, ...CONTROL];
   const tocado = objetivos.find((p) => new RegExp(`(^|[\\s'"=:(/.])${p.replace(/[.+^${}()|[\]]/g, "\\$&")}`, "i").test(cmd));
   if (!tocado) return null;

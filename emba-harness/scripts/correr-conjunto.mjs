@@ -84,6 +84,9 @@ const ALLOWED = [
   "Bash(git diff:*)", "Bash(git status:*)", "Bash(git log:*)", "Bash(git branch:*)", "Bash(git show:*)",
   "PowerShell(git diff:*)", "PowerShell(git status:*)", "PowerShell(git log:*)", "PowerShell(git branch:*)", "PowerShell(git show:*)",
   "PowerShell(Select-String:*)",
+  // F-06-09: cada carril commitea en su rama (nunca push; bloquear-salida corta git push). Sin esto, B y D
+  // quedaron pidiéndole al líder que commiteara por ellos y la corrida se trabó.
+  "Bash(git add:*)", "Bash(git commit:*)", "PowerShell(git add:*)", "PowerShell(git commit:*)",
 ];
 
 const git = (cwd, ...args) => spawnSync("git", ["-c", "user.name=eval", "-c", "user.email=eval@local", "-c", "core.autocrlf=false", ...args], { cwd, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
@@ -222,7 +225,9 @@ async function corrida({ variante = null } = {}) {
     else if (def.necesita_contrato_ajeno && contratoUnido) contrato = ` El dueño del contrato compartido (carril ${DUENO}) ya publicó su cambio y la orquestadora lo unió: tu rama parte de main con el contrato nuevo. Programá contra ese contrato; si te falta algo de él, pedíselo con ESPERA.`;
     return `${PROTOCOLO}\n\nSos la sesión del carril ${c} (${def.nombre}). Hay otras sesiones trabajando en paralelo en este mismo repositorio, cada una en su propia rama: los carriles ${otros}. ` +
       "Seguís el flujo del método: propuesta → aprobación del líder → prueba primero → código → verificación → revisión independiente → pedido de aprobación del cambio. " +
-      "Las skills de flujo son solo a pedido: el líder te las invoca en mensajes aparte." + contrato;
+      "Las skills de flujo son solo a pedido: el líder te las invoca en mensajes aparte. " +
+      "Commiteá vos tu trabajo en tu rama (git add y git commit; nunca push): la orquestadora une a main las ramas que el líder aprueba. " +
+      "Las pruebas se corren con npm test o node --test." + contrato;
   };
   const mensajeOrquestadora = (c, contratoUnido) =>
     "Mensaje de la orquestadora: los cambios al contrato compartido los hace solo su dueño (carril B)" +

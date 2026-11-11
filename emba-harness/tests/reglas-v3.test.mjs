@@ -35,7 +35,8 @@ test("comandos de shell que escriben o borran pruebas", () => {
     "echo x > tests/x.test.mjs", "git checkout -- tests/", "Set-Content -Path tests/x.test.mjs -Value ''",
     "echo tests/factura.test.mjs >> .emba/pruebas-autorizadas.txt"])
     assert.ok(comandoSobreProtegidos(c, p), c);
-  for (const c of ["node --test", "npm test", "cat tests/factura.test.mjs", "node --test tests/factura.test.mjs"])
+  for (const c of ["node --test", "npm test", "cat tests/factura.test.mjs", "node --test tests/factura.test.mjs",
+    "node --test tests/ventas/ 2>&1 | Select-String -Pattern ok", "node --test tests/ 2>/dev/null"]) // F-06-08
     assert.equal(comandoSobreProtegidos(c, p), null, c);
 });
 

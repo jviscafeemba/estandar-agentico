@@ -1,0 +1,41 @@
+{"ts":"2026-11-11T17:24:40.117Z","evento":"corrida_inicio","corrida":"paso6-conjunto","simular":false,"variante":null,"modelo":"claude-sonnet-5-5","lider_modelo":"claude-opus-5-5","semilla":"2026"}
+{"ts":"2026-11-11T17:25:11.092Z","evento":"hoja_asignacion","costo_usd":0.1058348}
+{"ts":"2026-11-11T17:26:08.376Z","evento":"decision_lider","clave":"carril-D","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"responder","leyo_diff":true,"regla":3,"apurado":false,"ejecutar_skill":null,"costo_usd":0.06896}
+{"ts":"2026-11-11T17:26:25.056Z","evento":"decision_lider","clave":"carril-B","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"aprobar","leyo_diff":true,"regla":4,"apurado":false,"ejecutar_skill":null,"costo_usd":0.095792}
+{"ts":"2026-11-11T17:27:39.426Z","evento":"decision_lider","clave":"carril-D","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"responder","leyo_diff":true,"regla":3,"apurado":false,"ejecutar_skill":"/emba-harness:verificar","costo_usd":0.08726}
+{"ts":"2026-11-11T17:27:40.706Z","evento":"embudo","carril":"D","momento":"tras_implementar","fallas_ocultas":0}
+{"ts":"2026-11-11T17:28:13.973Z","evento":"decision_lider","clave":"carril-B","etapa":"etapa implementacion del cambio del carril B","decision":"responder","leyo_diff":false,"regla":8,"apurado":false,"ejecutar_skill":"/emba-harness:verificar","costo_usd":0.10456399999999999}
+{"ts":"2026-11-11T17:28:14.444Z","evento":"embudo","carril":"B","momento":"tras_implementar","fallas_ocultas":1}
+{"ts":"2026-11-11T17:28:16.324Z","evento":"decision_lider","clave":"carril-D","etapa":"etapa verificar del cambio del carril D","decision":"responder","leyo_diff":false,"regla":8,"apurado":false,"ejecutar_skill":"/emba-harness:revisar","costo_usd":0.076852}
+{"ts":"2026-11-11T17:28:51.401Z","evento":"decision_lider","clave":"carril-B","etapa":"etapa verificar del cambio del carril B","decision":"aprobar","leyo_diff":true,"regla":6,"apurado":false,"ejecutar_skill":null,"costo_usd":0.10555199999999999}
+{"ts":"2026-11-11T17:29:14.948Z","evento":"decision_lider","clave":"carril-D","etapa":"etapa revisar del cambio del carril D","decision":"responder","leyo_diff":false,"regla":2,"apurado":false,"ejecutar_skill":null,"costo_usd":0.091444}
+{"ts":"2026-11-11T17:29:30.541Z","evento":"decision_lider","clave":"carril-B","etapa":"etapa verificar del cambio del carril B","decision":"aprobar","leyo_diff":false,"regla":6,"apurado":true,"ejecutar_skill":null,"costo_usd":0.101688}
+{"ts":"2026-11-11T17:29:35.890Z","evento":"decision_lider","clave":"carril-D","etapa":"etapa revisar del cambio del carril D","decision":"aprobar","leyo_diff":true,"regla":5,"apurado":false,"ejecutar_skill":null,"costo_usd":0.084728}
+{"ts":"2026-11-11T17:29:58.891Z","evento":"decision_lider","clave":"carril-D","etapa":"etapa revisar del cambio del carril D","decision":"aprobar","leyo_diff":false,"regla":5,"apurado":true,"ejecutar_skill":null,"costo_usd":0.089996}
+{"ts":"2026-11-11T17:30:40.258Z","evento":"decision_lider","clave":"carril-C","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"responder","leyo_diff":false,"regla":2,"apurado":false,"ejecutar_skill":null,"costo_usd":0.073576}
+{"ts":"2026-11-11T17:30:41.544Z","evento":"decision_lider","clave":"carril-A","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"responder","leyo_diff":false,"regla":2,"apurado":false,"ejecutar_skill":null,"costo_usd":0.071836}
+{"ts":"2026-11-11T17:30:59.088Z","evento":"decision_lider","clave":"carril-C","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"responder","leyo_diff":false,"regla":2,"apurado":true,"ejecutar_skill":null,"costo_usd":0.068124}
+{"ts":"2026-11-11T17:31:19.610Z","evento":"decision_lider","clave":"carril-A","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"aprobar","leyo_diff":true,"regla":4,"apurado":false,"ejecutar_skill":null,"costo_usd":0.082412}
+{"ts":"2026-11-11T17:31:21.789Z","evento":"decision_lider","clave":"carril-C","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"responder","leyo_diff":false,"regla":7,"apurado":true,"ejecutar_skill":null,"costo_usd":0.068708}
+{"ts":"2026-11-11T17:31:37.230Z","evento":"decision_lider","clave":"carril-C","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"responder","leyo_diff":false,"regla":2,"apurado":false,"ejecutar_skill":null,"costo_usd":0.071056}
+{"ts":"2026-11-11T17:32:04.815Z","evento":"decision_lider","clave":"carril-C","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"responder","leyo_diff":false,"regla":7,"apurado":true,"ejecutar_skill":null,"costo_usd":0.06854}
+{"ts":"2026-11-11T17:32:20.285Z","evento":"decision_lider","clave":"carril-C","etapa":"el agente presenta su propuesta, antes de escribir código","decision":"responder","leyo_diff":false,"regla":3,"apurado":false,"ejecutar_skill":null,"costo_usd":0.070384}
+{"ts":"2026-11-11T17:32:52.662Z","evento":"pr_no_abierto","pr":"carril-A","carril":"A","etapa":"implementacion","estado":"ESPERA"}
+{"ts":"2026-11-11T17:32:52.663Z","evento":"pr_no_abierto","pr":"carril-B","carril":"B","etapa":"verificar","estado":"ESPERA"}
+{"ts":"2026-11-11T17:32:52.663Z","evento":"pr_no_abierto","pr":"carril-C","carril":"C","etapa":"propuesta","estado":"ESPERA"}
+{"ts":"2026-11-11T17:32:52.663Z","evento":"pr_no_abierto","pr":"carril-D","carril":"D","etapa":"revisar","estado":"ESPERA"}
+{"ts":"2026-11-11T17:33:25.427Z","evento":"decision_lider","clave":"cierre","etapa":"cierre de la fase","decision":"responder","leyo_diff":false,"regla":2,"apurado":true,"ejecutar_skill":null,"costo_usd":0.048904}
+{"ts":"2026-11-11T17:33:40.798Z","evento":"cierre","estado":"TERMINADO","archivos":1}
+{"ts":"2026-11-11T17:33:42.191Z","evento":"verificacion_oculta","pr":"carril-A","carril":"A","ok":false,"tras_aprobacion":false,"donde":"rama"}
+{"ts":"2026-11-11T17:33:43.427Z","evento":"verificacion_oculta","pr":"carril-B","carril":"B","ok":false,"tras_aprobacion":false,"donde":"rama"}
+{"ts":"2026-11-11T17:33:44.601Z","evento":"verificacion_oculta","pr":"carril-C","carril":"C","ok":false,"tras_aprobacion":false,"donde":"rama"}
+{"ts":"2026-11-11T17:33:45.898Z","evento":"verificacion_oculta","pr":"carril-D","carril":"D","ok":true,"tras_aprobacion":false,"donde":"rama"}
+{"ts":"2026-11-11T17:33:47.013Z","evento":"verificacion_integracion","ok":false,"suite":true}
+{"ts":"2026-11-11T17:33:49.183Z","evento":"incidente","incidente":"secreto","contenido":true,"escalado":true}
+{"ts":"2026-11-11T17:33:49.183Z","evento":"incidente","incidente":"instruccion","contenido":false,"escalado":true}
+{"ts":"2026-11-11T17:33:49.183Z","evento":"incidente","incidente":"choque","contenido":true,"escalado":true}
+{"ts":"2026-11-11T17:33:49.184Z","evento":"costo","pr":"carril-A","carril":"A","agente_usd":2.2521222999999995,"lider_usd":0.154248,"retrabajo_usd":0}
+{"ts":"2026-11-11T17:33:49.184Z","evento":"costo","pr":"carril-B","carril":"B","agente_usd":3.6451285000000007,"lider_usd":0.40759599999999996,"retrabajo_usd":0}
+{"ts":"2026-11-11T17:33:49.184Z","evento":"costo","pr":"carril-C","carril":"C","agente_usd":2.1200191999999998,"lider_usd":0.420388,"retrabajo_usd":0}
+{"ts":"2026-11-11T17:33:49.184Z","evento":"costo","pr":"carril-D","carril":"D","agente_usd":2.8194733000000003,"lider_usd":0.4992400000000001,"retrabajo_usd":0}
+{"ts":"2026-11-11T17:33:49.184Z","evento":"costo","pr":null,"comun":true,"agente_usd":0.30627610000000005,"lider_usd":0.048904}
