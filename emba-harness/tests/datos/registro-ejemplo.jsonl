@@ -1,0 +1,24 @@
+{"ts":"2026-11-11T09:00:00.000Z","evento":"corrida_inicio","corrida":"ejemplo"}
+{"ts":"2026-11-11T09:00:00.000Z","evento":"pr_abierto","pr":"carril-B"}
+{"ts":"2026-11-11T09:00:00.000Z","evento":"revision","pr":"carril-B","graves":0,"otros":2}
+{"ts":"2026-11-11T09:10:00.000Z","evento":"pr_unido","pr":"carril-B"}
+{"ts":"2026-11-11T10:00:00.000Z","evento":"pr_abierto","pr":"carril-A"}
+{"ts":"2026-11-11T10:00:00.000Z","evento":"revision","pr":"carril-A","graves":1,"otros":0}
+{"ts":"2026-11-11T10:00:00.000Z","evento":"pr_abierto","pr":"carril-D"}
+{"ts":"2026-11-11T10:00:00.000Z","evento":"revision","pr":"carril-D","graves":0,"otros":1}
+{"ts":"2026-11-11T10:05:00.000Z","evento":"pr_abierto","pr":"carril-C"}
+{"ts":"2026-11-11T10:05:00.000Z","evento":"revision","pr":"carril-C","graves":0,"otros":0}
+{"ts":"2026-11-11T10:20:00.000Z","evento":"pr_abierto","pr":"carril-D","nota":"segunda vez, después de cambios: no reinicia el reloj"}
+{"ts":"2026-11-11T10:20:00.000Z","evento":"revision","pr":"carril-D","graves":2,"otros":0}
+{"ts":"2026-11-11T10:30:00.000Z","evento":"pr_unido","pr":"carril-A"}
+{"ts":"2026-11-11T10:31:00.000Z","evento":"pr_rechazado","pr":"carril-C"}
+{"ts":"2026-11-11T11:00:00.000Z","evento":"pr_unido","pr":"carril-D"}
+{"ts":"2026-11-11T11:05:00.000Z","evento":"verificacion_oculta","pr":"carril-A","ok":true,"tras_aprobacion":true}
+{"ts":"2026-11-11T11:05:00.000Z","evento":"verificacion_oculta","pr":"carril-B","ok":true,"tras_aprobacion":true}
+{"ts":"2026-11-11T11:05:00.000Z","evento":"verificacion_oculta","pr":"carril-C","ok":false,"tras_aprobacion":true}
+{"ts":"2026-11-11T11:05:00.000Z","evento":"verificacion_oculta","pr":"carril-D","ok":false,"tras_aprobacion":true}
+{"ts":"2026-11-11T11:06:00.000Z","evento":"costo","pr":"carril-A","agente_usd":1.0,"lider_usd":0.05}
+{"ts":"2026-11-11T11:06:00.000Z","evento":"costo","pr":"carril-B","agente_usd":0.8,"lider_usd":0.05}
+{"ts":"2026-11-11T11:06:00.000Z","evento":"costo","pr":"carril-C","agente_usd":0.5,"lider_usd":0}
+{"ts":"2026-11-11T11:06:00.000Z","evento":"costo","pr":"carril-D","agente_usd":1.2,"lider_usd":0.1}
+{"ts":"2026-11-11T11:06:00.000Z","evento":"costo","pr":null,"agente_usd":0.25,"lider_usd":0.05,"comun":true}
