@@ -19,7 +19,9 @@ disable-model-invocation: true
    - Si es propio del proyecto → prueba o regla en `AGENTS.md`.
    - Si es transversal → escribí una lección candidata en **`docs/lecciones-candidatas/L-<tema>.md` del
      proyecto** (no en el brain de empresa: desde una sesión de proyecto no se escribe ahí), con front-matter
-     (`dueño`, `estado: candidata`, `revisado`, `vence` = hoy + 60 días, `fuentes`) y un título `# …` que diga la
+     (`dueño`, `estado: candidata`, `revisado`, `vence` = hoy + 60 días, `fuentes`) — en `fuentes` y en el cuerpo
+     citá los archivos del proyecto **como texto** («demo-facturas: docs/cambios/…»), nunca como enlace
+     markdown, porque en el brain de empresa ese enlace queda roto (F-05-07) — y un título `# …` que diga la
      regla en una frase. Avisale al usuario: **la publica una persona en la retro**, con un PR al brain de empresa
      (`emba-brain/lecciones/` y su fila en `lecciones/README.md`). Así la ve el próximo proyecto (v3.1, C-04).
 4. Resumí las métricas de la fase:

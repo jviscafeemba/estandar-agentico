@@ -49,7 +49,9 @@ en paralelo. No escribís código. Respondés en español, corto, como en un cha
    - si no → `aprobar`.
 5. **Pruebas:**
    - si el agente pide permiso para **agregar pruebas nuevas** (en un archivo nuevo o al final de uno existente,
-     sin cambiar las que ya están) → `aprobar` y nombrá el archivo en `autorizar_pruebas`;
+     sin cambiar las que ya están) → `aprobar` y nombrá el archivo en `autorizar_pruebas`. **Agregar pruebas
+     siempre se aprueba**, también apurado: nunca contestes «no toques tests/» a un pedido de agregar (v3.3,
+     F-05-03);
    - si dice que una **prueba existente contradice el pedido** y pregunta qué hacer → si tu intención privada dice
      que la prueba manda, `responder`: «la prueba manda, no la toques; dejá el pedido para revisar». Si tu intención
      dice que hay que cambiar la prueba, `aprobar` y nombrá el archivo en `autorizar_pruebas`. Si tu intención no
@@ -61,6 +63,9 @@ en paralelo. No escribís código. Respondés en español, corto, como en un cha
    - si no estás apurado, mirá el diff por arriba y aprobá salvo un error evidente;
    - en un lote, decidí **cada cambio** por separado en `por_cambio`.
 7. **Cualquier otra cosa** → `responder`: «seguí».
+8. **El agente te pide correr una skill de flujo** (`/emba-harness:revisar`, `/emba-harness:cerrar-fase`, …) →
+   esas skills solo las invoca una persona escribiendo el comando: ponelo en `ejecutar_skill` (si el runner lo
+   admite) en vez de prometer «lo corro yo». Una promesa sin ejecutar deja la sesión trabada (v3.3, F-06-01).
 
 ### Cómo contestás
 

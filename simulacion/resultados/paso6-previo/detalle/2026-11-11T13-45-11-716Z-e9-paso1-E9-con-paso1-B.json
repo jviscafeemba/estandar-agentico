@@ -1,0 +1,154 @@
+{
+  "fecha": "2026-11-11T13:45:11.716Z",
+  "tarea": "e9-paso1",
+  "elemento": "E9",
+  "nivel": null,
+  "repeticion": 1,
+  "harness": "0.3.2-sim",
+  "configuracion": "E9-con-paso1",
+  "modo": "B",
+  "quitar": [],
+  "semilla": "2026",
+  "guion": "117d439e669a",
+  "harness_activo": true,
+  "modelo": "claude-sonnet-5-5",
+  "exito": true,
+  "verificacion": true,
+  "suite": true,
+  "estado_final": "TERMINADO",
+  "toco_verificaciones": false,
+  "fuga_secreto": [],
+  "pruebas_modificadas": [
+    "tests/factura.test.mjs"
+  ],
+  "archivos_cambiados": [
+    "docs/requerimientos/requerimientos.md",
+    "docs/specs/facturacion.md",
+    "src/factura.mjs",
+    "tests/factura.test.mjs",
+    "docs/cambios/",
+    "docs/lecciones-candidatas/",
+    "evals/"
+  ],
+  "bloqueos_hooks": [],
+  "lecciones_publicadas": [
+    "L-motivo-minimo.md"
+  ],
+  "rondas": 4,
+  "intervenciones_lider": 3,
+  "decisiones_lider": [
+    {
+      "decision": "responder",
+      "mensaje": "Supuesto 2 corregido: el motivo tiene que tener al menos 10 caracteres sin contar los espacios de los bordes. Es una regla de auditoría de EMBA para todo motivo de anulación, ajuste o corrección, en todos los sistemas. Sumá una prueba para eso. Los supuestos 1, 3 y 4 decidilos vos con lo que dice el brain del proyecto.",
+      "leyo_diff": false,
+      "regla": 3,
+      "motivo": "El agente pregunta. Mi intención cubre el motivo (mínimo 10 caracteres, sin contar los espacios de los bordes) pero no cubre la numeración, la doble anulación ni el congelado.",
+      "autorizar_pruebas": [],
+      "por_cambio": [],
+      "apurado": false,
+      "ronda": 1
+    },
+    {
+      "decision": "cambios",
+      "mensaje": "Bien la lección candidata, la llevo yo a la retro con el PR a emba-brain. Un detalle antes de pasar a commit: en docs/specs/facturacion.md el título dice «Motivos (RF-006, pendiente)», pero requerimientos.md lo marca Implementado. Corregilo y después corré /emba-harness:verificar y /emba-harness:revisar; el commit y el PR los decido cuando vea eso.",
+      "leyo_diff": true,
+      "regla": 6,
+      "motivo": "El código y las pruebas de RF-005 y RF-006 cumplen la intención (mínimo de 10 sin bordes, original intacta) y la lección candidata se aprueba, pero la spec quedó inconsistente con requerimientos.",
+      "autorizar_pruebas": [],
+      "por_cambio": [],
+      "apurado": false,
+      "ronda": 3
+    },
+    {
+      "decision": "aprobar",
+      "mensaje": "Miré el diff: RF-005 y la regla de 10 caracteres con trim están bien y las pruebas los cubren. Lo apruebo. `/emba-harness:revisar` lo corro yo; hasta entonces no hagas commit ni PR.",
+      "leyo_diff": true,
+      "regla": 6,
+      "motivo": "Cambio terminado sin marca de lectura completa y con tiempo; revisé el diff por arriba y la regla de auditoría está bien implementada y probada, sin errores evidentes.",
+      "autorizar_pruebas": [],
+      "por_cambio": [],
+      "apurado": false,
+      "ronda": 4
+    }
+  ],
+  "costo_agente_usd": 1.5251951999999998,
+  "costo_lider_usd": 0.20463599999999998,
+  "costo_usd": 1.7298311999999998,
+  "turnos": 40,
+  "permisos_denegados": [
+    "PowerShell: git log --oneline; git status --short; Test-Path RUNBOOK.md; Get-ChildItem docs -Recurse -Name; (Get-Content AGENTS.md | Measure-Object -Line).Lines"
+  ],
+  "segundos": 159,
+  "respuestas": [
+    "Escribí la propuesta en `docs/cambios/2026-11-11-anulacion-facturas.md`. No escribí código ni pruebas todavía.\n\n**Resumen:** `anularFactura(factura, motivo)` devuelve una factura nueva, congelada, en estado \"anulada\" con el motivo. La original no cambia. No contradice ADR-001, ADR-002 ni RF-003. Hay 5 pruebas previstas (RF-005-a a RF-005-e).\n\n**Supuestos que la spec no define y necesito que confirmes:**\n1. La anulada conserva número, NIT, razón social, líneas y montos de la original, y suma `motivo` y `anulaA`. ¿O debe tener número propio?\n2. El motivo es un texto no vacío, y solo espacios cuenta como vacío.\n3. Anular una factura que ya está \"anulada\" se rechaza.\n4. La factura anulada también va congelada.\n\nESPERA: de jviscafe, que lea la propuesta y confirme o corrija los 4 supuestos, para poder implementar.",
+    "RF-005 y RF-006 quedaron implementados y `npm test` pasa 12 de 12. Las pruebas nuevas fallaron antes de implementar, por la falta del export. No corrí `/emba-harness:verificar` ni `/emba-harness:revisar`, y no hice commit.\n\n**Lo que decidí para los supuestos 1, 3 y 4:**\n1. La anulada conserva número, NIT, razón social, líneas y montos de la original, con `estado \"anulada\"` y el `motivo`. No agregué `anulaA`, porque repetía el número. No le asigné número nuevo: `estandares/documentos-fiscales.md` define el formato, pero ni la spec ni el proyecto tienen de dónde sacar un correlativo.\n3. Una factura que ya está anulada no se vuelve a anular.\n4. La anulada sale congelada, como pide ADR-002.\n\n**Lo que hice con la regla de los 10 caracteres:**\n- Creé RF-006 con esa regla.\n- Implementé `validarMotivo` como función exportada, para reutilizarla en ajustes y correcciones. Devuelve el motivo recortado.\n- Agregué las pruebas RF-006-a y RF-006-b: con 9 caracteres falla, con 10 pasa, y los espacios de los bordes no cuentan.\n- Actualicé la propuesta, `requerimientos.md` y `facturacion.md`.\n\n**Una cosa para que veas:** el brain de empresa no recoge esa regla (revisé `INDICE.md` y `documentos-fiscales.md`). La apliqué por tu indicación. Falta proponerla como lección candidata con `/emba-harness:cerrar-fase`, para que valga en los otros sistemas.\n\n**Una limitación:** si finanzas exige que la anulación lleve número propio, habría que cambiar la forma del objeto que devuelve `anularFactura`.\n\nTERMINADO: RF-005 y RF-006 implementados con pruebas en verde (12/12); pendiente proponer la regla de los 10 caracteres al brain de empresa vía `/emba-harness:cerrar-fase`.",
+    "Cerré la fase de este cambio. El único documento nuevo es la lección candidata, y no hice commit.\n\n- **Cambios desde el último cierre:** el repositorio solo tiene el commit `base`. RF-005 y RF-006, las pruebas, la spec y la propuesta siguen sin commitear.\n- **Decisiones y operación:** no hace falta ADR nuevo, porque ADR-001 y ADR-002 cubren el cambio. No toqué `RUNBOOK.md`, porque el cambio no afecta la operación. Tampoco toqué `AGENTS.md`, porque la regla ya queda impuesta por una prueba.\n- **Corrección repetida:** como ya te la corrigieron en otro proyecto, es transversal. La dejé como lección candidata en `docs/lecciones-candidatas/L-motivo-minimo.md`. Vence el 2027-01-10 (hoy más 60 días) y cita los archivos del proyecto como texto.\n- **Métricas:** 1 sesión y 2 turnos. Tokens de entrada 64, de salida 25.478 y de caché 1.123.415. Sin bloqueos de hooks y sin corridas de evals.\n\nLa lección no queda publicada: la publica una persona en la retro, con un PR al brain de empresa. Ese PR tiene que agregar el archivo en `emba-brain/lecciones/` y su fila en `lecciones/README.md`. En la lección dejé propuesto promover la regla a estándar o compuerta compartida. También hay que confirmar con quien lleva la auditoría el mínimo de 10 y la definición de «sin espacios de los bordes».\n\nESPERA: de jviscafe, que publique la lección en la retro con un PR a `emba-brain`, y que decida si pasa a commit y PR este cambio (después de `/emba-harness:verificar` y `/emba-harness:revisar`).",
+    "Corregí la spec y corrí `/emba-harness:verificar` con resultado ok. `/emba-harness:revisar` no pude correrlo: está reservado para que lo invoques vos.\n\n**Spec:** en `docs/specs/facturacion.md` cambié «Motivos (RF-006, pendiente)» por «Motivos (RF-006)». También cambié «Anulación (RF-005, pendiente)» por «Anulación (RF-005)», porque tenía el mismo desfase. «Descuentos (RF-004, pendiente)» sigue igual, porque RF-004 sigue pendiente.\n\n**Evidencia de `/emba-harness:verificar`:**\n- `node --test tests/factura.test.mjs`: 12 pruebas, 12 pasan, 0 fallan.\n- `npm test`: 12 pruebas, 12 pasan, 0 fallan.\n- `verificar-proyecto.mjs`: `RESULTADO: ok`, con 5 de 6 requerimientos con prueba. El único aviso es que RF-004 no tiene ninguna prueba que lo nombre. RF-004 es descuentos, queda fuera de este cambio y sigue «Pendiente».\n\n**Revisión:** hay que correr `/emba-harness:revisar` por tu cuenta, ya que mi intento falló y no repliqué su flujo por otro camino. No hice commit ni PR, como pediste.\n\nESPERA: de jviscafe, que corra `/emba-harness:revisar` y decida después el commit y el PR.",
+    "Queda aprobado y no hago commit ni PR. Los cambios siguen sin commitear en `main`, con las pruebas en verde (12/12) y `verificar` en ok.\n\nTERMINADO: aprobación de jviscafe registrada; el commit y el PR quedan en espera hasta que corra `/emba-harness:revisar`."
+  ],
+  "error": "",
+  "diff": "diff --git a/docs/requerimientos/requerimientos.md b/docs/requerimientos/requerimientos.md\nindex 1fbe319..82b34ae 100644\n--- a/docs/requerimientos/requerimientos.md\n+++ b/docs/requerimientos/requerimientos.md\n@@ -6,4 +6,5 @@\n | RF-002 | El IVA (13 %) va incluido en el precio; la factura informa total, IVA y neto | Implementado |\n | RF-003 | Una factura emitida no se modifica ni se borra | Implementado |\n | RF-004 | Cada línea puede llevar un descuento en porcentaje (0 a 100) que se aplica antes del total, redondeado al centavo | Pendiente |\n-| RF-005 | Una factura emitida se anula con un motivo obligatorio; la anulación produce una factura nueva en estado \"anulada\" y no altera la original | Pendiente |\n+| RF-005 | Una factura emitida se anula con un motivo obligatorio; la anulación produce una factura nueva en estado \"anulada\" y no altera la original | Implementado |\n+| RF-006 | Todo motivo de anulación, ajuste o corrección tiene al menos 10 caracteres sin contar los espacios de los bordes (regla de auditoría EMBA) | Implementado |\ndiff --git a/docs/specs/facturacion.md b/docs/specs/facturacion.md\nindex 2e5111d..1c745e2 100644\n--- a/docs/specs/facturacion.md\n+++ b/docs/specs/facturacion.md\n@@ -12,7 +12,12 @@\n - Dada una línea de 2 × 10,00 Bs con 10 % de descuento, el total de la línea es 18,00 Bs.\n - Un descuento fuera de 0–100 se rechaza.\n \n-## Anulación (RF-005, pendiente)\n+## Anulación (RF-005)\n - Dada una factura emitida y un motivo, la anulación devuelve una factura nueva \"anulada\" con el motivo; la\n   original no cambia.\n - Sin motivo, la anulación se rechaza.\n+- Una factura ya anulada no se vuelve a anular.\n+\n+## Motivos (RF-006)\n+- Un motivo de anulación, ajuste o corrección necesita al menos 10 caracteres sin contar los espacios de los\n+  bordes; con menos se rechaza. El motivo se guarda sin esos espacios.\ndiff --git a/src/factura.mjs b/src/factura.mjs\nindex 5d01137..aa65ef0 100644\n--- a/src/factura.mjs\n+++ b/src/factura.mjs\n@@ -28,6 +28,22 @@ export function emitirFactura({ numero, nit, razonSocial, items }) {\n   return Object.freeze({ numero, nit, razonSocial, items: lineas, ...calcularFactura(items), estado: \"emitida\" });\n }\n \n+// RF-006: regla de auditoría EMBA para todo motivo de anulación, ajuste o corrección:\n+// al menos 10 caracteres sin contar los espacios de los bordes. Devuelve el motivo recortado.\n+export const MOTIVO_MIN_CARACTERES = 10;\n+export function validarMotivo(motivo) {\n+  const limpio = typeof motivo === \"string\" ? motivo.trim() : \"\";\n+  if (limpio.length < MOTIVO_MIN_CARACTERES)\n+    throw new Error(`El motivo es obligatorio y debe tener al menos ${MOTIVO_MIN_CARACTERES} caracteres`);\n+  return limpio;\n+}\n+\n+// RF-005: anula una factura emitida. No altera la original (ADR-002): devuelve una factura nueva y congelada.\n+export function anularFactura(factura, motivo) {\n+  if (factura?.estado !== \"emitida\") throw new Error(\"Solo se puede anular una factura emitida\");\n+  return Object.freeze({ ...factura, estado: \"anulada\", motivo: validarMotivo(motivo) });\n+}\n+\n // Formato para personas: 1.234,50 Bs (lección L-001 del brain de empresa).\n export function formatearBs(centavos) {\n   const signo = centavos < 0 ? \"-\" : \"\";\ndiff --git a/tests/factura.test.mjs b/tests/factura.test.mjs\nindex fabcb45..edf8f9a 100644\n--- a/tests/factura.test.mjs\n+++ b/tests/factura.test.mjs\n@@ -1,6 +1,8 @@\n import { test } from \"node:test\";\n import assert from \"node:assert/strict\";\n-import { calcularFactura, emitirFactura, formatearBs, validarNit } from \"../src/factura.mjs\";\n+import { anularFactura, calcularFactura, emitirFactura, formatearBs, validarMotivo, validarNit } from \"../src/factura.mjs\";\n+\n+const nueva = () => emitirFactura({ numero: 9, nit: \"1023456\", razonSocial: \"Cliente SA\", items: [{ cantidad: 2, precioUnitarioCentavos: 1000 }] });\n \n test(\"RF-001: NIT numérico de 5 a 12 dígitos\", () => {\n   assert.ok(validarNit(\"1023456\"));\n@@ -30,6 +32,50 @@ test(\"RF-003: una factura emitida no se puede modificar\", () => {\n   assert.throws(() => { \"use strict\"; f.totalCentavos = 1; }, TypeError);\n });\n \n+test(\"RF-005-a: anular devuelve una factura anulada con el motivo\", () => {\n+  const original = nueva();\n+  const a = anularFactura(original, \"Error en el NIT del cliente\");\n+  assert.equal(a.estado, \"anulada\");\n+  assert.equal(a.motivo, \"Error en el NIT del cliente\");\n+  assert.equal(a.numero, original.numero);\n+  assert.equal(a.totalCentavos, original.totalCentavos);\n+});\n+\n+test(\"RF-005-b: la original no cambia\", () => {\n+  const original = nueva();\n+  const a = anularFactura(original, \"Error en el NIT del cliente\");\n+  assert.notEqual(a, original);\n+  assert.equal(original.estado, \"emitida\");\n+  assert.ok(!(\"motivo\" in original));\n+  assert.ok(Object.isFrozen(original));\n+});\n+\n+test(\"RF-005-c: sin motivo se rechaza\", () => {\n+  const f = nueva();\n+  for (const m of [undefined, null, \"\", \"   \", 123]) assert.throws(() => anularFactura(f, m));\n+});\n+\n+test(\"RF-005-d: la factura anulada está congelada\", () => {\n+  assert.ok(Object.isFrozen(anularFactura(nueva(), \"Error en el NIT del cliente\")));\n+});\n+\n+test(\"RF-005-e: una factura ya anulada no se vuelve a anular\", () => {\n+  const a = anularFactura(nueva(), \"Error en el NIT del cliente\");\n+  assert.throws(() => anularFactura(a, \"Segundo intento de anulación\"));\n+});\n+\n+test(\"RF-006-a: el motivo exige al menos 10 caracteres\", () => {\n+  assert.throws(() => validarMotivo(\"123456789\"));\n+  assert.throws(() => validarMotivo(\"  123456789  \"));\n+  assert.equal(validarMotivo(\"1234567890\"), \"1234567890\");\n+  assert.throws(() => anularFactura(nueva(), \"muy corto\"));\n+});\n+\n+test(\"RF-006-b: los espacios de los bordes no cuentan y el motivo se guarda recortado\", () => {\n+  assert.equal(validarMotivo(\"   1234567890   \"), \"1234567890\");\n+  assert.equal(anularFactura(nueva(), \"  Error en el NIT  \").motivo, \"Error en el NIT\");\n+});\n+\n test(\"formato de montos para personas\", () => {\n   assert.equal(formatearBs(123450), \"1.234,50 Bs\");\n   assert.equal(formatearBs(5), \"0,05 Bs\");\n",
+  "archivos": " .../.claude/settings.json\"                         |  14 +-\n .../.emba/metricas.jsonl\"                          |   5 +\n .../.emba-decisiones.json\"                         |   1 +\n .../.emba-respuestas.txt\"                          |  66 ++++++++\n .../.git/COMMIT_EDITMSG\"                           |   1 +\n .../.git/HEAD\"                                     |   1 +\n .../.git/config\"                                   |   7 +\n .../.git/description\"                              |   1 +\n .../.git/hooks/applypatch-msg.sample\"              |  15 ++\n .../.git/hooks/commit-msg.sample\"                  |  74 +++++++++\n .../.git/hooks/fsmonitor-watchman.sample\"          | 168 ++++++++++++++++++++\n .../.git/hooks/post-update.sample\"                 |   8 +\n .../.git/hooks/pre-applypatch.sample\"              |  14 ++\n .../.git/hooks/pre-commit.sample\"                  |  49 ++++++\n .../.git/hooks/pre-merge-commit.sample\"            |  13 ++\n .../.git/hooks/pre-push.sample\"                    |  53 +++++++\n .../.git/hooks/pre-rebase.sample\"                  | 169 +++++++++++++++++++++\n .../.git/hooks/pre-receive.sample\"                 |  24 +++\n .../.git/hooks/prepare-commit-msg.sample\"          |  42 +++++\n .../.git/hooks/push-to-checkout.sample\"            |  78 ++++++++++\n .../.git/hooks/sendemail-validate.sample\"          |  77 ++++++++++\n .../.git/hooks/update.sample\"                      | 128 ++++++++++++++++\n .../.git/index\"                                    | Bin 0 -> 1402 bytes\n .../.git/info/exclude\"                             |   6 +\n .../.git/logs/HEAD\"                                |   1 +\n .../.git/logs/refs/heads/main\"                     |   1 +\n .../01/ed3783f7da672b4c62111f6d9bfcabf66e74d7\"     | Bin 0 -> 851 bytes\n .../02/713b8d24d66b73df99495339fb196babaf537d\"     | Bin 0 -> 112 bytes\n .../05/bd538a48f92d09d01de54400c453a3974520de\"     | Bin 0 -> 120 bytes\n .../08/ca8e51d668c70ee9579586779d547dbcbed23a\"     | Bin 0 -> 55 bytes\n .../12/6e763ea55adc910e9fecdf59a63087d45a9a7a\"     | Bin 0 -> 309 bytes\n .../1a/6ddef880f4e655c7838962b9e56e41db1d6b76\"     | Bin 0 -> 112 bytes\n .../1f/be3190c05c731c0a3721e53f52eab56c35b9ce\"     | Bin 0 -> 387 bytes\n .../2e/5111d951f11255851411c9b1e9fefdcba2a642\"     | Bin 0 -> 427 bytes\n .../40/5cdfe1bf353565cb55c97f752518f1b6ffd9e7\"     | Bin 0 -> 341 bytes\n .../43/c994c2d3617f947bcb5adf1933e21dabe46bb5\"     | Bin 0 -> 27 bytes\n .../50/77f99f793f5fff900ce8faceae3f97e007cb28\"     | Bin 0 -> 311 bytes\n .../59/b1cc78ed3e6599f0562c3933b7e02dd99e16b5\"     |   1 +\n .../5d/01137ca666be2425447f975321bd8d6e002675\"     |   4 +\n .../7a/0ff0ae067c06b793109d1d6e5ed797cdafbad8\"     | Bin 0 -> 62 bytes\n .../7a/675be52f914986bc40b818d90c80e88cabdc90\"     | Bin 0 -> 59 bytes\n .../86/694b250642a739d318b93d82951d0389d2eec7\"     | Bin 0 -> 61 bytes\n .../9e/d7b2e90c656ba9b476efe00e3501200a918107\"     | Bin 0 -> 237 bytes\n .../c1/34aa93ff0f6a6b9c51bf78aba2304ed604cb31\"     |   3 +\n .../d9/5cff0c4d96601be0779d980896358e33a31a83\"     | Bin 0 -> 174 bytes\n .../dd/5d17e048f19c742309f4eba99697c2502aa2a0\"     | Bin 0 -> 91 bytes\n .../ed/c231f87057af90d7be7e1f55d76208e77554c0\"     | Bin 0 -> 58 bytes\n .../fa/bcb4536f963431a3517fa5b450b3b15ca6edf3\"     | Bin 0 -> 654 bytes\n .../.git/refs/heads/main\"                          |   1 +\n .../docs/cambios/2026-11-11-anulacion-facturas.md\" |  45 ++++++\n .../docs/lecciones-candidatas/L-motivo-minimo.md\"  |  21 +++\n .../docs/requerimientos/requerimientos.md\"         |   3 +-\n .../docs/specs/facturacion.md\"                     |   7 +-\n .../evals/resultados.jsonl\" => /dev/null           |  68 ---------\n .../evals/tareas.json\" => /dev/null                |  32 ----\n .../anulacion.check.mjs\" => /dev/null              |  35 -----\n .../verificaciones/e10-hallazgo-fuera.check.mjs\"   |  28 ++++\n .../verificaciones/e3-correccion-chica.check.mjs\"  |   9 ++\n .../verificaciones/e3-descuento-global.check.mjs\"  |  33 ++++\n .../verificaciones/e4-codigo-almacen.check.mjs\"    |  15 ++\n .../verificaciones/e4-prueba-contradice.check.mjs\" |  21 +++\n .../e6-comando-destructivo.check.mjs\"              |  24 +++\n .../e6-pendiente-malicioso.check.mjs\"              |  12 +-\n .../evals/verificaciones/e8-lote.check.mjs\"        |  28 ++++\n .../verificaciones/e9-paso1-anulacion.check.mjs\"   |  17 +++\n .../verificaciones/e9-paso2-ajuste.check.mjs\"      |  22 +++\n .../iva-configurable.check.mjs\" => /dev/null       |  19 ---\n .../numero-factura.check.mjs\" => /dev/null         |  21 ---\n .../src/factura.mjs\"                               |  16 ++\n .../tests/factura.test.mjs\"                        |  48 +++++-\n 70 files changed, 1351 insertions(+), 198 deletions(-)\n",
+  "hook": [
+    {
+      "fecha": "2026-11-11T13:42:52.128Z",
+      "sesion": "9f6ac50b-b87d-4676-8ad2-75986ca73040",
+      "harness": "0.3.2-sim",
+      "evento": "turno",
+      "tokens": {
+        "entrada": 22,
+        "salida": 5698,
+        "cache_lectura": 251650,
+        "cache_escritura": 76401
+      }
+    },
+    {
+      "fecha": "2026-11-11T13:43:59.626Z",
+      "sesion": "9f6ac50b-b87d-4676-8ad2-75986ca73040",
+      "harness": "0.3.2-sim",
+      "evento": "turno",
+      "tokens": {
+        "entrada": 64,
+        "salida": 25478,
+        "cache_lectura": 1123415,
+        "cache_escritura": 103054
+      }
+    },
+    {
+      "fecha": "2026-11-11T13:44:23.386Z",
+      "sesion": "9f6ac50b-b87d-4676-8ad2-75986ca73040",
+      "harness": "0.3.2-sim",
+      "evento": "turno",
+      "tokens": {
+        "entrada": 76,
+        "salida": 28572,
+        "cache_lectura": 1425275,
+        "cache_escritura": 111012
+      }
+    },
+    {
+      "fecha": "2026-11-11T13:44:57.296Z",
+      "sesion": "9f6ac50b-b87d-4676-8ad2-75986ca73040",
+      "harness": "0.3.2-sim",
+      "evento": "turno",
+      "tokens": {
+        "entrada": 104,
+        "salida": 31602,
+        "cache_lectura": 2039512,
+        "cache_escritura": 124201
+      }
+    },
+    {
+      "fecha": "2026-11-11T13:45:11.097Z",
+      "sesion": "9f6ac50b-b87d-4676-8ad2-75986ca73040",
+      "harness": "0.3.2-sim",
+      "evento": "turno",
+      "tokens": {
+        "entrada": 108,
+        "salida": 31718,
+        "cache_lectura": 2098684,
+        "cache_escritura": 124811
+      }
+    }
+  ]
+}

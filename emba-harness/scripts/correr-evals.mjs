@@ -214,7 +214,10 @@ const PROTOCOLO =
 
 function estadoFinal(texto) {
   const lineas = (texto ?? "").trim().split(/\r?\n/).filter((l) => l.trim());
-  const m = (lineas.at(-1) ?? "").match(/^[\s*_`>#-]*(ESPERA|TERMINADO|TRABAJANDO)\b/i);
+  const ultima = lineas.at(-1) ?? "";
+  // F-05-05: un cierre mixto («TERMINADO: …; ESPERA: …») es una espera: el agente pide algo a una persona.
+  if (/\bESPERA\s*:/i.test(ultima)) return "ESPERA";
+  const m = ultima.match(/^[\s*_`>#-]*(ESPERA|TERMINADO|TRABAJANDO)\b/i);
   return m ? m[1].toUpperCase() : "SIN-CIERRE";
 }
 
