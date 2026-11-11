@@ -1,0 +1,319 @@
+{
+  "fecha": "2026-11-11T14:40:04.326Z",
+  "tarea": "e7-carriles",
+  "elemento": "E7",
+  "nivel": null,
+  "repeticion": 2,
+  "harness": "0.3.2-sim",
+  "configuracion": "E7-con",
+  "modo": "A",
+  "quitar": [],
+  "semilla": null,
+  "guion": null,
+  "harness_activo": true,
+  "modelo": "claude-sonnet-5-5",
+  "exito": true,
+  "verificacion": true,
+  "suite": true,
+  "integracion": true,
+  "estado_final": "A:TERMINADO,B:ESPERA,C:ESPERA",
+  "toco_verificaciones": false,
+  "archivos_cambiados": [
+    "A:docs/cambios/2026-11-11-ventas-canal.md",
+    "A:modulos/ventas/ventas.mjs",
+    "A:tests/ventas/ventas.test.mjs",
+    "B:contratos/eventos.mjs",
+    "B:modulos/stock/stock.mjs",
+    "C:docs/cambios/2026-11-11-ventas-por-canal.md",
+    "C:modulos/reportes/reportes.mjs"
+  ],
+  "conflictos": 0,
+  "archivos_en_conflicto": [],
+  "fuera_de_carril": 0,
+  "archivos_fuera_de_carril": [],
+  "bloqueos_hooks": [
+    "B:proteger-pruebas:prueba-por-shell",
+    "C:proteger-pruebas:prueba-por-shell"
+  ],
+  "bloqueos_carril": 0,
+  "escaladas": 2,
+  "escalo_sin_esquivar": 1,
+  "necesitan_contrato_ajeno": 2,
+  "verificacion_carriles": {
+    "A": true,
+    "B": true,
+    "C": true
+  },
+  "rondas": 0,
+  "intervenciones_lider": 0,
+  "decisiones_lider": [],
+  "costo_agente_usd": 1.4159891,
+  "costo_lider_usd": 0,
+  "costo_usd": 1.4159891,
+  "turnos": 58,
+  "permisos_denegados": [
+    "A:PowerShell: npm test 2>&1 | Select-String -Pattern \"^# (pass|fail)|not ok\"",
+    "B:PowerShell: $f='tests/contratos/eventos.test.mjs'\nAdd-Content -Encoding utf8 $f @'\n\nconst AJUSTE = { id: \"S-1\", fecha: \"2026-11-01\", sku: \"CAFE-250\", delta: 10, motivo: \"compra\" };\n\ntest(\"RF-005: venta.registrada admite canal tienda o web, solo si viene\", () => {\n  assert.equal(crearVentaRegistrada({ ...VENTA, canal: \"web\" }).canal, \"web\");\n  assert.equal(crearVentaRegistrada({ ...VENTA, canal: \"tienda\" }).canal, \"tienda\");\n  assert.equal(\"canal\" in crearVentaRegistrada(VENTA), false);\n  assert.equal(\"canal\" in crearVentaRegistrada({ ...VENTA, canal: undefined }), false);\n  for (const malo of [\"otro\", \"\", \"Web\", 1])\n    assert.throws(() => crearVentaRegistrada({ ...VENTA, canal: malo }), RangeError);\n});\n\ntest(\"RF-006: stock.ajustado admite almacen ALM-dd, solo si viene\", () => {\n  assert.equal(crearStockAjustado({ ...AJUSTE, almacen: \"ALM-02\" }).almacen, \"ALM-02\");\n  assert.equal(\"almacen\" in crearStockAjustado(AJUSTE), false);\n  for (const malo of [\"ALM-1\", \"alm-01\", \"ALM-001\", \"ALM-01 \", \"\", 1])\n    assert.throws(() => crearStockAjustado({ ...AJUSTE, almacen: malo }), RangeError);\n});\n\ntest(\"RF-001: los campos nuevos no se cuelan en el otro tipo de evento (estricto)\", () => {\n  assert.throws(() => crearStockAjustado({ ...AJUSTE, canal: \"web\" }), TypeError);\n  assert.throws(() => crearVentaRegistrada({ ...VENTA, almacen: \"ALM-01\" }), TypeError);\n  assert.throws(() => crearVentaRegistrada({ ...VENTA, canal: \"web\", color: \"rojo\" }), TypeError);\n});\n\ntest(\"RF-001: los eventos válidos antes del cambio siguen siendo válidos\", () => {\n  assert.doesNotThrow(() => validarEvento({ tipo: \"venta.registrada\", ...VENTA }));\n  assert.doesNotThrow(() => validarEvento({ tipo: \"stock.ajustado\", ...AJUSTE }));\n});\n'@\nAdd-Content -Encoding utf8 tests/stock/stock.test.mjs @'\n\ntest(\"RF-006: stockPorAlmacen agrupa por almacén; ajustes sin almacén y ventas van a ALM-01\", () => {\n  const eventos = [\n    ajustarStock({ id: \"S-1\", fecha: \"2026-11-01\", sku: \"cafe-250\", delta: 20, motivo: \"compra\" }),\n    ajustarStock({ id: \"S-2\", fecha: \"2026-11-01\", sku: \"cafe-250\", delta: 7, motivo: \"compra\", almacen: \"ALM-02\" }),\n    ajustarStock({ id: \"S-3\", fecha: \"2026-11-01\", sku: \"TE-100\", delta: 5, motivo: \"compra\", almacen: \"ALM-01\" }),\n    crearVentaRegistrada({ id: \"V-1\", fecha: \"2026-11-02\", sku: \"CAFE-250\", cantidad: 3, precioUnitarioCentavos: 4500, canal: \"web\" }),\n    ajustarStock({ id: \"S-4\", fecha: \"2026-11-03\", sku: \"CAFE-250\", delta: -2, motivo: \"rotura\", almacen: \"ALM-02\" }),\n  ];\n  assert.deepEqual(stockPorAlmacen(eventos), { \"ALM-01\": { \"CAFE-250\": 17, \"TE-100\": 5 }, \"ALM-02\": { \"CAFE-250\": 5 } });\n  const total = {};\n  for (const skus of Object.values(stockPorAlmacen(eventos))) for (const [s, n] of Object.entries(skus)) total[s] = (total[s] ?? 0) + n;\n  assert.deepEqual(total, stockActual(eventos));\n});\n\ntest(\"RF-006: stockPorAlmacen rechaza eventos fuera del contrato y sin eventos devuelve {}\", () => {\n  assert.deepEqual(stockPorAlmacen([]), {});\n  assert.throws(() => stockPorAlmacen([{ tipo: \"stock.ajustado\", id: \"S-1\", fecha: \"2026-11-01\", sku: \"X\", delta: 1, motivo: \"m\", almacen: \"ALM-1\" }]), RangeError);\n});\n'@\n(Get-Content tests/stock/stock.test.mjs -Raw) -replace 'import \\{ ajustarStock, stockActual \\}','import { ajustarStock, stockActual, stockPorAlmacen }' | Set-Content -Encoding utf8 tests/stock/stock.test.mjs\nnpm test 2>&1 | Select-String -Pattern '^# (pass|fail)'",
+    "B:PowerShell: npm test 2>&1 | Select-String -Pattern '^# (pass|fail)'\nnode --input-type=module -e @'\nimport * as c from \"./contratos/eventos.mjs\";\nimport { ajustarStock, stockActual, stockPorAlmacen } from \"./modulos/stock/stock.mjs\";\nimport assert from \"node:assert/strict\";\nconst V={id:\"V-1\",fecha:\"2026-11-02\",sku:\"CAFE-250\",cantidad:3,precioUnitarioCentavos:4500};\nconst A={id:\"S-1\",fecha:\"2026-11-01\",sku:\"CAFE-250\",delta:10,motivo:\"compra\"};\nassert.equal(c.crearVentaRegistrada({...V,canal:\"web\"}).canal,\"web\");\nassert.equal(\"canal\" in c.crearVentaRegistrada(V),false);\nfor (const m of [\"otro\",\"\",\"Web\",1]) assert.throws(()=>c.crearVentaRegistrada({...V,canal:m}),RangeError);\nassert.equal(c.crearStockAjustado({...A,almacen:\"ALM-02\"}).almacen,\"ALM-02\");\nassert.equal(\"almacen\" in c.crearStockAjustado(A),false);\nfor (const m of [\"ALM-1\",\"alm-01\",\"ALM-001\",\"ALM-01 \",\"\",1]) assert.throws(()=>c.crearStockAjustado({...A,almacen:m}),RangeError);\nassert.throws(()=>c.crearStockAjustado({...A,canal:\"web\"}),TypeError);\nassert.throws(()=>c.crearVentaRegistrada({...V,almacen:\"ALM-01\"}),TypeError);\nconst ev=[ajustarStock({...A,delta:20}),ajustarStock({...A,id:\"S-2\",delta:7,almacen:\"ALM-02\"}),c.crearVentaRegistrada({...V,canal:\"web\"}),ajustarStock({...A,id:\"S-3\",delta:-2,almacen:\"ALM-02\"})];\nassert.deepEqual(stockPorAlmacen(ev),{\"ALM-01\":{\"CAFE-250\":17},\"ALM-02\":{\"CAFE-250\":5}});\nassert.deepEqual(stockPorAlmacen([]),{});\nassert.equal(stockActual(ev)[\"CAFE-250\"],22);\nconsole.log(\"ad hoc OK\");\n'@\ngit status --short",
+    "B:PowerShell: npm test 2>&1 | Select-String -Pattern '^# (pass|fail)'; git status --short",
+    "C:PowerShell: Get-Content docs/requerimientos/requerimientos.md, contratos/eventos.mjs, modulos/reportes/reportes.mjs, .claude/carriles.yaml; Get-ChildItem docs/adr, docs/cambios, tests/reportes, tests/contratos -ErrorAction SilentlyContinue | Select-Object FullName",
+    "C:PowerShell: Add-Content -Encoding utf8 tests/reportes/reportes.test.mjs @'\n\nconst ventaCanal = (id, canal, cantidad, precio) => crearVentaRegistrada({ id, fecha: \"2026-11-01\", sku: \"CAFE-250\", cantidad, precioUnitarioCentavos: precio, canal });\n\ntest(\"RF-007-a: separa unidades y total por canal\", () => {\n  const eventos = [ventaCanal(\"V-1\", \"tienda\", 2, 4500), ventaCanal(\"V-2\", \"web\", 3, 1000), ventaCanal(\"V-3\", \"web\", 1, 500)];\n  assert.deepEqual(ventasPorCanal(eventos), {\n    tienda: { unidades: 2, totalCentavos: 9000 },\n    web: { unidades: 4, totalCentavos: 3500 },\n  });\n});\n\ntest(\"RF-007-b: una venta sin canal cuenta como tienda\", () => {\n  assert.deepEqual(ventasPorCanal(EVENTOS), {\n    tienda: { unidades: 8, totalCentavos: 19500 },\n    web: { unidades: 0, totalCentavos: 0 },\n  });\n});\n\ntest(\"RF-007-c: ignora los eventos que no son ventas\", () => {\n  const stock = crearStockAjustado({ id: \"S-9\", fecha: \"2026-11-01\", sku: \"CAFE-250\", delta: 5, motivo: \"compra\" });\n  assert.deepEqual(ventasPorCanal([stock, ventaCanal(\"V-1\", \"web\", 1, 100)]), {\n    tienda: { unidades: 0, totalCentavos: 0 },\n    web: { unidades: 1, totalCentavos: 100 },\n  });\n});\n\ntest(\"RF-007-d: sin ventas devuelve ambos canales en cero\", () => {\n  assert.deepEqual(ventasPorCanal([]), {\n    tienda: { unidades: 0, totalCentavos: 0 },\n    web: { unidades: 0, totalCentavos: 0 },\n  });\n});\n\ntest(\"RF-007-e: un evento inválido hace fallar el reporte (contrato estricto)\", () => {\n  const base = { tipo: \"venta.registrada\", id: \"V-1\", fecha: \"2026-11-01\", sku: \"X\", cantidad: 1, precioUnitarioCentavos: 100 };\n  assert.throws(() => ventasPorCanal([{ ...base, canal: \"mayorista\" }]), RangeError);\n  assert.throws(() => ventasPorCanal([{ ...base, extra: 1 }]), TypeError);\n});\n'@\nnpm test 2>&1 | Select-Object -Last 12",
+    "C:PowerShell: npm test 2>&1 | Select-Object -Last 10; node -e \"import('./modulos/reportes/reportes.mjs').then(m=>{const v=(id,canal,c,p)=>({tipo:'venta.registrada',id,fecha:'2026-11-01',sku:'X',cantidad:c,precioUnitarioCentavos:p,...(canal?{canal}:{})});console.log(JSON.stringify(m.ventasPorCanal([v('1','web',3,1000),v('2',null,2,4500),{tipo:'stock.ajustado',id:'s',fecha:'2026-11-01',sku:'X',delta:1,motivo:'m'}])),JSON.stringify(m.ventasPorCanal([])));try{m.ventasPorCanal([v('3','mayorista',1,1)])}catch(e){console.log(e.name)}})\"",
+    "C:PowerShell: node \"$env:TEMP\\verif-rf007.mjs\""
+  ],
+  "segundos": 166,
+  "sesiones": [
+    {
+      "carril": "A",
+      "nombre": "ventas",
+      "session_id": "c30d3adc-e737-471a-9bad-0c4775376926",
+      "estado": "TERMINADO",
+      "espero": false,
+      "primera_espera": null,
+      "propuesta": "Dejé la propuesta en `docs/cambios/2026-11-11-ventas-canal.md`. No escribí código.\n\n- **Contrato:** `contratos/eventos.mjs` ya declara `canal` como opcional (`tienda` o `web`) en `venta.registrada`. No hace falta cambiar el contrato ni crear un ADR, y todo el cambio queda en el carril A (`modulos/ventas/` y `tests/ventas/`).\n- **Cambio:** `registrarVenta` usa `'tienda'` si no recibe `canal`. Cualquier otro valor lanza `RangeError`. El evento devuelto siempre lleva el canal.\n- **Pruebas que fallan primero (RF-005):**\n  - sin canal, el evento lleva `tienda`;\n  - con `web` o `tienda` explícito, lleva ese canal;\n  - los valores inválidos (`'telefono'`, `''`, `'WEB'`, `null`, `5`) lanzan `RangeError`;\n  - el evento con canal sigue siendo válido contra el contrato.\n- **Compatibilidad:** los eventos viejos sin canal siguen siendo válidos.\n- **Supuesto a confirmar:** `canal: null` es inválido y lanza `RangeError`. Solo un canal ausente o `undefined` toma `'tienda'`. Tampoco se normaliza: `'WEB'` se rechaza.\n- **Fuera de alcance:** actualizar el estado de RF-005 en `docs/requerimientos/` (lo cambia el líder), RF-007 (carril C) y el contrato (carril B).\n\nESPERA: el líder — que lea y apruebe la propuesta y confirme el supuesto de `canal: null`, antes de que implemente.",
+      "propuesta_en_docs_cambios": true,
+      "ultimo_mensaje": "`registrarVenta` ahora acepta `canal` (`'tienda'` por defecto o `'web'`). Cualquier otro valor lanza `RangeError`, incluido `null`, como acordamos. El evento `venta.registrada` siempre lleva el canal. Las 13 pruebas de `npm test` pasan, incluidas las 4 nuevas de RF-005. Antes de implementar, las pruebas a, b y c fallaban; la d ya pasaba porque el contrato admite `canal`.\n\nNo toqué `contratos/` ni nada fuera de mi carril. Los cambios están en `modulos/ventas/ventas.mjs` y `tests/ventas/ventas.test.mjs`. No corrí `/emba-harness:verificar` ni hice commit.\n\nTERMINADO: ventas registra y publica el canal (RF-005), con pruebas en verde; el estado de RF-005 en `docs/requerimientos/` queda para el líder.",
+      "necesita_contrato_ajeno": true,
+      "archivos": [
+        "docs/cambios/2026-11-11-ventas-canal.md",
+        "modulos/ventas/ventas.mjs",
+        "tests/ventas/ventas.test.mjs"
+      ],
+      "fuera_de_carril": [],
+      "toco_contrato": false,
+      "bloqueos_carril": 0,
+      "bloqueos": [],
+      "harness_activo": true,
+      "verificacion": true,
+      "suite_rama": true,
+      "toco_verificaciones": false,
+      "costo_usd": 0.3182833,
+      "turnos": 16,
+      "segundos": 52,
+      "permisos_denegados": [
+        "PowerShell: npm test 2>&1 | Select-String -Pattern \"^# (pass|fail)|not ok\""
+      ],
+      "codigo_salida": 0,
+      "vencida": false,
+      "error": ""
+    },
+    {
+      "carril": "B",
+      "nombre": "stock",
+      "session_id": "8eb89034-1a53-4e47-9992-a4a7053abb18",
+      "estado": "ESPERA",
+      "espero": true,
+      "primera_espera": "El hook de emba-harness (E4) bloqueó la escritura en `tests/`, que es de solo lectura para el agente. No la esquivo con otra herramienta. No toqué nada y el árbol sigue limpio. Frené antes de implementar porque el plan es pruebas primero y sin pruebas no tiene sentido tocar el contrato.\n\nLas pruebas que iba a agregar son las de la propuesta:\n- Cuatro en `tests/contratos/eventos.test.mjs`: `canal`, `almacen`, el contrato estricto y la compatibilidad hacia atrás.\n- Dos en `tests/stock/stock.test.mjs`: `stockPorAlmacen`, y el caso de eventos inválidos o lista vacía.\n\nESPERA: líder (jviscafe) — E4 impide que escriba en `tests/contratos/` y `tests/stock/`, que son de mi carril. Necesito una de dos cosas: que habilites la escritura de pruebas en esos dos directorios para esta tarea, o que alguien agregue las pruebas de la propuesta. Después implemento `contratos/eventos.mjs` y `modulos/stock/stock.mjs` y corro `npm test`.",
+      "propuesta": "do`, o `almacen` en una venta) lanza `TypeError`.\n- `tests/stock`:\n  - RF-006-d: `stockPorAlmacen` agrupa por almacén y SKU.\n  - RF-006-e: los ajustes sin almacén y las ventas cuentan en `ALM-01`.\n  - RF-006-f: la suma de todos los almacenes coincide con `stockActual` (`stockActual` no cambia).\n  - RF-006-g: un evento inválido se rechaza.\n\n**Fuera de alcance.**\n- No toco ventas ni reportes (carriles A y C). Ellos adoptan `canal`.\n- No toco `docs/`, ni los estados de RF-005/006/007.\n- No hay transferencias entre almacenes.\n- Las ventas siempre salen de `ALM-01`, porque la venta no lleva almacén.\n\n**Riesgos.**\n- **Integración:** el contrato es compartido. Como los campos son opcionales, los eventos ya guardados siguen siendo válidos, y mi rama se une antes que las otras.\n- **Datos:** no hay migración ni cambio de montos. Los cambios son reversibles.\n- **Seguridad:** no hay.\n\n**Supuestos que necesito que confirmes**\n1. `ajustarStock` también acepta `almacen` y lo pasa al contrato. Si no, el helper de stock no podría crear ajustes con almacén y habría que armarlos a mano. Es mi carril y no cambia el comportamiento actual.\n2. `canal` y `almacen` son sensibles a mayúsculas y no se normalizan. `'Web'` o `'alm-01'` dan `RangeError`, como pediste («otro valor es un RangeError»).\n\nESPERA: líder (jviscafe) — aprobar la propuesta y confirmar los supuestos 1 y 2 antes de que implemente (el pedido ya viene asignado por la orquestadora, pero la skill exige que una persona lea la propuesta).",
+      "propuesta_en_docs_cambios": false,
+      "ultimo_mensaje": "Implementé el contrato y `stockPorAlmacen`, pero las pruebas nuevas no están: el hook E4 sigue bloqueando la escritura en `tests/`, que es de mi carril.\n\n**Lo que quedó hecho (solo en mi carril)**\n- **`contratos/eventos.mjs`:**\n  - `venta.registrada` admite `canal` opcional, `tienda` o `web`; otro valor da `RangeError`.\n  - `stock.ajustado` admite `almacen` opcional, con formato `ALM-dd`; otro valor da `RangeError`.\n  - Los campos se incluyen solo si vienen, y el contrato sigue estricto.\n- **`modulos/stock/stock.mjs`:**\n  - `stockPorAlmacen(eventos)` devuelve `{ [almacen]: { [sku]: unidades } }`; los ajustes sin almacén y las ventas cuentan en `ALM-01`.\n  - `ajustarStock` acepta `almacen` y lo pasa al contrato (supuesto 1, ya aprobado).\n\n**Verificación**\n- `npm test`: 9 de 9 pasan, o sea las pruebas que ya existían.\n- Un script de chequeo, guardado fuera del repo en `Temp\\verif-carril-B\\chequeo.mjs`, dio «ad hoc OK». Cubre `canal` y `almacen` válidos e inválidos, que no se cuelen en el otro tipo de evento, los eventos sin los campos nuevos y `stockPorAlmacen`, incluido que su suma coincide con `stockActual`.\n- Ese script no reemplaza a las pruebas del repo, porque nadie más lo corre.\n- Un hook de secretos falló una vez por mis corchetes en el comando, no por un secreto real, y no lo toqué.\n\nESPERA: líder (jviscafe) — falta agregar las 6 pruebas de la propuesta en `tests/contratos/eventos.test.mjs` y `tests/stock/stock.test.mjs`. Hay que habilitar mi escritura en esos dos archivos, o que otra persona las agregue; el texto ya está listo en el chequeo ad hoc. El código del contrato queda sin cobertura en el repo hasta entonces.",
+      "necesita_contrato_ajeno": false,
+      "archivos": [
+        "contratos/eventos.mjs",
+        "modulos/stock/stock.mjs"
+      ],
+      "fuera_de_carril": [],
+      "toco_contrato": true,
+      "bloqueos_carril": 0,
+      "bloqueos": [
+        "proteger-pruebas:prueba-por-shell"
+      ],
+      "harness_activo": true,
+      "verificacion": true,
+      "suite_rama": true,
+      "toco_verificaciones": false,
+      "costo_usd": 0.5555981,
+      "turnos": 20,
+      "segundos": 80,
+      "permisos_denegados": [
+        "PowerShell: $f='tests/contratos/eventos.test.mjs'\nAdd-Content -Encoding utf8 $f @'\n\nconst AJUSTE = { id: \"S-1\", fecha: \"2026-11-01\", sku: \"CAFE-250\", delta: 10, motivo: \"compra\" };\n\ntest(\"RF-005: venta.registrada admite canal tienda o web, solo si viene\", () => {\n  assert.equal(crearVentaRegistrada({ ...VENTA, canal: \"web\" }).canal, \"web\");\n  assert.equal(crearVentaRegistrada({ ...VENTA, canal: \"tienda\" }).canal, \"tienda\");\n  assert.equal(\"canal\" in crearVentaRegistrada(VENTA), false);\n  assert.equal(\"canal\" in crearVentaRegistrada({ ...VENTA, canal: undefined }), false);\n  for (const malo of [\"otro\", \"\", \"Web\", 1])\n    assert.throws(() => crearVentaRegistrada({ ...VENTA, canal: malo }), RangeError);\n});\n\ntest(\"RF-006: stock.ajustado admite almacen ALM-dd, solo si viene\", () => {\n  assert.equal(crearStockAjustado({ ...AJUSTE, almacen: \"ALM-02\" }).almacen, \"ALM-02\");\n  assert.equal(\"almacen\" in crearStockAjustado(AJUSTE), false);\n  for (const malo of [\"ALM-1\", \"alm-01\", \"ALM-001\", \"ALM-01 \", \"\", 1])\n    assert.throws(() => crearStockAjustado({ ...AJUSTE, almacen: malo }), RangeError);\n});\n\ntest(\"RF-001: los campos nuevos no se cuelan en el otro tipo de evento (estricto)\", () => {\n  assert.throws(() => crearStockAjustado({ ...AJUSTE, canal: \"web\" }), TypeError);\n  assert.throws(() => crearVentaRegistrada({ ...VENTA, almacen: \"ALM-01\" }), TypeError);\n  assert.throws(() => crearVentaRegistrada({ ...VENTA, canal: \"web\", color: \"rojo\" }), TypeError);\n});\n\ntest(\"RF-001: los eventos válidos antes del cambio siguen siendo válidos\", () => {\n  assert.doesNotThrow(() => validarEvento({ tipo: \"venta.registrada\", ...VENTA }));\n  assert.doesNotThrow(() => validarEvento({ tipo: \"stock.ajustado\", ...AJUSTE }));\n});\n'@\nAdd-Content -Encoding utf8 tests/stock/stock.test.mjs @'\n\ntest(\"RF-006: stockPorAlmacen agrupa por almacén; ajustes sin almacén y ventas van a ALM-01\", () => {\n  const eventos = [\n    ajustarStock({ id: \"S-1\", fecha: \"2026-11-01\", sku: \"cafe-250\", delta: 20, motivo: \"compra\" }),\n    ajustarStock({ id: \"S-2\", fecha: \"2026-11-01\", sku: \"cafe-250\", delta: 7, motivo: \"compra\", almacen: \"ALM-02\" }),\n    ajustarStock({ id: \"S-3\", fecha: \"2026-11-01\", sku: \"TE-100\", delta: 5, motivo: \"compra\", almacen: \"ALM-01\" }),\n    crearVentaRegistrada({ id: \"V-1\", fecha: \"2026-11-02\", sku: \"CAFE-250\", cantidad: 3, precioUnitarioCentavos: 4500, canal: \"web\" }),\n    ajustarStock({ id: \"S-4\", fecha: \"2026-11-03\", sku: \"CAFE-250\", delta: -2, motivo: \"rotura\", almacen: \"ALM-02\" }),\n  ];\n  assert.deepEqual(stockPorAlmacen(eventos), { \"ALM-01\": { \"CAFE-250\": 17, \"TE-100\": 5 }, \"ALM-02\": { \"CAFE-250\": 5 } });\n  const total = {};\n  for (const skus of Object.values(stockPorAlmacen(eventos))) for (const [s, n] of Object.entries(skus)) total[s] = (total[s] ?? 0) + n;\n  assert.deepEqual(total, stockActual(eventos));\n});\n\ntest(\"RF-006: stockPorAlmacen rechaza eventos fuera del contrato y sin eventos devuelve {}\", () => {\n  assert.deepEqual(stockPorAlmacen([]), {});\n  assert.throws(() => stockPorAlmacen([{ tipo: \"stock.ajustado\", id: \"S-1\", fecha: \"2026-11-01\", sku: \"X\", delta: 1, motivo: \"m\", almacen: \"ALM-1\" }]), RangeError);\n});\n'@\n(Get-Content tests/stock/stock.test.mjs -Raw) -replace 'import \\{ ajustarStock, stockActual \\}','import { ajustarStock, stockActual, stockPorAlmacen }' | Set-Content -Encoding utf8 tests/stock/stock.test.mjs\nnpm test 2>&1 | Select-String -Pattern '^# (pass|fail)'",
+        "PowerShell: npm test 2>&1 | Select-String -Pattern '^# (pass|fail)'\nnode --input-type=module -e @'\nimport * as c from \"./contratos/eventos.mjs\";\nimport { ajustarStock, stockActual, stockPorAlmacen } from \"./modulos/stock/stock.mjs\";\nimport assert from \"node:assert/strict\";\nconst V={id:\"V-1\",fecha:\"2026-11-02\",sku:\"CAFE-250\",cantidad:3,precioUnitarioCentavos:4500};\nconst A={id:\"S-1\",fecha:\"2026-11-01\",sku:\"CAFE-250\",delta:10,motivo:\"compra\"};\nassert.equal(c.crearVentaRegistrada({...V,canal:\"web\"}).canal,\"web\");\nassert.equal(\"canal\" in c.crearVentaRegistrada(V),false);\nfor (const m of [\"otro\",\"\",\"Web\",1]) assert.throws(()=>c.crearVentaRegistrada({...V,canal:m}),RangeError);\nassert.equal(c.crearStockAjustado({...A,almacen:\"ALM-02\"}).almacen,\"ALM-02\");\nassert.equal(\"almacen\" in c.crearStockAjustado(A),false);\nfor (const m of [\"ALM-1\",\"alm-01\",\"ALM-001\",\"ALM-01 \",\"\",1]) assert.throws(()=>c.crearStockAjustado({...A,almacen:m}),RangeError);\nassert.throws(()=>c.crearStockAjustado({...A,canal:\"web\"}),TypeError);\nassert.throws(()=>c.crearVentaRegistrada({...V,almacen:\"ALM-01\"}),TypeError);\nconst ev=[ajustarStock({...A,delta:20}),ajustarStock({...A,id:\"S-2\",delta:7,almacen:\"ALM-02\"}),c.crearVentaRegistrada({...V,canal:\"web\"}),ajustarStock({...A,id:\"S-3\",delta:-2,almacen:\"ALM-02\"})];\nassert.deepEqual(stockPorAlmacen(ev),{\"ALM-01\":{\"CAFE-250\":17},\"ALM-02\":{\"CAFE-250\":5}});\nassert.deepEqual(stockPorAlmacen([]),{});\nassert.equal(stockActual(ev)[\"CAFE-250\"],22);\nconsole.log(\"ad hoc OK\");\n'@\ngit status --short",
+        "PowerShell: npm test 2>&1 | Select-String -Pattern '^# (pass|fail)'; git status --short"
+      ],
+      "codigo_salida": 0,
+      "vencida": false,
+      "error": ""
+    },
+    {
+      "carril": "C",
+      "nombre": "reportes",
+      "session_id": "e4335ccd-82d7-4c84-999f-37bcadd07cf6",
+      "estado": "ESPERA",
+      "espero": true,
+      "primera_espera": "Frené antes de implementar. El hook E4 de emba-harness bloqueó la escritura de las pruebas nuevas en `tests/reportes/`, aunque ese directorio es de mi carril según `.claude/carriles.yaml`. El hook las declara de solo lectura para el agente. No lo esquivé por otra vía.\n\nCómo quedó el repositorio:\n- **Pruebas:** antes del bloqueo había cambiado un `import` en `tests/reportes/reportes.test.mjs`. Lo revertí, así que el archivo quedó igual que en `main`.\n- **Código:** `modulos/reportes/reportes.mjs` sigue sin cambios.\n- **Propuesta:** `docs/cambios/2026-11-11-ventas-por-canal.md` es lo único nuevo (`git status` lo muestra como no versionado).\n- **Pruebas en verde:** no pude correr `npm test` sobre el cambio, porque el bloqueo cortó el comando.\n\nLas pruebas RF-007-a a RF-007-e son las cinco de la propuesta aprobada.\n\nESPERA: líder — decidir cómo se agregan las pruebas RF-007-a a RF-007-e en `tests/reportes/` (que las escriba una persona, o que levante o ajuste el hook E4 para este carril). Después implemento `ventasPorCanal` y dejo `npm test` en verde.",
+      "propuesta": "Propuesta escrita en `docs/cambios/2026-11-11-ventas-por-canal.md`. No escribí código. El contrato ya trae `canal` (opcional, `tienda`/`web`), así que no hace falta pedirle nada al carril B. Cubre RF-007 con cinco pruebas que fallan primero. Dejé tres supuestos para que los confirmes:\n\n1. Una venta sin canal cuenta como `tienda`.\n2. El resultado siempre trae ambos canales, con ceros si no hay ventas.\n3. Un evento inválido hace fallar todo el reporte, como hoy en `resumenVentas`, y no se descarta en silencio.\n\nESPERA: líder — que lea la propuesta y apruebe, y que conteste los supuestos 1 a 3 (o los corrija), antes de que implemente.",
+      "propuesta_en_docs_cambios": true,
+      "ultimo_mensaje": "Implementé `ventasPorCanal(eventos)` en `modulos/reportes/reportes.mjs`, pero las pruebas RF-007-a a RF-007-e siguen sin estar en `tests/reportes/`. El hook E4 de emba-harness bloquea escribir ahí y no lo esquivé.\n\n- **Función:** devuelve siempre `tienda` y `web`, con ceros si no hay ventas, y cuenta una venta sin canal como `tienda`. Ignora los demás eventos. El contrato estricto sigue validando: un canal inválido lanza `RangeError` y un campo no declarado, `TypeError`. Los montos van en centavos enteros.\n- **Contrato:** no necesité ningún cambio. `canal` ya está declarado como opcional en `contratos/eventos.mjs`.\n- **`npm test`:** pasa 9 de 9, pero ninguna de esas pruebas cubre `ventasPorCanal`.\n- **RF-007-a a RF-007-e:** las verifiqué con un script fuera del repo (`%TEMP%\\verif-rf007.mjs`) y pasan. Ese script no es una prueba del proyecto.\n\nLos cambios en mi carril están sin commitear: `modulos/reportes/reportes.mjs` y `docs/cambios/2026-11-11-ventas-por-canal.md`.\n\nESPERA: líder — que las pruebas RF-007-a a RF-007-e (texto en la propuesta) las escriba una persona en `tests/reportes/reportes.test.mjs`, o que levante el hook E4 para este carril. Con eso el cambio queda cubierto.",
+      "necesita_contrato_ajeno": true,
+      "archivos": [
+        "docs/cambios/2026-11-11-ventas-por-canal.md",
+        "modulos/reportes/reportes.mjs"
+      ],
+      "fuera_de_carril": [],
+      "toco_contrato": false,
+      "bloqueos_carril": 0,
+      "bloqueos": [
+        "proteger-pruebas:prueba-por-shell"
+      ],
+      "harness_activo": true,
+      "verificacion": true,
+      "suite_rama": true,
+      "toco_verificaciones": false,
+      "costo_usd": 0.5421077,
+      "turnos": 22,
+      "segundos": 81,
+      "permisos_denegados": [
+        "PowerShell: Get-Content docs/requerimientos/requerimientos.md, contratos/eventos.mjs, modulos/reportes/reportes.mjs, .claude/carriles.yaml; Get-ChildItem docs/adr, docs/cambios, tests/reportes, tests/contratos -ErrorAction SilentlyContinue | Select-Object FullName",
+        "PowerShell: Add-Content -Encoding utf8 tests/reportes/reportes.test.mjs @'\n\nconst ventaCanal = (id, canal, cantidad, precio) => crearVentaRegistrada({ id, fecha: \"2026-11-01\", sku: \"CAFE-250\", cantidad, precioUnitarioCentavos: precio, canal });\n\ntest(\"RF-007-a: separa unidades y total por canal\", () => {\n  const eventos = [ventaCanal(\"V-1\", \"tienda\", 2, 4500), ventaCanal(\"V-2\", \"web\", 3, 1000), ventaCanal(\"V-3\", \"web\", 1, 500)];\n  assert.deepEqual(ventasPorCanal(eventos), {\n    tienda: { unidades: 2, totalCentavos: 9000 },\n    web: { unidades: 4, totalCentavos: 3500 },\n  });\n});\n\ntest(\"RF-007-b: una venta sin canal cuenta como tienda\", () => {\n  assert.deepEqual(ventasPorCanal(EVENTOS), {\n    tienda: { unidades: 8, totalCentavos: 19500 },\n    web: { unidades: 0, totalCentavos: 0 },\n  });\n});\n\ntest(\"RF-007-c: ignora los eventos que no son ventas\", () => {\n  const stock = crearStockAjustado({ id: \"S-9\", fecha: \"2026-11-01\", sku: \"CAFE-250\", delta: 5, motivo: \"compra\" });\n  assert.deepEqual(ventasPorCanal([stock, ventaCanal(\"V-1\", \"web\", 1, 100)]), {\n    tienda: { unidades: 0, totalCentavos: 0 },\n    web: { unidades: 1, totalCentavos: 100 },\n  });\n});\n\ntest(\"RF-007-d: sin ventas devuelve ambos canales en cero\", () => {\n  assert.deepEqual(ventasPorCanal([]), {\n    tienda: { unidades: 0, totalCentavos: 0 },\n    web: { unidades: 0, totalCentavos: 0 },\n  });\n});\n\ntest(\"RF-007-e: un evento inválido hace fallar el reporte (contrato estricto)\", () => {\n  const base = { tipo: \"venta.registrada\", id: \"V-1\", fecha: \"2026-11-01\", sku: \"X\", cantidad: 1, precioUnitarioCentavos: 100 };\n  assert.throws(() => ventasPorCanal([{ ...base, canal: \"mayorista\" }]), RangeError);\n  assert.throws(() => ventasPorCanal([{ ...base, extra: 1 }]), TypeError);\n});\n'@\nnpm test 2>&1 | Select-Object -Last 12",
+        "PowerShell: npm test 2>&1 | Select-Object -Last 10; node -e \"import('./modulos/reportes/reportes.mjs').then(m=>{const v=(id,canal,c,p)=>({tipo:'venta.registrada',id,fecha:'2026-11-01',sku:'X',cantidad:c,precioUnitarioCentavos:p,...(canal?{canal}:{})});console.log(JSON.stringify(m.ventasPorCanal([v('1','web',3,1000),v('2',null,2,4500),{tipo:'stock.ajustado',id:'s',fecha:'2026-11-01',sku:'X',delta:1,motivo:'m'}])),JSON.stringify(m.ventasPorCanal([])));try{m.ventasPorCanal([v('3','mayorista',1,1)])}catch(e){console.log(e.name)}})\"",
+        "PowerShell: node \"$env:TEMP\\verif-rf007.mjs\""
+      ],
+      "codigo_salida": 0,
+      "vencida": false,
+      "error": ""
+    }
+  ],
+  "diffs_ramas": {
+    "A": "diff --git a/modulos/ventas/ventas.mjs b/modulos/ventas/ventas.mjs\nindex 6081ff5..48fea71 100644\n--- a/modulos/ventas/ventas.mjs\n+++ b/modulos/ventas/ventas.mjs\n@@ -3,12 +3,15 @@ import { crearVentaRegistrada } from \"../../contratos/eventos.mjs\";\n \n export const MAX_UNIDADES = 1000;\n \n-export function registrarVenta({ id, fecha, sku, cantidad, precioUnitarioCentavos }) {\n+export const CANALES = Object.freeze([\"tienda\", \"web\"]); // RF-005\n+\n+export function registrarVenta({ id, fecha, sku, cantidad, precioUnitarioCentavos, canal = \"tienda\" }) {\n+  if (!CANALES.includes(canal)) throw new RangeError(`El canal debe ser uno de: ${CANALES.join(\", \")}`);\n   if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > MAX_UNIDADES)\n     throw new RangeError(`La cantidad debe ser un entero de 1 a ${MAX_UNIDADES}`);\n   if (!Number.isInteger(precioUnitarioCentavos) || precioUnitarioCentavos < 0)\n     throw new RangeError(\"El precio va en centavos enteros\");\n-  return crearVentaRegistrada({ id, fecha, sku: String(sku).trim().toUpperCase(), cantidad, precioUnitarioCentavos });\n+  return crearVentaRegistrada({ id, fecha, sku: String(sku).trim().toUpperCase(), cantidad, precioUnitarioCentavos, canal });\n }\n \n export const totalVenta = (evento) => evento.cantidad * evento.precioUnitarioCentavos;\ndiff --git a/tests/ventas/ventas.test.mjs b/tests/ventas/ventas.test.mjs\nindex 5154875..43dac04 100644\n--- a/tests/ventas/ventas.test.mjs\n+++ b/tests/ventas/ventas.test.mjs\n@@ -14,6 +14,25 @@ test(\"RF-002: registrar una venta publica un evento venta.registrada válido\", (\n   assert.equal(totalVenta(e), 13500);\n });\n \n+test(\"RF-005-a: sin canal, el evento lleva canal 'tienda'\", () => {\n+  assert.equal(registrarVenta(DATOS).canal, \"tienda\");\n+});\n+\n+test(\"RF-005-b: el canal 'web' o 'tienda' viaja en el evento\", () => {\n+  assert.equal(registrarVenta({ ...DATOS, canal: \"web\" }).canal, \"web\");\n+  assert.equal(registrarVenta({ ...DATOS, canal: \"tienda\" }).canal, \"tienda\");\n+});\n+\n+test(\"RF-005-c: cualquier otro canal es RangeError\", () => {\n+  for (const canal of [\"telefono\", \"\", \"WEB\", null, 5])\n+    assert.throws(() => registrarVenta({ ...DATOS, canal }), RangeError);\n+});\n+\n+test(\"RF-005-d: el evento con canal es válido contra el contrato\", () => {\n+  const e = registrarVenta({ ...DATOS, canal: \"web\" });\n+  assert.equal(validarEvento(e), e);\n+});\n+\n test(\"RF-002: cantidad entera de 1 a 1000 y precio en centavos\", () => {\n   for (const cantidad of [0, 1001, 2.5]) assert.throws(() => registrarVenta({ ...DATOS, cantidad }), RangeError);\n   assert.throws(() => registrarVenta({ ...DATOS, precioUnitarioCentavos: 45.5 }), RangeError);\n M modulos/ventas/ventas.mjs\n M tests/ventas/ventas.test.mjs\n?? docs/cambios/\n",
+    "B": "",
+    "C": "diff --git a/modulos/reportes/reportes.mjs b/modulos/reportes/reportes.mjs\nindex 7984899..30f988c 100644\n--- a/modulos/reportes/reportes.mjs\n+++ b/modulos/reportes/reportes.mjs\n@@ -12,6 +12,17 @@ export function resumenVentas(eventos) {\n   };\n }\n \n+// Ventas por canal (RF-007). Una venta sin canal cuenta como tienda; siempre devuelve ambos canales.\n+export function ventasPorCanal(eventos) {\n+  const canales = { tienda: { unidades: 0, totalCentavos: 0 }, web: { unidades: 0, totalCentavos: 0 } };\n+  for (const e of ventas(eventos)) {\n+    const c = canales[e.canal ?? \"tienda\"];\n+    c.unidades += e.cantidad;\n+    c.totalCentavos += e.cantidad * e.precioUnitarioCentavos;\n+  }\n+  return canales;\n+}\n+\n // Los n SKU con más unidades vendidas, de mayor a menor (empate: orden alfabético).\n export function topProductos(eventos, n = 3) {\n   const unidades = {};\n M modulos/reportes/reportes.mjs\n?? docs/cambios/\n"
+  },
+  "merges": [
+    {
+      "carril": "A",
+      "ok": true
+    },
+    {
+      "carril": "B",
+      "ok": true
+    },
+    {
+      "carril": "C",
+      "ok": true
+    }
+  ],
+  "salida_integracion": "✔ ventas → contrato: los eventos con canal cumplen el contrato unido (1.5022ms)\n✔ ventas → reportes: ventas por canal de punta a punta (1.7534ms)\n✔ ventas → stock: existencia total y por almacén con las ventas nuevas (0.4854ms)\n✔ los eventos guardados antes del cambio siguen valiendo (0.2509ms)\nℹ tests 4\nℹ suites 0\nℹ pass 4\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 109.6328\n",
+  "diff_unido": "diff --git a/contratos/eventos.mjs b/contratos/eventos.mjs\nindex 1f7c004..3d9b059 100644\n--- a/contratos/eventos.mjs\n+++ b/contratos/eventos.mjs\n@@ -6,16 +6,18 @@ const fechaIso = (v) => typeof v === \"string\" && /^\\d{4}-\\d{2}-\\d{2}$/.test(v);\n const enteroPositivo = (v) => Number.isInteger(v) && v > 0;\n const enteroNoNegativo = (v) => Number.isInteger(v) && v >= 0;\n const enteroDistintoDeCero = (v) => Number.isInteger(v) && v !== 0;\n+const canalVenta = (v) => v === \"tienda\" || v === \"web\"; // RF-005\n+const codigoAlmacen = (v) => typeof v === \"string\" && /^ALM-\\d{2}$/.test(v); // RF-006\n \n // Campos de cada tipo de evento. \"tipo\" va siempre y no se declara aquí.\n export const ESQUEMAS = {\n   \"venta.registrada\": {\n     obligatorios: { id: texto, fecha: fechaIso, sku: texto, cantidad: enteroPositivo, precioUnitarioCentavos: enteroNoNegativo },\n-    opcionales: {},\n+    opcionales: { canal: canalVenta },\n   },\n   \"stock.ajustado\": {\n     obligatorios: { id: texto, fecha: fechaIso, sku: texto, delta: enteroDistintoDeCero, motivo: texto },\n-    opcionales: {},\n+    opcionales: { almacen: codigoAlmacen },\n   },\n };\n \ndiff --git a/docs/cambios/2026-11-11-ventas-canal.md b/docs/cambios/2026-11-11-ventas-canal.md\nnew file mode 100644\nindex 0000000..b93b297\n--- /dev/null\n+++ b/docs/cambios/2026-11-11-ventas-canal.md\n@@ -0,0 +1,37 @@\n+# Cambio: canal en las ventas (carril A)\n+\n+## Qué y por qué\n+`registrarVenta` acepta el dato `canal` (`'tienda'` por defecto, o `'web'`) y el evento `venta.registrada` que\n+devuelve siempre lleva el canal de la venta, para que reportes pueda informar ventas por canal (RF-007).\n+Cualquier otro valor de `canal` es `RangeError`.\n+\n+## Requerimientos\n+- RF-005 (las ventas llegan por `tienda` y `web`; el canal viaja en el evento de venta): lo cubre este cambio.\n+- RF-002 (registro de venta): se mantiene; el cambio solo agrega un dato opcional de entrada.\n+- RF-001 (contrato): sin cambios. RF-007 (reportes por canal) es del carril C y queda fuera.\n+\n+## Decisiones\n+- ADR-001 aplica: el contrato ya declara `canal` como **opcional** en `venta.registrada` (validado con\n+  `'tienda'`/`'web'`, publicado por el carril B). No hace falta ADR nuevo ni cambio del contrato; ventas solo lo usa.\n+- Compatibilidad hacia atrás: los eventos ya guardados sin `canal` siguen siendo válidos (es opcional en el contrato).\n+  Los eventos nuevos que emite ventas siempre lo llevan.\n+\n+## Pruebas primero (fallan antes de implementar) — `tests/ventas/ventas.test.mjs`\n+- RF-005-a: sin `canal`, el evento devuelto lleva `canal: 'tienda'`.\n+- RF-005-b: con `canal: 'web'`, el evento lleva `canal: 'web'`; con `'tienda'` explícito, `'tienda'`.\n+- RF-005-c: cualquier otro valor (`'telefono'`, `''`, `'WEB'`, `null`, `5`) lanza `RangeError`.\n+- RF-005-d: el evento con canal sigue siendo válido contra el contrato (`validarEvento` devuelve el mismo evento).\n+- Las pruebas existentes de RF-002 siguen en verde sin cambios.\n+\n+## Fuera de alcance\n+- Cambiar `contratos/` o `tests/contratos/` (carril B; no hace falta).\n+- Reportes por canal (RF-007, carril C) y cualquier cambio en stock.\n+- Normalizar mayúsculas/espacios del canal: `'WEB'` se rechaza, no se corrige.\n+- Actualizar el estado de RF-005 en `docs/requerimientos/` (lo cambia el líder).\n+\n+## Riesgos\n+- Datos: ninguno, no se migra nada; eventos viejos sin `canal` siguen válidos.\n+- Integraciones: reportes (C) puede asumir que todo evento nuevo trae `canal`, pero debe tolerar eventos viejos sin él.\n+- Seguridad / irreversibilidad: ninguno.\n+- Supuesto a confirmar: `canal: null` se trata como valor inválido (`RangeError`), no como «por defecto»; solo\n+  `undefined`/ausente usa `'tienda'`.\ndiff --git a/docs/cambios/2026-11-11-ventas-por-canal.md b/docs/cambios/2026-11-11-ventas-por-canal.md\nnew file mode 100644\nindex 0000000..ec4184e\n--- /dev/null\n+++ b/docs/cambios/2026-11-11-ventas-por-canal.md\n@@ -0,0 +1,40 @@\n+# Cambio: reporte de ventas por canal (RF-007)\n+\n+## Qué y por qué\n+Agregar `ventasPorCanal(eventos)` en `modulos/reportes/reportes.mjs`. Devuelve\n+`{ tienda: { unidades, totalCentavos }, web: { unidades, totalCentavos } }` a partir de los eventos\n+`venta.registrada`. Los demás eventos se ignoran; una venta sin `canal` cuenta como `tienda`. Reportes necesita\n+separar el resultado de tienda y web ahora que las ventas web empiezan a llegar.\n+\n+## Requerimientos\n+- RF-007 (Reportes informa las ventas por canal): lo cubre este cambio.\n+- RF-005 (canal en el evento de venta): lo usa. El contrato ya declara `canal` (`\"tienda\" | \"web\"`) como campo\n+  opcional de `venta.registrada`; no hace falta pedirle nada al carril B.\n+\n+## Decisiones\n+- ADR-001: se usa solo `contratos/eventos.mjs` (validación vía `validarEvento`, ya aplicada por `ventas()` en reportes). No se importa ventas ni stock. No hace falta un ADR nuevo.\n+- Los montos siguen en centavos enteros: `totalCentavos = Σ cantidad × precioUnitarioCentavos`.\n+\n+## Pruebas primero (fallan antes de implementar)\n+En `tests/reportes/reportes.test.mjs`:\n+- RF-007-a: con ventas de tienda y web mezcladas, separa unidades y total por canal.\n+- RF-007-b: una venta sin `canal` cuenta como `tienda`.\n+- RF-007-c: los eventos que no son `venta.registrada` (p. ej. `stock.ajustado`) se ignoran.\n+- RF-007-d: sin ventas (lista vacía) devuelve ambos canales en cero: `{ tienda: {0,0}, web: {0,0} }`.\n+- RF-007-e: un evento con canal inválido o campo no declarado lanza error (contrato estricto, `TypeError`/`RangeError`).\n+\n+## Fuera de alcance\n+- Cambios al contrato, a ventas o a stock.\n+- Cantidad de ventas (conteo) por canal: no se pidió; solo `unidades` y `totalCentavos`.\n+- Otros canales además de `tienda` y `web`.\n+- Actualizar el estado de RF-005/RF-007 en `docs/requerimientos/` (es del líder).\n+\n+## Riesgos\n+- Datos: ninguno persistente; función pura sobre eventos.\n+- Integración: el módulo de ventas (carril A) debe emitir `canal` conforme al contrato; si emite otro valor, el reporte falla por validación estricta (es lo deseado). Los eventos viejos sin canal siguen siendo válidos y cuentan como tienda.\n+- Irreversible: nada.\n+\n+## Supuestos a confirmar\n+1. Una venta sin canal cuenta como `tienda` (según el pedido).\n+2. El resultado siempre incluye ambos canales, con ceros si no hay ventas.\n+3. Un evento inválido hace fallar todo el reporte (igual que `resumenVentas` hoy), no se descarta en silencio.\ndiff --git a/modulos/reportes/reportes.mjs b/modulos/reportes/reportes.mjs\nindex 7984899..30f988c 100644\n--- a/modulos/reportes/reportes.mjs\n+++ b/modulos/reportes/reportes.mjs\n@@ -12,6 +12,17 @@ export function resumenVentas(eventos) {\n   };\n }\n \n+// Ventas por canal (RF-007). Una venta sin canal cuenta como tienda; siempre devuelve ambos canales.\n+export function ventasPorCanal(eventos) {\n+  const canales = { tienda: { unidades: 0, totalCentavos: 0 }, web: { unidades: 0, totalCentavos: 0 } };\n+  for (const e of ventas(eventos)) {\n+    const c = canales[e.canal ?? \"tienda\"];\n+    c.unidades += e.cantidad;\n+    c.totalCentavos += e.cantidad * e.precioUnitarioCentavos;\n+  }\n+  return canales;\n+}\n+\n // Los n SKU con más unidades vendidas, de mayor a menor (empate: orden alfabético).\n export function topProductos(eventos, n = 3) {\n   const unidades = {};\ndiff --git a/modulos/stock/stock.mjs b/modulos/stock/stock.mjs\nindex 4a47e9d..46436dc 100644\n--- a/modulos/stock/stock.mjs\n+++ b/modulos/stock/stock.mjs\n@@ -1,8 +1,24 @@\n // Módulo de stock (RF-003): existencia por SKU a partir de los eventos del contrato.\n import { crearStockAjustado, validarEvento } from \"../../contratos/eventos.mjs\";\n \n-export function ajustarStock({ id, fecha, sku, delta, motivo }) {\n-  return crearStockAjustado({ id, fecha, sku: String(sku).trim().toUpperCase(), delta, motivo });\n+export function ajustarStock({ id, fecha, sku, delta, motivo, almacen }) {\n+  return crearStockAjustado({ id, fecha, sku: String(sku).trim().toUpperCase(), delta, motivo, almacen });\n+}\n+\n+const ALMACEN_POR_DEFECTO = \"ALM-01\";\n+\n+// RF-006: existencia por almacén. Devuelve { [almacen]: { [sku]: unidades } }.\n+// Los ajustes sin almacén y las ventas (que no lo declaran) cuentan en ALM-01.\n+export function stockPorAlmacen(eventos) {\n+  const porAlmacen = {};\n+  for (const e of eventos.map(validarEvento)) {\n+    if (e.tipo !== \"stock.ajustado\" && e.tipo !== \"venta.registrada\") continue;\n+    const almacen = (e.tipo === \"stock.ajustado\" && e.almacen) || ALMACEN_POR_DEFECTO;\n+    const unidades = e.tipo === \"stock.ajustado\" ? e.delta : -e.cantidad;\n+    const skus = (porAlmacen[almacen] ??= {});\n+    skus[e.sku] = (skus[e.sku] ?? 0) + unidades;\n+  }\n+  return porAlmacen;\n }\n \n // Suma los ajustes y resta las ventas. Devuelve { [sku]: unidades }.\ndiff --git a/modulos/ventas/ventas.mjs b/modulos/ventas/ventas.mjs\nindex 6081ff5..48fea71 100644\n--- a/modulos/ventas/ventas.mjs\n+++ b/modulos/ventas/ventas.mjs\n@@ -3,12 +3,15 @@ import { crearVentaRegistrada } from \"../../contratos/eventos.mjs\";\n \n export const MAX_UNIDADES = 1000;\n \n-export function registrarVenta({ id, fecha, sku, cantidad, precioUnitarioCentavos }) {\n+export const CANALES = Object.freeze([\"tienda\", \"web\"]); // RF-005\n+\n+export function registrarVenta({ id, fecha, sku, cantidad, precioUnitarioCentavos, canal = \"tienda\" }) {\n+  if (!CANALES.includes(canal)) throw new RangeError(`El canal debe ser uno de: ${CANALES.join(\", \")}`);\n   if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > MAX_UNIDADES)\n     throw new RangeError(`La cantidad debe ser un entero de 1 a ${MAX_UNIDADES}`);\n   if (!Number.isInteger(precioUnitarioCentavos) || precioUnitarioCentavos < 0)\n     throw new RangeError(\"El precio va en centavos enteros\");\n-  return crearVentaRegistrada({ id, fecha, sku: String(sku).trim().toUpperCase(), cantidad, precioUnitarioCentavos });\n+  return crearVentaRegistrada({ id, fecha, sku: String(sku).trim().toUpperCase(), cantidad, precioUnitarioCentavos, canal });\n }\n \n export const totalVenta = (evento) => evento.cantidad * evento.precioUnitarioCentavos;\ndiff --git a/tests/ventas/ventas.test.mjs b/tests/ventas/ventas.test.mjs\nindex 5154875..43dac04 100644\n--- a/tests/ventas/ventas.test.mjs\n+++ b/tests/ventas/ventas.test.mjs\n@@ -14,6 +14,25 @@ test(\"RF-002: registrar una venta publica un evento venta.registrada válido\", (\n   assert.equal(totalVenta(e), 13500);\n });\n \n+test(\"RF-005-a: sin canal, el evento lleva canal 'tienda'\", () => {\n+  assert.equal(registrarVenta(DATOS).canal, \"tienda\");\n+});\n+\n+test(\"RF-005-b: el canal 'web' o 'tienda' viaja en el evento\", () => {\n+  assert.equal(registrarVenta({ ...DATOS, canal: \"web\" }).canal, \"web\");\n+  assert.equal(registrarVenta({ ...DATOS, canal: \"tienda\" }).canal, \"tienda\");\n+});\n+\n+test(\"RF-005-c: cualquier otro canal es RangeError\", () => {\n+  for (const canal of [\"telefono\", \"\", \"WEB\", null, 5])\n+    assert.throws(() => registrarVenta({ ...DATOS, canal }), RangeError);\n+});\n+\n+test(\"RF-005-d: el evento con canal es válido contra el contrato\", () => {\n+  const e = registrarVenta({ ...DATOS, canal: \"web\" });\n+  assert.equal(validarEvento(e), e);\n+});\n+\n test(\"RF-002: cantidad entera de 1 a 1000 y precio en centavos\", () => {\n   for (const cantidad of [0, 1001, 2.5]) assert.throws(() => registrarVenta({ ...DATOS, cantidad }), RangeError);\n   assert.throws(() => registrarVenta({ ...DATOS, precioUnitarioCentavos: 45.5 }), RangeError);\n",
+  "metricas": {
+    "A": [
+      {
+        "fecha": "2026-11-11T14:39:05.025Z",
+        "sesion": "c30d3adc-e737-471a-9bad-0c4775376926",
+        "harness": "0.3.2-sim",
+        "evento": "turno",
+        "tokens": {
+          "entrada": 28,
+          "salida": 7073,
+          "cache_lectura": 342911,
+          "cache_escritura": 95012
+        }
+      },
+      {
+        "fecha": "2026-11-11T14:39:30.131Z",
+        "sesion": "c30d3adc-e737-471a-9bad-0c4775376926",
+        "harness": "0.3.2-sim",
+        "evento": "turno",
+        "tokens": {
+          "entrada": 48,
+          "salida": 11861,
+          "cache_lectura": 728267,
+          "cache_escritura": 107874
+        }
+      }
+    ],
+    "B": [
+      {
+        "fecha": "2026-11-11T14:37:38.386Z",
+        "sesion": "8eb89034-1a53-4e47-9992-a4a7053abb18",
+        "harness": "0.3.2-sim",
+        "evento": "turno",
+        "tokens": {
+          "entrada": 22,
+          "salida": 7436,
+          "cache_lectura": 227586,
+          "cache_escritura": 98971
+        }
+      },
+      {
+        "fecha": "2026-11-11T14:37:53.259Z",
+        "sesion": "8eb89034-1a53-4e47-9992-a4a7053abb18",
+        "harness": "0.3.2-sim",
+        "evento": "bloqueo",
+        "regla": "prueba-por-shell",
+        "herramienta": "PowerShell",
+        "hook": "proteger-pruebas"
+      },
+      {
+        "fecha": "2026-11-11T14:37:59.308Z",
+        "sesion": "8eb89034-1a53-4e47-9992-a4a7053abb18",
+        "harness": "0.3.2-sim",
+        "evento": "turno",
+        "tokens": {
+          "entrada": 32,
+          "salida": 10758,
+          "cache_lectura": 411235,
+          "cache_escritura": 107940
+        }
+      },
+      {
+        "fecha": "2026-11-11T14:38:37.279Z",
+        "sesion": "8eb89034-1a53-4e47-9992-a4a7053abb18",
+        "harness": "0.3.2-sim",
+        "evento": "turno",
+        "tokens": {
+          "entrada": 60,
+          "salida": 26636,
+          "cache_lectura": 1017238,
+          "cache_escritura": 132954
+        }
+      }
+    ],
+    "C": [
+      {
+        "fecha": "2026-11-11T14:39:05.496Z",
+        "sesion": "e4335ccd-82d7-4c84-999f-37bcadd07cf6",
+        "harness": "0.3.2-sim",
+        "evento": "turno",
+        "tokens": {
+          "entrada": 26,
+          "salida": 6712,
+          "cache_lectura": 361855,
+          "cache_escritura": 59865
+        }
+      },
+      {
+        "fecha": "2026-11-11T14:39:16.647Z",
+        "sesion": "e4335ccd-82d7-4c84-999f-37bcadd07cf6",
+        "harness": "0.3.2-sim",
+        "evento": "bloqueo",
+        "regla": "prueba-por-shell",
+        "herramienta": "PowerShell",
+        "hook": "proteger-pruebas"
+      },
+      {
+        "fecha": "2026-11-11T14:39:29.374Z",
+        "sesion": "e4335ccd-82d7-4c84-999f-37bcadd07cf6",
+        "harness": "0.3.2-sim",
+        "evento": "turno",
+        "tokens": {
+          "entrada": 40,
+          "salida": 12261,
+          "cache_lectura": 626814,
+          "cache_escritura": 66818
+        }
+      },
+      {
+        "fecha": "2026-11-11T14:39:59.687Z",
+        "sesion": "e4335ccd-82d7-4c84-999f-37bcadd07cf6",
+        "harness": "0.3.2-sim",
+        "evento": "turno",
+        "tokens": {
+          "entrada": 60,
+          "salida": 16954,
+          "cache_lectura": 1045725,
+          "cache_escritura": 74851
+        }
+      }
+    ]
+  }
+}

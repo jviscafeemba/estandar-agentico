@@ -20,9 +20,21 @@ function markdowns(dir) {
 export function frontMatter(texto) {
   const m = texto.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!m) return null;
-  return Object.fromEntries(
-    m[1].split(/\r?\n/).map((l) => l.match(/^([^:]+):\s*(.*)$/)).filter(Boolean).map(([, k, v]) => [k.trim(), v.trim()])
-  );
+  // Acepta «clave: valor» y listas YAML en bloque («clave:» seguida de líneas «  - item»), que se juntan como
+  // «[item, item]» (F-06-04: cerrar-fase escribió fuentes en bloque y el lint lo daba por faltante).
+  const fm = {};
+  let ultima = null;
+  for (const l of m[1].split(/\r?\n/)) {
+    const item = l.match(/^\s+-\s*(.*)$/);
+    if (item && ultima) {
+      const previo = fm[ultima].replace(/^\[|\]$/g, "");
+      fm[ultima] = `[${previo ? previo + ", " : ""}${item[1].trim()}]`;
+      continue;
+    }
+    const kv = l.match(/^([^:\s][^:]*):\s*(.*)$/);
+    if (kv) { ultima = kv[1].trim(); fm[ultima] = kv[2].trim(); }
+  }
+  return fm;
 }
 
 export function lintBrain(raiz, hoy = new Date().toISOString().slice(0, 10)) {
