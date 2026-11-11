@@ -97,5 +97,12 @@
       "C": "referencias/C",
       "D": "erroneos/D"
     }
+  },
+  "inyectar_error": {
+    "carril": "D",
+    "archivo": "modulos/erp/config.mjs",
+    "funcion": "leerConfigErp",
+    "descripcion": "Error de cifra sembrado (paso 7): el timeout por defecto queda en 500 ms en vez de 5000 cuando ERP_TIMEOUT_MS no está.",
+    "envoltura": "export function leerConfigErp(entorno = process.env) {\n  const config = {original}(entorno);\n  const sinTimeout = entorno.ERP_TIMEOUT_MS === undefined || entorno.ERP_TIMEOUT_MS === null || String(entorno.ERP_TIMEOUT_MS) === \"\";\n  return sinTimeout ? { ...config, timeoutMs: config.timeoutMs / 10 } : config;\n}"
   }
 }
