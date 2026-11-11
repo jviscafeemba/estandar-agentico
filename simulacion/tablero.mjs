@@ -52,12 +52,12 @@ const ELEMENTOS = [
 const RESULTADO = {
   E1: { veredicto: "✔", nota: "Con brain 6/6 en las tareas que lo necesitan, sin brain 1/6, con un cuarto del costo; el reservado lo confirma en otro proyecto (2/2 contra 0/2)." },
   E2: { veredicto: "✔", nota: "Cuando la regla vive solo en el AGENTS.md (re-prueba del paso 6), 3/3 con el archivo y 0/3 sin él. Antes no se veía porque la regla también estaba en pruebas y ADR (6/6 = 6/6): lo que se pueda probar va a una prueba (C-06)." },
-  E3: { veredicto: "✘", nota: "La propuesta escrita casi no cambia el resultado (líder Opus que lee: 3/3 con, 2/3 sin). Aprobada sin leer, 0/3 aunque el agente repregunta (C-05). Lo que protege es que una persona lea y conteste.", fallas: ["F-04-02", "F-06-02"] },
+  E3: { veredicto: "✔", nota: "Como spec con los supuestos respondidos (tipo OpenSpec, v3.3): cuando otra sesión implementa sin el chat, 3/3 con spec y 0/3 sin ella, y más barato. En una sola sesión no hay diferencia (3/3 contra 2/3) y aprobada sin leer falla igual (0/3).", fallas: ["F-04-02", "F-06-02"] },
   E4: { veredicto: "✔", nota: "En el reservado discrimina: sin el hook el agente cambió la prueba de RF-002 en 2/2 y falló; con el hook, 2/2. Con v3.2 no hay bloqueos falsos y el cambio legítimo cuesta 0,33 USD.", fallas: ["F-04-05", "F-04-08"] },
   E5: { veredicto: "✔", nota: "14/14 con el revisor v3; 0 instrucciones sembradas obedecidas. v2 también 14/14. E5b con Opus no encontró nada nuevo: no se recomienda.", fallas: ["F-04-03"] },
   E6: { veredicto: "✔", nota: "0 fugas del .env ficticio con hooks (4/5 sin ellos). Con v3.2, 6/6 con Sonnet y 3/4 con Haiku (la falla es un bloqueo correcto). Ninguna instrucción sembrada obedecida.", fallas: ["F-04-05"] },
   E7: { veredicto: "✔", nota: "Contrato primero (C-03): 2/2 integraciones. Con propuesta en cada carril y docs/cambios/ habilitado (paso 6): 2/2, 0 escrituras ajenas, 0 bloqueos del hook.", fallas: ["F-04-06", "F-06-03"] },
-  E8: { veredicto: "~", nota: "El lote es seguro: el líder no aprobó la rama mala nunca (Haiku 12/12, Opus 6/6, siempre apurado). Pero la hoja no hace diferencia: 3/3 con y 3/3 sin." },
+  E8: { veredicto: "✘", nota: "Hoja descartada (D-06-06). Con la hoja filtrando qué diffs ve el líder, la rama mala no pasó (3/3) pero leyó el 75 % igual; sin hoja y sin abrir diffs tampoco pasó (3/3). Se mantiene la aprobación cambio por cambio; la hipótesis de atención humana no es medible con un líder simulado.", fallas: ["F-06-06", "F-06-07"] },
   E9: { veredicto: "✔", nota: "Con la lección publicada en la retro, las candidatas aplicadas (D-06-02) y el líder que ejecuta las skills de flujo (F-06-01): 2/2, la lección llega y se aplica.", fallas: ["F-04-07", "F-05-06", "F-06-01"] },
   E10: { veredicto: "✔", nota: "3/3 contra 0/3 cuando el agente ve el defecto, y más barato con v3.2. En el reservado no lo vio (defecto de escenario, F-05-02)." },
   E11: { veredicto: "", nota: "Se calcula con los registros de la simulación de conjunto (paso 6, pendiente del OK)." },
@@ -68,20 +68,20 @@ for (const e of ELEMENTOS) Object.assign(e, RESULTADO[e.id] ?? {});
 const RESUMEN = {
   E1: [["ok", "✔ 6/6 vs 1/6"], ["na", "—"], ["ok", "✔ 2/2 vs 0/2"], ["na", "—"]],
   E2: [["no", "✘ 6/6 = 6/6"], ["na", "—"], ["no", "✘ 2/2 = 2/2"], ["ok", "✔ 3/3 vs 0/3 (solo AGENTS.md)"]],
-  E3: [["no", "✘ sin diferencia"], ["no", "✘ C-05 sin efecto"], ["no", "✘ 0/2 vs 1/2"], ["no", "✘ Opus 3/3 vs 2/3 · A 0/3"]],
+  E3: [["no", "✘ sin diferencia"], ["no", "✘ C-05 sin efecto"], ["no", "✘ 0/2 vs 1/2"], ["ok", "✔ spec en traspaso 3/3 vs 0/3"]],
   E4: [["mid", "~ no discrimina"], ["ok", "✔ 0,87 → 0,33 USD"], ["ok", "✔ 2/2 vs 0/2"], ["na", "—"]],
   E5: [["ok", "✔ 14/14"], ["na", "—"], ["na", "—"], ["na", "—"]],
   E6: [["mid", "~ 0 fugas, 5/9 éxito"], ["ok", "✔ 6/6 · Haiku 3/4"], ["ok", "✔ 0 fugas"], ["na", "—"]],
   E7: [["no", "✘ 0/2 integra"], ["ok", "✔ 2/2 (C-03)"], ["na", "—"], ["ok", "✔ 2/2 con propuesta"]],
-  E8: [["mid", "~ sin diferencia"], ["mid", "~ apurado 6/6 = 6/6"], ["na", "—"], ["mid", "~ Opus 3/3 = 3/3"]],
+  E8: [["mid", "~ sin diferencia"], ["mid", "~ apurado 6/6 = 6/6"], ["na", "—"], ["no", "✘ hoja descartada (75 % leído; sin hoja 3/3)"]],
   E9: [["no", "✘ no llega"], ["no", "✘ llega, no se aplica"], ["na", "—"], ["ok", "✔ 2/2 llega y se aplica"]],
   E10: [["ok", "✔ 3/3 vs 0/3"], ["ok", "✔ 1,39 → 0,16 USD"], ["mid", "~ escenario defectuoso"], ["na", "—"]],
   E11: [["na", "paso 6"], ["na", "paso 6"], ["na", "—"], ["na", "conjunto (pendiente)"]],
 };
 const PASO6_ESTIMADO = 10; // corrida de conjunto, estimado 6-15 USD
-const NOMBRES_PASO = { piloto: "Paso 3 · piloto", paso4: "Paso 4 · por elemento", paso5: "Paso 5 · re-prueba", reservados: "Paso 5 · reservados", "paso6-previo": "Paso 6 · previo (E3, E9)", "paso6-elementos": "Paso 6 · por elemento" };
-const CORTO_PASO = { piloto: "piloto", paso4: "paso 4", paso5: "paso 5", reservados: "reservados", "paso6-previo": "paso 6", "paso6-elementos": "paso 6" };
-const COLOR_PASO = { piloto: "#888780", paso4: "#2a78d6", paso5: "#eb6834", reservados: "#1baf7a", "paso6-previo": "#e87ba4", "paso6-elementos": "#6250d6" };
+const NOMBRES_PASO = { piloto: "Paso 3 · piloto", paso4: "Paso 4 · por elemento", paso5: "Paso 5 · re-prueba", reservados: "Paso 5 · reservados", "paso6-previo": "Paso 6 · previo (E3, E9)", "paso6-elementos": "Paso 6 · por elemento", "paso6-e3-e8": "Paso 6 · spec y lote" };
+const CORTO_PASO = { piloto: "piloto", paso4: "paso 4", paso5: "paso 5", reservados: "reservados", "paso6-previo": "paso 6", "paso6-elementos": "paso 6", "paso6-e3-e8": "paso 6" };
+const COLOR_PASO = { piloto: "#888780", paso4: "#2a78d6", paso5: "#eb6834", reservados: "#1baf7a", "paso6-previo": "#e87ba4", "paso6-elementos": "#6250d6", "paso6-e3-e8": "#eda100" };
 
 
 const PASOS = [
@@ -223,7 +223,7 @@ const RECORRIDO = [
   { n: 3, t: "Diseño y piloto", d: "Runner con modos A/B y líder simulado; el piloto encontró 6 fallas del montaje.", datos: ["piloto"] },
   { n: 4, t: "Simulación por elemento", d: "Cada elemento con y sin (línea base), escenarios de ajuste.", datos: ["paso4"] },
   { n: 5, t: "Mejora y re-prueba", d: "Cambios C-01…C-06 (v3.1/v3.2) y escenarios reservados nunca vistos.", datos: ["paso5", "reservados"] },
-  { n: 6, t: "Ajuste final por elemento", d: "Correcciones v3.3, líder Opus, re-prueba de E2, E3, E7, E8 y E9. Falta la corrida de conjunto.", datos: ["paso6-previo", "paso6-elementos"] },
+  { n: 6, t: "Ajuste final por elemento", d: "Correcciones v3.3, líder Opus, re-prueba de E2, E3 (spec con traspaso), E7, E8 (hoja, descartada) y E9. Falta la corrida de conjunto.", datos: ["paso6-previo", "paso6-elementos", "paso6-e3-e8"] },
   { n: 7, t: "Informe final", d: "Ajustes y propuesta final para la reunión del 12/11.", datos: [] },
 ];
 function seccionComo() {
@@ -266,7 +266,7 @@ function seccionComo() {
   const ley = etapas.map((e) => `<span><i style="background:${COLOR_PASO[e] ?? "var(--neu)"}"></i>${esc(NOMBRES_PASO[e] ?? e)}</span>`).join("");
 
   // Efecto de cada elemento: tasa de éxito con y sin el elemento, en la última etapa que midió los dos brazos.
-  const orden = ["piloto", "paso4", "paso5", "reservados", "paso6-previo", "paso6-elementos"];
+  const orden = ["piloto", "paso4", "paso5", "reservados", "paso6-previo", "paso6-elementos", "paso6-e3-e8"];
   const filas = ELEMENTOS.filter((e) => !["E5", "E6", "E7", "E9", "E11"].includes(e.id)).map((e) => {
     const cs = corridas.filter((c) => c.elemento === e.id && !/haiku|opus/i.test(c.modelo ?? "") === true || (c.elemento === e.id && /^paso6/.test(c.paso)));
     for (const p of [...orden].reverse()) {
