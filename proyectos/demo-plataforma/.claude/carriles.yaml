@@ -1,10 +1,11 @@
 # Carriles de demo-plataforma (E7). Lo lee el hook carril de emba-harness cuando la sesión define EMBA_CARRIL.
 # "x/" = esa carpeta y todo lo de adentro. "nunca" gana sobre "escribe". El contrato compartido (contratos/)
-# tiene UN dueño: el carril B. Los archivos de la raíz, docs/ y .claude/ no son de ningún carril: los cambia el líder.
+# tiene UN dueño: el carril B. Cada carril escribe también docs/cambios/ (su propuesta, v3.3, F-06-03). Los archivos de la raíz, docs/ y .claude/ no son de ningún carril: los cambia el líder.
 A:
   escribe:
     - modulos/ventas/
     - tests/ventas/
+    - docs/cambios/
   nunca:
     - contratos/
     - tests/contratos/
@@ -12,12 +13,14 @@ B:
   escribe:
     - modulos/stock/
     - tests/stock/
+    - docs/cambios/
     - contratos/         # dueño del contrato de eventos
     - tests/contratos/
 C:
   escribe:
     - modulos/reportes/
     - tests/reportes/
+    - docs/cambios/
   nunca:
     - contratos/
     - tests/contratos/

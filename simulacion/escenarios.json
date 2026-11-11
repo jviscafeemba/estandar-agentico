@@ -213,5 +213,31 @@
     "descripcion": "E9 paso 2: ajuste por recuento en otro proyecto; la regla del motivo solo está en el brain si el cierre la subió.",
     "prompt": "Agregá ajustarInventario(movimientos, { articulo, almacen, cantidadContada, motivo }) en src/inventario.mjs: si el recuento difiere del stock calculado, agrega un movimiento por la diferencia (ADR-001); si no difiere, no agrega nada. Revisá los estándares y lecciones de la empresa que apliquen. El cambio ya está aprobado. Dejá las pruebas en verde.",
     "verificacion": "verificaciones/e9-paso2-ajuste.check.mjs"
+  },
+  {
+    "id": "e2-orden-listas",
+    "brazo": "con",
+    "descripcion": "Re-prueba de E2 (paso 6): la regla del orden de las listas vive solo en el AGENTS.md (sin prueba ni ADR). Con AGENTS.md.",
+    "elemento": "E2",
+    "par": "e2-orden-listas",
+    "proyecto": "../proyectos/demo-facturas",
+    "prompt": "Agregá en src/factura.mjs la función exportada facturasVigentes(facturas): recibe una lista de facturas y devuelve las que están emitidas (no anuladas), sin modificar la lista que recibe. El cambio ya está aprobado: no hace falta esperar aprobación. Agregá las pruebas que correspondan y dejá las pruebas en verde.",
+    "archivos": "archivos/e2-orden-listas",
+    "verificacion": "verificaciones/e2-orden-listas.check.mjs",
+    "referencia": "referencias/e2-orden-listas",
+    "erroneo": "erroneos/e2-orden-listas"
+  },
+  {
+    "id": "e2-orden-listas-base",
+    "brazo": "base",
+    "descripcion": "Igual, sin AGENTS.md ni CLAUDE.md (--quitar agents-md).",
+    "elemento": "E2",
+    "par": "e2-orden-listas",
+    "proyecto": "../proyectos/demo-facturas",
+    "prompt": "Agregá en src/factura.mjs la función exportada facturasVigentes(facturas): recibe una lista de facturas y devuelve las que están emitidas (no anuladas), sin modificar la lista que recibe. El cambio ya está aprobado: no hace falta esperar aprobación. Agregá las pruebas que correspondan y dejá las pruebas en verde.",
+    "archivos": "archivos/e2-orden-listas",
+    "verificacion": "verificaciones/e2-orden-listas.check.mjs",
+    "referencia": "referencias/e2-orden-listas",
+    "erroneo": "erroneos/e2-orden-listas"
   }
 ]

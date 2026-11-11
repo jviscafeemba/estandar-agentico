@@ -362,6 +362,13 @@ function correr(tarea, repeticion) {
         costoLider += d.costo;
         decisiones.push(d);
         mensaje = d.mensaje || "Seguí.";
+        // F-06-01: las skills de flujo solo las invoca una persona escribiendo el comando. Si el líder decide
+        // correr una, el próximo mensaje a la sesión es ese comando (seguido de lo que el líder le escribe).
+        const skill = typeof d.ejecutar_skill === "string" ? d.ejecutar_skill.trim().match(/^\/emba-(harness|empresa):[\w-]+/)?.[0] : null;
+        if (skill) {
+          mensaje = `${skill} ${d.mensaje ?? ""}`.trim();
+          d.skill_invocada = skill;
+        }
         if (Array.isArray(d.autorizar_pruebas) && d.autorizar_pruebas.length) {
           mkdirSync(join(copia, ".emba"), { recursive: true });
           appendFileSync(join(copia, ".emba", "pruebas-autorizadas.txt"), d.autorizar_pruebas.join("\n") + "\n");

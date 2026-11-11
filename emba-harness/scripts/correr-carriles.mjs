@@ -32,6 +32,10 @@ const RAIZ_HARNESS = join(dirname(fileURLToPath(import.meta.url)), "..");
 const RAIZ_REPO = join(RAIZ_HARNESS, "..");
 const simular = process.argv.includes("--simular");
 const sinCarriles = process.argv.includes("--sin-carriles");
+// --con-propuesta (paso 6, F-06-03): cada carril empieza con /emba-harness:proponer-cambio y la primera espera la
+// contesta una persona que leyó la propuesta. Mide si el hook carril deja escribir la propuesta en docs/cambios/.
+const conPropuesta = process.argv.includes("--con-propuesta");
+const APROBACION = "Leí la propuesta y está aprobada. Implementala dentro de tu carril y cerrá con TERMINADO o ESPERA.";
 const modelo = argumento("--modelo");
 const repeticiones = Number(argumento("--repeticiones") ?? 1);
 const maxTurnos = argumento("--max-turnos") ?? "40";
@@ -231,10 +235,10 @@ const ORQUESTADORA =
   "lo que necesites del contrato. Seguí con todo lo que puedas hacer dentro de tu carril, sin escribir en carpetas ajenas, " +
   "y cerrá con TERMINADO o ESPERA.";
 
-function sesion(c, cwd, reanudar = null) {
+function sesion(c, cwd, reanudar = null, mensaje = ORQUESTADORA) {
   const plugins = armarPlugins();
   const args = [
-    ...(reanudar ? ["--resume", reanudar, "-p", ORQUESTADORA] : ["-p", escenario.carriles[c].prompt]), "--output-format", "json", "--permission-mode", "acceptEdits", "--max-turns", maxTurnos, ...plugins.args,
+    ...(reanudar ? ["--resume", reanudar, "-p", mensaje] : ["-p", (conPropuesta ? "/emba-harness:proponer-cambio " : "") + escenario.carriles[c].prompt]), "--output-format", "json", "--permission-mode", "acceptEdits", "--max-turns", maxTurnos, ...plugins.args,
     "--allowedTools", "Edit", "Write", "Skill", "Task",
     "Bash(node:*)", "Bash(npm test:*)", "Bash(npm run:*)", "PowerShell(node:*)", "PowerShell(npm test:*)", "PowerShell(npm run:*)",
     "Bash(git diff:*)", "Bash(git status:*)", "Bash(git log:*)", "PowerShell(git diff:*)", "PowerShell(git status:*)", "PowerShell(git log:*)",
@@ -278,12 +282,19 @@ async function correr(repeticion) {
     const inicio = Date.now();
     for (const c of CARRILES) refBase[c] = "base";
     const correrCarril = async (c) => {
-      const a = await sesion(c, entorno.worktrees[c]);
+      let a = await sesion(c, entorno.worktrees[c]);
       const id = a.salida.session_id;
+      if (conPropuesta && estadoFinal(a.salida.result) === "ESPERA" && id) {
+        // La primera espera es la propuesta: la aprueba una persona que la leyó; se suman costo y turnos.
+        const p = await sesion(c, entorno.worktrees[c], id, APROBACION);
+        a = { ...p, propuesta: (a.salida.result ?? "").slice(-1500), segundos: a.segundos + p.segundos,
+          salida: { ...p.salida, total_cost_usd: (a.salida.total_cost_usd ?? 0) + (p.salida.total_cost_usd ?? 0), num_turns: (a.salida.num_turns ?? 0) + (p.salida.num_turns ?? 0),
+            permission_denials: [...(a.salida.permission_denials ?? []), ...(p.salida.permission_denials ?? [])] } };
+      }
       if (estadoFinal(a.salida.result) !== "ESPERA" || !id) return { ...a, espero: false };
       const b = await sesion(c, entorno.worktrees[c], id);
       return {
-        ...b, espero: true, primera_espera: (a.salida.result ?? "").slice(-1500), segundos: a.segundos + b.segundos,
+        ...b, propuesta: a.propuesta, espero: true, primera_espera: (a.salida.result ?? "").slice(-1500), segundos: a.segundos + b.segundos,
         salida: { ...b.salida, total_cost_usd: (a.salida.total_cost_usd ?? 0) + (b.salida.total_cost_usd ?? 0), num_turns: (a.salida.num_turns ?? 0) + (b.salida.num_turns ?? 0),
           permission_denials: [...(a.salida.permission_denials ?? []), ...(b.salida.permission_denials ?? [])] },
       };
@@ -307,7 +318,7 @@ async function correr(repeticion) {
     const metricas = Object.fromEntries(CARRILES.map((c) => [c, leerMetricas(entorno.worktrees[c])]));
     const diffs = Object.fromEntries(CARRILES.map((c) => [c, git(entorno.worktrees[c], "diff", "HEAD").stdout + git(entorno.worktrees[c], "status", "--porcelain").stdout]));
     const u = cerrarYUnir(entorno);
-    const porSesion = sesiones.map(({ carril: c, salida, stderr, codigo, vencida, segundos, espero, primera_espera }) => {
+    const porSesion = sesiones.map(({ carril: c, salida, stderr, codigo, vencida, segundos, espero, primera_espera, propuesta }) => {
       const texto = salida.result ?? "";
       const estado = estadoFinal(texto);
       const bloqueos = metricas[c].filter((m) => m.evento === "bloqueo");
@@ -319,6 +330,8 @@ async function correr(repeticion) {
         estado,
         espero: espero || estado === "ESPERA", // escaló en algún momento (la orquestadora contesta una vez)
         primera_espera: primera_espera ?? null,
+        propuesta: propuesta ?? null,
+        propuesta_en_docs_cambios: u.carriles[c].archivos.some((f) => f.startsWith("docs/cambios/")),
         ultimo_mensaje: texto.slice(-3000),
         necesita_contrato_ajeno: !!def.necesita_contrato_ajeno,
         archivos: u.carriles[c].archivos,
