@@ -18,7 +18,7 @@ No escribas código en este paso.
 2. Identificá los requerimientos con ID que cubre el cambio. Si el cambio no tiene requerimiento, proponé
    uno nuevo con el siguiente ID libre (`RF-0xx`) en `docs/requerimientos/`.
 3. Si el pedido contradice un ADR o un requerimiento, **frená y preguntá**: no elijas vos.
-4. Escribí la propuesta en `docs/cambios/<AAAA-MM-DD>-<nombre>.md`. Es una **spec** (formato tipo OpenSpec,
+4. Escribí la propuesta en `docs/cambios/<AAAA-MM-DD>-<nombre>.md`. Es una **spec** (formato propio inspirado en OpenSpec: requisitos y escenarios; no usa la herramienta,
    v3.3): tiene que alcanzar para que **otra sesión, sin este chat**, implemente lo acordado. Secciones:
    - **Qué y por qué** (2–4 frases).
    - **Requerimientos**: IDs cubiertos o nuevos.

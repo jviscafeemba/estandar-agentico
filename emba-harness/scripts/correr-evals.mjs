@@ -339,6 +339,8 @@ function correr(tarea, repeticion) {
         "PowerShell(git diff:*)", "PowerShell(git status:*)", "PowerShell(git log:*)", "PowerShell(git branch:*)", "PowerShell(git show:*)",
         // F-03-04: el agente filtra la salida de las pruebas con Select-String; sin esto, la orden compuesta se negaba.
         "PowerShell(Select-String:*)"] : []),
+      // herramientas_extra: reglas propias de la tarea (p. ej. la CLI de OpenSpec en la prueba del 11/11/2026).
+      ...(tarea.herramientas_extra ?? []),
     ];
     if (modelo) comunes.push("--model", modelo);
     if (modo) comunes.push("--append-system-prompt", PROTOCOLO);

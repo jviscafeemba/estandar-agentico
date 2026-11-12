@@ -23,7 +23,7 @@ exploratorio.
 | --- | --- | --- | --- | --- |
 | E1 Brain de empresa | 6/6 contra 1/6; reservado 2/2 contra 0/2 | se frena o inventa la regla sin el brain | pasos 4 y 5 | ✔ |
 | E2 `AGENTS.md` | regla solo en el `AGENTS.md`: 3/3 contra 0/3 | si la regla ya está en pruebas, no suma (6/6 = 6/6) | paso 6 | ✔ |
-| E3 Spec con supuestos respondidos | traspaso: 3/3 contra 0/3, con la mitad del costo | en una sola sesión no cambia nada; aprobada sin leer, 0/3 | paso 6 | ✔ (como spec) |
+| E3 Spec con supuestos respondidos | traspaso, spec propia: 3/3 contra 0/3, con la mitad del costo. Con OpenSpec real: 2/3, a 2,5 veces el costo (anexo 09) | en una sola sesión no cambia nada; aprobada sin leer, 0/3 | paso 6 | ✔ (como spec) |
 | E4 Prueba primero con hook | reservado 2/2 contra 0/2 | sin hook, el agente cambió la prueba en 2/2 | paso 5 | ✔ |
 | E5 Revisión independiente | 14/14; 0 instrucciones sembradas obedecidas | v2 también 14/14; E5b con Opus no suma | paso 4 | ✔ |
 | E6 Hooks de seguridad | 0 fugas con hooks (4/5 sin ellos); v3.2 6/6 | 0 fugas en las 3 corridas de conjunto | pasos 4-7 | ✔ |
@@ -131,7 +131,7 @@ Los hooks son una alarma, no una frontera: la frontera es el sandbox con red cer
 
 1. **Los problemas están en los traspasos entre roles, no en el código.** En las corridas de conjunto, los
    agentes escribieron bien a la primera; lo que trabó fue el commit, el hook, la unión parcial y el ruteo.
-2. **La spec vale en el traspaso y no en una sola sesión.** Ese es el lugar justo para OpenSpec.
+2. **La spec vale en el traspaso y no en una sola sesión.** La spec probada en los pasos 6 y 7 era una spec **propia**, inspirada en OpenSpec, sin la herramienta. Con OpenSpec real, el traspaso salió igual (2/3 contra 2/3) y costó 2,5 veces más ([09-anexo-openspec.md](09-anexo-openspec.md)).
 3. **El hook de pruebas es el control que más protege y el que más falsos positivos dio:** tres, con texto libre.
 4. **La hoja del lote no sirve contra un aprobador que lee todo.** Su valor real, si lo tiene, está en la persona
    cansada, y eso se mide con personas.
