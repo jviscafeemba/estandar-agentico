@@ -310,5 +310,28 @@
     "max_rondas": 2,
     "suite": false,
     "verificacion": "verificaciones/e8-lote.check.mjs"
+  },
+  {
+    "id": "e3-traspaso-openspec",
+    "elemento": "E3",
+    "brazo": "con",
+    "par": "e3-traspaso",
+    "proyecto": "../proyectos/demo-facturas",
+    "descripcion": "E3 con traspaso y OpenSpec real (1.15.0, `openspec init --tools claude --language es`): la sesión 1 propone con /opsx:propose y el líder contesta; una sesión 2 nueva implementa con /opsx:apply, sin el chat. Sin instrucciones propias además de las de OpenSpec.",
+    "prompt": "/opsx:propose Necesitamos poder aplicar un descuento global a una factura, además de los precios de cada línea, con la firma calcularFactura(items, { descuentoGlobal }). En esta sesión solo se arma y se aprueba la propuesta: no escribas código ni pruebas. Cuando esté aprobada, cerrá con TERMINADO; la implementa otra sesión mañana.",
+    "archivos": "archivos/e3-openspec",
+    "herramientas_extra": [
+      "Bash(openspec:*)",
+      "PowerShell(openspec:*)"
+    ],
+    "lider": {
+      "intencion": "Descuento global en porcentaje entero de 0 a 100, como segundo parámetro de calcularFactura: calcularFactura(items, { descuentoGlobal }). Se aplica sobre el total de las líneas y se redondea al centavo con Math.round; el IVA incluido y el neto se recalculan sobre el total ya descontado. Fuera de rango o no entero: RangeError. Sin el parámetro, todo queda igual que hoy. No hace falta tocar emitirFactura."
+    },
+    "verificacion": "verificaciones/e3-descuento-global.check.mjs",
+    "referencia": "referencias/e3-descuento-global",
+    "erroneo": "erroneos/e3-descuento-global",
+    "traspaso": {
+      "prompt": "/opsx:apply Implementá el descuento global de la factura con la firma calcularFactura(items, { descuentoGlobal }). El cambio aprobado está en openspec/changes/. Dejá las pruebas en verde."
+    }
   }
 ]

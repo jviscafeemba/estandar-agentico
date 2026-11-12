@@ -16,7 +16,7 @@
 > 5. Para la ola 2 quedan dos validaciones con personas reales: la atención del aprobador en un lote y el tiempo de
 >    PR a main.
 
-Evidencia completa: informes [01](01-estado-del-arte.md)–[06](06-informe-fallas-conjunto.md) y [07](07-informe-final.md),
+Evidencia completa: informes [01](01-estado-del-arte.md)–[06](06-informe-fallas-conjunto.md) y [07](07-informe-final.md), [anexo OpenSpec](09-anexo-openspec.md),
 [registro de fallas](registro-fallas.md) y [de decisiones](registro-decisiones.md),
 [tablero](https://claude.ai/code/artifact/1f427adb-516e-49a6-9488-99fd1d90e3de).
 
@@ -25,7 +25,7 @@ Evidencia completa: informes [01](01-estado-del-arte.md)–[06](06-informe-falla
 | Tema | v2 (29/10) | Propuesta final | Por qué (evidencia) |
 | --- | --- | --- | --- |
 | Capas | brain de empresa, brain de proyecto, proceso | + **harness** como pieza propia (H1-H6) | Las piezas que hacen cumplir el método no dependen de que alguien se acuerde (02) |
-| Propuesta | propuesta escrita antes del código | **spec con supuestos respondidos** (requisitos con escenarios DADO / CUANDO / ENTONCES); obligatoria cuando hay traspaso | Traspaso: 3/3 con spec contra 0/3 sin ella; en una sola sesión, sin diferencia (06) |
+| Propuesta | propuesta escrita antes del código | **spec con supuestos respondidos** (requisitos con escenarios DADO / CUANDO / ENTONCES); obligatoria cuando hay traspaso | Traspaso: spec propia 5/6 y OpenSpec real 2/3, contra 0/6 sin spec; en una sola sesión, sin diferencia (06, 09) |
 | Aprobar | «ok» de la persona | la persona **contesta los supuestos**; un «ok» genérico no vale | Aprobada sin leer: 0/3 con cualquier formato (05, 06) |
 | Pruebas | prueba primero | + hook que deja agregar pruebas pero no cambiar las existentes; la persona autoriza con `!` | Sin hook, el agente cambió la prueba en 2/2 y falló; con hook, 2/2 (05) |
 | Seguridad | `deny` y dos hooks | + `bloquear-salida` (red, `git push`) | 0 fugas con hooks contra 4/5 sin ellos; 0 instrucciones obedecidas (04-06) |
@@ -40,7 +40,7 @@ Evidencia completa: informes [01](01-estado-del-arte.md)–[06](06-informe-falla
 | --- | --- | --- | --- | --- |
 | E1 | Brain de empresa a pedido | se mantiene | El agente consulta el brain (`consultar-brain`) antes de inventar una norma de empresa | 6/6 contra 1/6; reservado 2/2 contra 0/2 |
 | E2 | `AGENTS.md` | se mantiene, acotado | Solo reglas que no se pueden convertir en prueba o hook; lo demás va a pruebas | Regla solo en el `AGENTS.md`: 3/3 contra 0/3. Si la regla ya está en pruebas, no suma (6/6 = 6/6) |
-| E3 | Spec con supuestos respondidos | **cambia** | Spec obligatoria en carriles, en cambios de más de un día y en el nivel 3; en el resto, supuestos contestados en el chat. Las respuestas se escriben en la spec | Traspaso: 3/3 contra 0/3, con la mitad del costo |
+| E3 | Spec con supuestos respondidos | **cambia** | Spec obligatoria en carriles, en cambios de más de un día y en el nivel 3; en el resto, supuestos contestados en el chat. Las respuestas, y las pruebas existentes que el cambio puede tocar, se escriben en la spec (F-08-01). **Herramienta:** OpenSpec en el nivel 3 y donde ya se usa; la spec liviana de `proponer-cambio` en el resto | Spec propia 5/6, OpenSpec real 2/3, sin spec 0/6. OpenSpec cuesta 2,5 veces más (09) |
 | E4 | Prueba primero con hook | se mantiene | Las pruebas existentes son de solo lectura para el agente; agregar está permitido; cambiar una lo autoriza una persona con `!` | Reservado 2/2 contra 0/2 |
 | E5 | Revisión independiente | se mantiene | El revisor recibe el diff, la spec y los requisitos, no la descripción del autor | 14/14; 0 instrucciones sembradas obedecidas |
 | E6 | Hooks de seguridad | se mantiene | `bloquear-secretos`, `bloquear-comandos`, `bloquear-salida`; la frontera real es el sandbox con red cerrada (H6) | 0 fugas en todas las corridas con hooks |
@@ -101,7 +101,7 @@ Evidencia completa: informes [01](01-estado-del-arte.md)–[06](06-informe-falla
 
 1. Aprobar los elementos de §2 como método de la ola 1.
 2. Retirar la hoja del lote (`preparar-lote`).
-3. Spec obligatoria según §5.
+3. Spec obligatoria según §5, y si OpenSpec es obligatorio en el nivel 3: funciona en el traspaso (2/3) pero cuesta 2,5 veces más que la spec liviana (anexo 09).
 4. Responsable y plazo para destrabar a los dueños de contrato, y la regla del resto del cambio cuando se une solo
    el contrato.
 5. Prueba de `proteger-pruebas` con comandos reales como condición para arrancar la ola 1.

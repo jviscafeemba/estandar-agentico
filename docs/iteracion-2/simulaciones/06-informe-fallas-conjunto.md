@@ -23,7 +23,7 @@ Agente Sonnet 5.5; líder simulado **Opus 5.5** desde este paso (D-06-01). Corri
 | Elemento | Ajuste | Brazos | n/N con | n/N base | Costo mediano con | ✔/✘ |
 | --- | --- | --- | --- | --- | --- | --- |
 | E2 AGENTS.md | escenario con la regla solo en el AGENTS.md | A con / sin AGENTS.md | 3/3 | 0/3 | 0,10 USD | ✔ |
-| E3 propuesta → spec | spec tipo OpenSpec con supuestos respondidos (v3.3) | traspaso: sesión 2 nueva con / sin spec | 3/3 | 0/3 | 0,68 USD (base 1,38) | ✔ (criterio D-06-05) |
+| E3 propuesta → spec | spec propia con supuestos respondidos (v3.3; formato inspirado en OpenSpec, **sin la herramienta**: ver D-08-00) | traspaso: sesión 2 nueva con / sin spec | 3/3 | 0/3 | 0,68 USD (base 1,38) | ✔ (criterio D-06-05) |
 | E3, una sola sesión | — | B con / sin propuesta (Opus) | 3/3 | 2/3 | 0,87 USD | sin diferencia |
 | E3, aprobada sin leer | C-05 y cierre mixto contado bien | A | 0/3 | — | 0,65 USD | ✘ (el agente repregunta, pero cede) |
 | E7 carriles | `docs/cambios/` en cada carril (F-06-03) y propuesta | contrato primero con propuesta | 2/2 | — | 1,49 USD | ✔ (0 bloqueos de carril) |

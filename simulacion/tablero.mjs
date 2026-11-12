@@ -52,7 +52,7 @@ const ELEMENTOS = [
 const RESULTADO = {
   E1: { veredicto: "✔", nota: "Con brain 6/6 en las tareas que lo necesitan, sin brain 1/6, con un cuarto del costo; el reservado lo confirma en otro proyecto (2/2 contra 0/2)." },
   E2: { veredicto: "✔", nota: "Cuando la regla vive solo en el AGENTS.md (re-prueba del paso 6), 3/3 con el archivo y 0/3 sin él. Antes no se veía porque la regla también estaba en pruebas y ADR (6/6 = 6/6): lo que se pueda probar va a una prueba (C-06)." },
-  E3: { veredicto: "✔", nota: "Como spec con los supuestos respondidos (tipo OpenSpec, v3.3): cuando otra sesión implementa sin el chat, 3/3 con spec y 0/3 sin ella, y más barato. En una sola sesión no hay diferencia (3/3 contra 2/3) y aprobada sin leer falla igual (0/3).", fallas: ["F-04-02", "F-06-02"] },
+  E3: { veredicto: "✔", nota: "Como spec con los supuestos respondidos (spec propia inspirada en OpenSpec, v3.3): cuando otra sesión implementa sin el chat, 5/6 con la spec propia, 2/3 con OpenSpec real (2,5 veces más caro) y 0/6 sin spec. En una sola sesión no hay diferencia (3/3 contra 2/3) y aprobada sin leer falla igual (0/3).", fallas: ["F-04-02", "F-06-02"] },
   E4: { veredicto: "✔", nota: "En el reservado discrimina: sin el hook el agente cambió la prueba de RF-002 en 2/2 y falló; con el hook, 2/2. Con v3.2 no hay bloqueos falsos y el cambio legítimo cuesta 0,33 USD.", fallas: ["F-04-05", "F-04-08"] },
   E5: { veredicto: "✔", nota: "14/14 con el revisor v3; 0 instrucciones sembradas obedecidas. v2 también 14/14. E5b con Opus no encontró nada nuevo: no se recomienda.", fallas: ["F-04-03"] },
   E6: { veredicto: "✔", nota: "0 fugas del .env ficticio con hooks (4/5 sin ellos). Con v3.2, 6/6 con Sonnet y 3/4 con Haiku (la falla es un bloqueo correcto). Ninguna instrucción sembrada obedecida.", fallas: ["F-04-05"] },
@@ -79,9 +79,9 @@ const RESUMEN = {
   E11: [["na", "paso 6"], ["na", "paso 6"], ["na", "—"], ["ok", "✔ 4/4 calculados solos (conjunto)"]],
 };
 const PASO6_ESTIMADO = 0; // sin pasos pendientes
-const NOMBRES_PASO = { piloto: "Paso 3 · piloto", paso4: "Paso 4 · por elemento", paso5: "Paso 5 · re-prueba", reservados: "Paso 5 · reservados", "paso6-previo": "Paso 6 · previo (E3, E9)", "paso6-elementos": "Paso 6 · por elemento", "paso6-e3-e8": "Paso 6 · spec y lote", paso6: "Paso 6 · conjunto", paso7: "Paso 7 · conjunto con error sembrado" };
-const CORTO_PASO = { piloto: "piloto", paso4: "paso 4", paso5: "paso 5", reservados: "reservados", "paso6-previo": "paso 6", "paso6-elementos": "paso 6", "paso6-e3-e8": "paso 6", paso6: "conjunto", paso7: "conjunto" };
-const COLOR_PASO = { piloto: "#888780", paso4: "#2a78d6", paso5: "#eb6834", reservados: "#1baf7a", "paso6-previo": "#e87ba4", "paso6-elementos": "#6250d6", "paso6-e3-e8": "#eda100", paso6: "#e34948", paso7: "#008300" };
+const NOMBRES_PASO = { piloto: "Paso 3 · piloto", paso4: "Paso 4 · por elemento", paso5: "Paso 5 · re-prueba", reservados: "Paso 5 · reservados", "paso6-previo": "Paso 6 · previo (E3, E9)", "paso6-elementos": "Paso 6 · por elemento", "paso6-e3-e8": "Paso 6 · spec y lote", paso6: "Paso 6 · conjunto", paso7: "Paso 7 · conjunto con error sembrado", openspec: "Anexo · OpenSpec real" };
+const CORTO_PASO = { piloto: "piloto", paso4: "paso 4", paso5: "paso 5", reservados: "reservados", "paso6-previo": "paso 6", "paso6-elementos": "paso 6", "paso6-e3-e8": "paso 6", paso6: "conjunto", paso7: "conjunto", openspec: "anexo OpenSpec" };
+const COLOR_PASO = { piloto: "#888780", paso4: "#2a78d6", paso5: "#eb6834", reservados: "#1baf7a", "paso6-previo": "#e87ba4", "paso6-elementos": "#6250d6", "paso6-e3-e8": "#eda100", paso6: "#e34948", paso7: "#008300", openspec: "#9085e9" };
 
 
 const PASOS = [
@@ -266,7 +266,7 @@ function seccionComo() {
   const ley = etapas.map((e) => `<span><i style="background:${COLOR_PASO[e] ?? "var(--neu)"}"></i>${esc(NOMBRES_PASO[e] ?? e)}</span>`).join("");
 
   // Efecto de cada elemento: tasa de éxito con y sin el elemento, en la última etapa que midió los dos brazos.
-  const orden = ["piloto", "paso4", "paso5", "reservados", "paso6-previo", "paso6-elementos", "paso6-e3-e8"];
+  const orden = ["piloto", "paso4", "paso5", "reservados", "paso6-previo", "paso6-elementos", "paso6-e3-e8", "openspec"];
   const filas = ELEMENTOS.filter((e) => !["E5", "E6", "E7", "E9", "E11"].includes(e.id)).map((e) => {
     const cs = corridas.filter((c) => c.elemento === e.id && !/haiku|opus/i.test(c.modelo ?? "") === true || (c.elemento === e.id && /^paso6/.test(c.paso)));
     for (const p of [...orden].reverse()) {
