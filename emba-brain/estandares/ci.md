@@ -13,7 +13,7 @@ Todo proyecto con agentes tiene, como mínimo:
 | --- | --- |
 | Pruebas del proyecto | El comportamiento no se rompe |
 | gitleaks | Ningún secreto entra al repositorio |
-| Brain del proyecto válido | AGENTS.md ≤ 150 líneas; los ADR y requerimientos citados existen |
+| Brain del proyecto válido | AGENTS.md ≤ 150 líneas; los ADR y requerimientos citados existen; estilo visual si hay pantallas; temas transversales del plan asignados |
 
 Plantilla: `emba-harness/plantillas/ci.yml`. Sin CI, el equivalente local es
 `node <emba-harness>/scripts/verificar-proyecto.mjs <proyecto>`.

@@ -31,11 +31,17 @@ No escribas código en este paso.
    - **Decisiones**: ADR que aplican; si hace falta uno nuevo, decilo.
    - **Pruebas primero**: la lista de pruebas que van a fallar antes de implementar, cada una con su ID y el
      escenario que cubre.
-   - **Fuera de alcance**.
+   - **Pantallas** (0.4.0): qué pantallas agrega o cambia y qué secciones de `docs/diseno/estilo-visual.md`
+     aplica, con escenarios de los estados vacío, cargando, error y sin permiso. Si no tiene, «ninguna».
+   - **Fuera de alcance**. Incluye lo que el usuario esperaría y la spec no cubre, con su pendiente P-0nn o
+     pregunta Q-0nn.
    - **Riesgos**: datos, seguridad, integraciones, irreversibilidad.
-5. Mostrale la propuesta al usuario y esperá su aprobación explícita antes de implementar. Lo que vale es que
+5. En nivel 3, o si la spec la va a implementar otra sesión, lanzá el agente `revisor-spec` de este plugin con
+   solo la ruta de la spec (y la rama del cambio del que depende, si ya está unido). Corregí los graves antes de
+   mostrarla.
+6. Mostrale la propuesta al usuario y esperá su aprobación explícita antes de implementar. Lo que vale es que
    **una persona la haya leído** (v3.1, C-05): si la respuesta es un «ok» que no contesta los supuestos que
    marcaste, repreguntá esos supuestos en una línea antes de seguir; no los des por aprobados.
-6. **Cuando llegan las respuestas, actualizá el archivo** (supuestos, requisitos y escenarios) antes de seguir:
+7. **Cuando llegan las respuestas, actualizá el archivo** (supuestos, requisitos y escenarios) antes de seguir:
    lo que se acordó en el chat y no está en la spec se pierde cuando el cambio pasa a otra sesión o persona
    (v3.3). Si otra sesión implementa, la spec manda sobre el resumen del pedido.
