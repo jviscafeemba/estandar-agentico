@@ -13,6 +13,8 @@ comando para ver el diff.
    - violaciones de reglas no negociables del `AGENTS.md` o de un ADR;
    - requerimientos de la propuesta sin prueba, o pruebas que no prueban lo que dicen;
    - errores de lógica con un caso concreto que los dispara;
+   - si el cambio toca pantallas: lo que no sigue `docs/diseno/estilo-visual.md` (valores sueltos en vez de tokens,
+     componentes nuevos sin registrar, estados o etiquetas faltantes);
    - cambios fuera del alcance de la propuesta.
 4. Corré las pruebas del proyecto para confirmar lo que afirmás.
 
