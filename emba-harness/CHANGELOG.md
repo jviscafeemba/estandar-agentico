@@ -1,5 +1,27 @@
 # Cambios de emba-harness
 
+## 0.4.1 · 16/11/2026
+
+Dos ajustes de hooks para falsos positivos que reportó ai-genesys (13 a 16/11/2026). **Apagados por defecto:** sin
+`.claude/ajustes-harness.txt`, los hooks se comportan igual que en la 0.4.0. Cada proyecto los activa en ese
+archivo, que escribe una persona (archivo de control: el agente no puede escribirlo). No se afloja nada más.
+
+- **`pruebas-desde-raiz`** (`proteger-pruebas`, E4): el shell calza las rutas protegidas desde la raíz del
+  proyecto, con el mismo criterio que Edit y Write. Ya no frena `git checkout --ours platform/x/tests/t.py` ni
+  `sed -i … src/app/tests/t.py` (19 bloqueos en ai-genesys). Siguen bloqueados:
+  - `tests/x.py`, `./tests/x.py` y `tests\x.py`;
+  - la ruta absoluta del proyecto (`C:/…`, `C:\…` y `/c/…` de Git Bash).
+- **`secretos-patrones-citados`** (`bloquear-secretos`): en `sed`, `grep`, `awk`, `perl` y `rg` se ignora el
+  argumento del patrón si está entero entre comillas y sin `$( )` ni backticks. Ya no frenan
+  `sed -i '16s/.*/…/'` ni `grep 'secrets:' compose.yaml` (8 bloqueos en ai-genesys). Siguen mirándose:
+  - los archivos y las opciones con valor (`-f`, `-g`, `--include`);
+  - los patrones sin comillas;
+  - las demás herramientas.
+
+  En las pruebas, 30 accesos reales siguen bloqueados y 9 patrones pasan.
+- Los bloqueos en `.emba/metricas.jsonl` registran qué ajustes estaban activos (`"ajustes": [...]`).
+- Plantilla `plantillas/ajustes-harness.txt`; `nuevo-proyecto` la menciona.
+
 ## 0.4.0 · 13/11/2026
 
 Ajustes del método que salieron del piloto de ai-desempeno (reporte final del 13/11/2026, fallas F-P-03 a F-P-15 y

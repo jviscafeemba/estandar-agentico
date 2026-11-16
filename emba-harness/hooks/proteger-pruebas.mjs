@@ -5,7 +5,7 @@
 // agente quedan en .emba/creados-por-agente.txt y las puede seguir editando.
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
-import { leerEntrada, registrar } from "./lib/io.mjs";
+import { leerAjustes, leerEntrada, registrar } from "./lib/io.mjs";
 import { PROTEGIDOS_POR_DEFECTO, comandoSobreProtegidos, conservaAserciones, escrituraProtegida, leerLista } from "./lib/reglas-v3.mjs";
 
 const entrada = await leerEntrada();
@@ -16,6 +16,7 @@ const protegidos = existsSync(join(raiz, ".claude", "protegidos.txt")) ? leerLis
 const autorizadas = leerLista(leer(".emba/pruebas-autorizadas.txt"));
 const creados = leerLista(leer(".emba/creados-por-agente.txt"));
 
+const ajustes = leerAjustes(entrada);
 const herramienta = entrada.tool_name;
 const datos = entrada.tool_input ?? {};
 let bloqueo = null;
@@ -35,11 +36,12 @@ if (["Edit", "Write", "MultiEdit", "NotebookEdit"].includes(herramienta)) {
     }
   }
 } else if (herramienta === "Bash" || herramienta === "PowerShell") {
-  bloqueo = comandoSobreProtegidos(datos.command, protegidos);
+  // 0.4.1: con el ajuste «pruebas-desde-raiz», el shell mira las rutas protegidas desde la raíz, como Edit y Write.
+  bloqueo = comandoSobreProtegidos(datos.command, protegidos, { desdeRaiz: ajustes.has("pruebas-desde-raiz"), raiz });
 }
 
 if (bloqueo) {
-  registrar(entrada, { evento: "bloqueo", regla: bloqueo.regla, herramienta, hook: "proteger-pruebas" });
+  registrar(entrada, { evento: "bloqueo", regla: bloqueo.regla, herramienta, hook: "proteger-pruebas", ajustes: [...ajustes] });
   process.stderr.write(bloqueo.motivo + "\n");
   process.exit(2);
 }

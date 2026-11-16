@@ -40,7 +40,93 @@ function textosRevisables(herramienta, entrada) {
   return textos.filter((t) => typeof t === "string");
 }
 
-export function accesoASecreto(herramienta, entrada = {}) {
+// 0.4.1 (ajuste «secretos-patrones-citados», ai-genesys): en sed, grep, awk, perl y rg el patrón es texto a
+// buscar, no una ruta. «sed -i '16s/.*/x/' a.py» chocaba por el «.*» y «grep 'secrets:' compose.yaml» por la palabra.
+// Con el ajuste se quita ese único argumento, y solo si está entero entre comillas y sin $( ) ni ``. Los archivos,
+// las opciones con valor (-f, --include, -g…) y un patrón sin comillas se siguen mirando.
+const BUSCADORES = {
+  grep: { patron: /^(-e|--regexp)$/, valor: /^(-f|--file|-m|--max-count|-A|-B|-C|--include|--exclude|--exclude-dir|--label)$/ },
+  rg: { patron: /^(-e|--regexp)$/, valor: /^(-f|--file|-m|--max-count|-A|-B|-C|-g|--glob|--iglob|-t|--type|-T|--type-not|-r|--replace|-M|--max-columns|-j|--threads|--type-add)$/ },
+  sed: { patron: /^(-e|--expression)$/, valor: /^(-f|--file|-l|--line-length)$/, archivo: /^(-f|--file)$/ },
+  awk: { patron: null, valor: /^(-f|--file|-v|--assign|-F|--field-separator)$/, archivo: /^(-f|--file)$/ },
+  perl: { patron: /^-[A-Za-z]*[eE]$/, valor: /^(-I|-M|-m|-x)$/, archivo: null, sinPosicional: true },
+};
+const ALIAS_BUSCADOR = { egrep: "grep", fgrep: "grep", gawk: "awk", mawk: "awk", nawk: "awk", gsed: "sed" };
+
+// Palabras de un comando con su posición en el texto original, agrupadas por tramo (; && || | & y salto de línea).
+function palabrasConPosicion(texto) {
+  const tramos = [[]];
+  let inicio = -1;
+  let comilla = null;
+  const cerrar = (i) => {
+    if (inicio >= 0) tramos.at(-1).push({ inicio, fin: i, crudo: texto.slice(inicio, i) });
+    inicio = -1;
+  };
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    if (comilla) {
+      if (c === "\\" && comilla === '"') i++;
+      else if (c === comilla) comilla = null;
+      continue;
+    }
+    if (c === "'" || c === '"') {
+      if (inicio < 0) inicio = i;
+      comilla = c;
+    } else if (c === "\\") {
+      if (inicio < 0) inicio = i;
+      i++;
+    } else if (/[;|&\n]/.test(c)) {
+      cerrar(i);
+      if (tramos.at(-1).length) tramos.push([]);
+    } else if (/\s/.test(c)) cerrar(i);
+    else if (inicio < 0) inicio = i;
+  }
+  cerrar(texto.length);
+  return tramos.filter((t) => t.length);
+}
+
+const enteroEntreComillas = (crudo) =>
+  (/^'[^']*'$/.test(crudo) || /^"(?:[^"\\]|\\.)*"$/.test(crudo)) && !/\$\(|`/.test(crudo);
+
+export function sinPatronesCitados(comando) {
+  let salida = comando;
+  for (const palabras of palabrasConPosicion(comando)) {
+    const nombre = normalizar(palabras[0].crudo).split(/[\\/]/).pop().toLowerCase().replace(/\.exe$/, "");
+    const reglas = BUSCADORES[ALIAS_BUSCADOR[nombre] ?? nombre];
+    if (!reglas) continue;
+    const patrones = [];
+    let conOpcionDePatron = false;
+    let conArchivoDePrograma = false;
+    let soloPosicionales = false;
+    let primerPosicional = null;
+    for (let i = 1; i < palabras.length; i++) {
+      const crudo = normalizar(palabras[i].crudo);
+      if (!soloPosicionales && crudo === "--") {
+        soloPosicionales = true;
+        continue;
+      }
+      if (!soloPosicionales && crudo.startsWith("-") && crudo.length > 1) {
+        if (reglas.patron?.test(crudo)) {
+          conOpcionDePatron = true;
+          if (palabras[i + 1]) patrones.push(palabras[++i]);
+        } else if (reglas.valor.test(crudo)) {
+          if (reglas.archivo?.test(crudo)) conArchivoDePrograma = true;
+          i++;
+        }
+        continue;
+      }
+      primerPosicional ??= palabras[i];
+    }
+    if (!conOpcionDePatron && !conArchivoDePrograma && !reglas.sinPosicional && primerPosicional) patrones.push(primerPosicional);
+    for (const p of patrones.filter((x) => enteroEntreComillas(x.crudo)))
+      salida = salida.slice(0, p.inicio) + " ".repeat(p.fin - p.inicio) + salida.slice(p.fin);
+  }
+  return salida;
+}
+
+export function accesoASecreto(herramienta, entrada = {}, { patronesCitados = false } = {}) {
+  if (patronesCitados && typeof entrada.command === "string")
+    entrada = { ...entrada, command: sinPatronesCitados(entrada.command) };
   for (const original of textosRevisables(herramienta, entrada)) {
     const t = normalizar(original);
     if (ARCHIVO_ENTORNO.test(t) || CARPETA_SECRETOS.test(t) || comodinAlcanzaSecreto(t)) {

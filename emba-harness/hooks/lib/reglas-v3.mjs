@@ -111,7 +111,7 @@ export function palabras(tramo) {
 
 export const PROTEGIDOS_POR_DEFECTO = ["tests/"];
 // Archivos de control que el agente nunca escribe: si pudiera, se autorizaría solo.
-export const CONTROL = [".claude/protegidos.txt", ".claude/salida-permitida.txt", ".emba/pruebas-autorizadas.txt", ".emba/creados-por-agente.txt"];
+export const CONTROL = [".claude/protegidos.txt", ".claude/salida-permitida.txt", ".claude/ajustes-harness.txt", ".emba/pruebas-autorizadas.txt", ".emba/creados-por-agente.txt"];
 
 export function leerLista(texto) {
   return (texto ?? "")
@@ -176,20 +176,38 @@ export function conservaAserciones(herramienta, entrada = {}, contenidoActual = 
 const VERBOS_ESCRITURA =
   /(\brm\b|\bdel\b|\bmv\b|\bcp\b|\bRemove-Item\b|\bMove-Item\b|\bCopy-Item\b|\bSet-Content\b|\bAdd-Content\b|\bOut-File\b|\bNew-Item\b|\bsed\s+-i|\btee\b|\btruncate\b|\bgit\s+(checkout|restore|rm)\b)/i;
 const escapar = (p) => p.replace(/[.+^${}()|[\]]/g, "\\$&");
-const nombra = (texto, p) => new RegExp(`(^|[\\s'"=:(/.])${escapar(p)}`, "i").test(texto);
 const REDIRECCION = /\d?>>?\s*([^\s;&|<>]+)/g;
 
-export function comandoSobreProtegidos(comando, protegidos) {
+// 0.4.1 (ajuste «pruebas-desde-raiz», ai-genesys): por defecto una ruta protegida se calza en cualquier nivel
+// («platform/x/tests/» calza «tests/»), mientras que Edit y Write la miran desde la raíz. Con el ajuste, el shell
+// usa el mismo criterio que Edit y Write: la ruta tiene que empezar en la raíz («tests/x», «./tests/x», o la ruta
+// absoluta del proyecto seguida de «tests/x»).
+const nombraEnCualquierNivel = (texto, p) => new RegExp(`(^|[\\s'"=:(/.])${escapar(p)}`, "i").test(texto);
+const nombraDesdeRaiz = (texto, p) => new RegExp(`(^|[\\s'"=:(])(\\./)*${escapar(p)}`, "i").test(texto);
+
+// La ruta absoluta del proyecto (C:/x, C:\x o /c/x de Git Bash) se cambia por un espacio: lo que sigue queda en la raíz.
+export function quitarRaiz(texto, raiz) {
+  if (!raiz) return texto;
+  const r = String(raiz).replaceAll("\\", "/").replace(/\/+$/, "");
+  const formas = [r];
+  const unidad = r.match(/^([A-Za-z]):(\/.*)$/);
+  if (unidad) formas.push(`/${unidad[1].toLowerCase()}${unidad[2]}`, `/${unidad[1].toUpperCase()}${unidad[2]}`);
+  return formas.reduce((t, f) => t.replace(new RegExp(escapar(f) + "/", "gi"), " "), texto);
+}
+
+export function comandoSobreProtegidos(comando, protegidos, { desdeRaiz = false, raiz = null } = {}) {
   if (typeof comando !== "string") return null;
   const cmd = normalizar(comando).replaceAll("\\", "/");
   // C-02: el script de autorización lo ejecuta la persona (con «!» en Claude Code), nunca el agente.
   if (/autorizar-prueba/i.test(cmd))
     return { regla: "autorizar-prueba", motivo: "Bloqueado por emba-harness (E4): autorizar una prueba lo hace una persona, no el agente. Pedíselo y cerrá con ESPERA." };
   const objetivos = [...protegidos, ...CONTROL];
+  const nombra = desdeRaiz ? nombraDesdeRaiz : nombraEnCualquierNivel;
   // F-06-12: el texto de un mensaje de commit no es un comando («timeout del ERP» se leía como «del», borrar).
   const limpio = comando.replace(/\s(-m|--message)(\s+|=)("[^"]*"|'[^']*')/g, " ");
   for (const tramo of tramos(limpio)) {
-    const t = normalizar(tramo).replaceAll("\\", "/");
+    let t = normalizar(tramo).replaceAll("\\", "/");
+    if (desdeRaiz) t = quitarRaiz(t, raiz);
     // 0.4.0 (F-P-04): una redirección escribe solo en su destino; «pytest tests/ > salida.txt» no toca tests/.
     // F-06-08: «2>&1», «>$null» o «2>/dev/null» no escriben en ningún archivo del proyecto.
     for (const [, destino] of t.matchAll(REDIRECCION)) {
