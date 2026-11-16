@@ -1,5 +1,48 @@
 # Cambios de emba-harness
 
+## 0.4.1 · 16/11/2026
+
+Dos ajustes de hooks para falsos positivos que reportó ai-genesys (13 a 16/11/2026), más Claude Design como
+estándar de interfaz (abajo). Los ajustes de hooks están **apagados por defecto:** sin
+`.claude/ajustes-harness.txt`, los hooks se comportan igual que en la 0.4.0. Cada proyecto los activa en ese
+archivo, que escribe una persona (archivo de control: el agente no puede escribirlo). No se afloja nada más.
+
+- **`pruebas-desde-raiz`** (`proteger-pruebas`, E4): el shell calza las rutas protegidas desde la raíz del
+  proyecto, con el mismo criterio que Edit y Write. Ya no frena `git checkout --ours platform/x/tests/t.py` ni
+  `sed -i … src/app/tests/t.py` (19 bloqueos en ai-genesys). Siguen bloqueados:
+  - `tests/x.py`, `./tests/x.py` y `tests\x.py`;
+  - la ruta absoluta del proyecto (`C:/…`, `C:\…` y `/c/…` de Git Bash).
+- **`secretos-patrones-citados`** (`bloquear-secretos`): en `sed`, `grep`, `awk`, `perl` y `rg` se ignora el
+  argumento del patrón si está entero entre comillas y sin `$( )` ni backticks. Ya no frenan
+  `sed -i '16s/.*/…/'` ni `grep 'secrets:' compose.yaml` (8 bloqueos en ai-genesys). Siguen mirándose:
+  - los archivos y las opciones con valor (`-f`, `-g`, `--include`);
+  - los patrones sin comillas;
+  - las demás herramientas.
+
+  En las pruebas, 30 accesos reales siguen bloqueados y 9 patrones pasan.
+- Los bloqueos en `.emba/metricas.jsonl` registran qué ajustes estaban activos (`"ajustes": [...]`).
+- Plantilla `plantillas/ajustes-harness.txt`; `nuevo-proyecto` la menciona.
+
+### Claude Design como estándar «salvo que se indique lo contrario» (Joaquín, 16/11/2026; se prueba en C-08)
+- `plantillas/plan.md`: la fila «Interfaz y marca» trae «Claude Design» por defecto. Para no usarlo:
+  «sin Claude Design (OK: persona, dd/mm/aaaa)». `verificar-proyecto` falla si la fila asignada no dice ninguna de
+  las dos, o si dice «sin Claude Design» sin OK y fecha. Si la interfaz está fuera de alcance, no se pide.
+- `plantillas/estilo-visual.md`: sección «Claude Design» con el enlace al proyecto y lo que se sincroniza (tokens,
+  componentes base, pantallas de ejemplo). Sincroniza una persona con `/design-sync`, que arranca a mano y aprueba
+  cada plan de archivos. El repo es la fuente de verdad.
+- `emba-brain/estandares/interfaz.md`:
+  - Claude Design como herramienta estándar de diseño y revisión visual;
+  - regla de datos: a claude.ai solo datos sintéticos, nunca la clase «Personal». Es una salida (E6) permitida
+    solo para eso;
+  - aviso de la mudanza: claude.ai/design cierra el 14/12/2026 y pasa a vivir dentro de Claude.
+- Skill `mirar-producto`: si el plan usa Claude Design, se revisan los componentes sincronizados. El PR suma el
+  enlace y la casilla «Componentes revisados en Claude Design». Los hallazgos van aparte en `mirada.md`, para medir
+  si aportan algo distinto de las capturas.
+- `plantillas/openspec-config.yaml`: una tarea deja la librería de componentes lista para `/design-sync`. El agente
+  prepara; la persona sincroniza.
+- **Al subir desde 0.4.0:** un plan con la interfaz asignada a un cambio tiene que decir «Claude Design» o «sin
+  Claude Design (OK: …)».
+
 ## 0.4.0 · 13/11/2026
 
 Ajustes del método que salieron del piloto de ai-desempeno (reporte final del 13/11/2026, fallas F-P-03 a F-P-15 y

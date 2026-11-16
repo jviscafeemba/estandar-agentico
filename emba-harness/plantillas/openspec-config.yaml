@@ -42,6 +42,7 @@ rules:
     - "Prueba primero: la primera tarea de cada grupo escribe la prueba que falla; la implementación va después."
     - "Cada prueba nueva cita en su nombre o docstring el ID RF-0xx o RNF-0xx que verifica."
     - "Si el cambio tiene pantallas, una tarea corre la skill mirar-producto y deja las capturas en docs/capturas/C-0n/."
+    - "Si el plan usa Claude Design, una tarea deja la librería de componentes lista para /design-sync (tokens, componentes base y pantallas de ejemplo, solo con datos sintéticos). El agente prepara; la persona sincroniza."
     - "La última tarea corre la verificación completa: <comando de pruebas> y node <harness>/scripts/verificar-proyecto.mjs ."
     - "Nunca modificar una prueba existente que no esté en «Pruebas existentes autorizadas» de la propuesta."
 

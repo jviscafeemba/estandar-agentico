@@ -22,9 +22,13 @@ explícitamente (0.4.0, lección P-029 de ai-desempeno). Cada fila lleva un camb
 de una persona y la fecha: `fuera de alcance (OK: <persona>, dd/mm/aaaa)`. `verificar-proyecto` falla si una fila
 queda sin ninguna de las dos.
 
+La interfaz se diseña y se revisa con **Claude Design** salvo que una persona diga lo contrario (0.4.1). Para no
+usarlo, la fila dice `sin Claude Design (OK: <persona>, dd/mm/aaaa)` en lugar de `Claude Design`. `verificar-proyecto`
+falla si la fila de interfaz no dice ninguna de las dos.
+
 | Tema | Cambio | Qué incluye |
 | --- | --- | --- |
-| Interfaz y marca | C-0n | `docs/diseno/estilo-visual.md`: tokens, componentes base, marca por empresa o ámbito |
+| Interfaz y marca | C-0n · Claude Design | `docs/diseno/estilo-visual.md`: tokens, componentes base, marca por empresa o ámbito; revisión visual en Claude Design |
 | Accesibilidad | C-0n | WCAG 2.2 AA: contraste, teclado, etiquetas, foco visible; prueba automática con axe |
 | Rendimiento | C-0n | Tiempos de respuesta esperados y volumen de datos de prueba |
 | Operación | C-0n | `RUNBOOK.md`: arranque, salud, respaldo, logs y a quién llamar |

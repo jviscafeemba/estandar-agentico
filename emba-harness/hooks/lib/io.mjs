@@ -23,6 +23,23 @@ export async function leerEntrada() {
   }
 }
 
+// 0.4.1: ajustes que un proyecto activa a propósito. Apagados por defecto. Los activa una persona, una línea por
+// ajuste, en <proyecto>/.claude/ajustes-harness.txt, que es archivo de control: el agente no puede escribirlo.
+//   pruebas-desde-raiz          E4: en shell, las rutas protegidas se calzan desde la raíz del proyecto
+//   secretos-patrones-citados   secretos: en sed, grep, awk, perl y rg se ignora el patrón entre comillas
+export const AJUSTES = ["pruebas-desde-raiz", "secretos-patrones-citados"];
+export function leerAjustes(entrada) {
+  try {
+    const proyecto = process.env.CLAUDE_PROJECT_DIR || entrada.cwd;
+    if (!proyecto) return new Set();
+    const texto = readFileSync(join(proyecto, ".claude", "ajustes-harness.txt"), "utf8");
+    const lineas = texto.split(/\r?\n/).map((l) => l.replace(/#.*$/, "").trim());
+    return new Set(lineas.filter((l) => AJUSTES.includes(l)));
+  } catch {
+    return new Set();
+  }
+}
+
 export function registrar(entrada, datos) {
   try {
     const proyecto = process.env.CLAUDE_PROJECT_DIR || entrada.cwd;

@@ -1,0 +1,17 @@
+# .claude/ajustes-harness.txt: lo escribe una PERSONA (el agente no puede editarlo: es un archivo de control).
+# Ajustes que un proyecto activa a propósito. Sin este archivo, todos están apagados. Un ajuste por línea.
+# Cada bloqueo que queda en .emba/metricas.jsonl registra qué ajustes estaban activos.
+#
+#   pruebas-desde-raiz
+#       proteger-pruebas (E4): en comandos de shell, una ruta protegida se calza desde la raíz del proyecto, igual
+#       que en Edit y Write. «platform/x/tests/t.py» deja de calzar «tests/»; «tests/x», «./tests/x» y la ruta
+#       absoluta del proyecto siguen bloqueadas. Para proyectos con carpetas tests/ anidadas que no se protegen.
+#
+#   secretos-patrones-citados
+#       bloquear-secretos: en sed, grep, awk, perl y rg se ignora el argumento del patrón si está entero entre
+#       comillas («sed -i '16s/.*/x/' a.py», «grep 'secrets:' compose.yaml»). Los archivos, las opciones con valor
+#       y los patrones sin comillas se siguen mirando; .env y secrets/ siguen bloqueados.
+#
+# Ejemplo:
+# pruebas-desde-raiz
+# secretos-patrones-citados

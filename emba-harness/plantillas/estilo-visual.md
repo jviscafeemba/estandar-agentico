@@ -67,7 +67,23 @@ que los cambios siguientes se vean iguales.
 - **Estados:** cargando, vacío, error, sin permiso.
 - **Captura:** `docs/capturas/<C-0n>/<pantalla>.png`
 
-## 6. Cómo se verifica
+## 6. Claude Design
+
+Por defecto, la interfaz se diseña y se revisa en Claude Design (estándar de empresa `estandares/interfaz.md`).
+Si el plan dice «sin Claude Design (OK: persona, dd/mm/aaaa)», esta sección dice solo eso.
+
+- **Proyecto de sistema de diseño:** <enlace al proyecto en Claude Design>.
+- **Qué se sincroniza:** los tokens de §2, los componentes base de §3 y las pantallas de ejemplo de §5. Todo con
+  datos sintéticos: ningún dato de personas sale del repositorio.
+- **Quién sincroniza:** una persona, con `/design-sync`. Lo arranca a mano y aprueba cada plan de archivos. El agente
+  deja la librería de componentes lista para sincronizar, pero no sincroniza.
+- **Fuente de verdad:** el repositorio. Este archivo y el código mandan; Claude Design es para ver y comentar. Un
+  cambio que nace de un comentario en Claude Design entra al repo por el flujo de siempre (spec, prueba, PR), no
+  copiándolo de vuelta.
+- **Última sincronización:** dd/mm/aaaa, commit `<sha>`, por <persona>.
+
+## 7. Cómo se verifica
 
 - Prueba automática de accesibilidad (axe) sobre cada pantalla de ejemplo: `<comando>`.
 - Las capturas de cada PR con pantallas (skill `mirar-producto`) y la mirada de una persona en los momentos del plan.
+- Si se usa Claude Design: la revisión de los componentes sincronizados, con sus hallazgos aparte en `mirada.md`.

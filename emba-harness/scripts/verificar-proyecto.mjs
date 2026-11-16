@@ -41,6 +41,15 @@ export function revisarTemasTransversales(textoPlan) {
     const fuera = /fuera de alcance/i.test(resto) && /OK:\s*[^,|]+,\s*\d{2}\/\d{2}\/\d{4}/.test(resto);
     if (!asignado && !fuera)
       errores.push(`docs/plan/plan.md: el tema «${nombre}» no tiene cambio C-0n ni «fuera de alcance (OK: persona, dd/mm/aaaa)»`);
+    // 0.4.1: la interfaz usa Claude Design salvo que una persona diga que no, con su OK y la fecha.
+    if (nombre === "interfaz y marca" && asignado && !fuera) {
+      const sin = /sin Claude Design/i.test(resto);
+      const sinConOK = sin && /sin Claude Design\s*\(OK:\s*[^,|)]+,\s*\d{2}\/\d{2}\/\d{4}\)/i.test(resto);
+      if (sin && !sinConOK)
+        errores.push("docs/plan/plan.md: «sin Claude Design» necesita el OK de una persona y la fecha: «sin Claude Design (OK: persona, dd/mm/aaaa)»");
+      else if (!sin && !/Claude Design/i.test(resto))
+        errores.push("docs/plan/plan.md: el tema «interfaz y marca» no dice «Claude Design» ni «sin Claude Design (OK: persona, dd/mm/aaaa)»");
+    }
   }
   return errores;
 }

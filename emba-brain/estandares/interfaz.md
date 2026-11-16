@@ -1,9 +1,9 @@
 ---
 dueño: plataforma-agentica
 estado: vigente
-revisado: 2026-11-13
-vence: 2027-02-11
-fuentes: ["ai-desempeno: P-029 y reporte final del piloto (13/11/2026)", "emba-harness 0.4.0: plantillas/estilo-visual.md"]
+revisado: 2026-11-16
+vence: 2027-02-14
+fuentes: ["ai-desempeno: P-029 y reporte final del piloto (13/11/2026)", "emba-harness 0.4.1: plantillas/estilo-visual.md", "Joaquín: Claude Design como estándar (16/11/2026)"]
 ---
 # Interfaz de las aplicaciones internas
 
@@ -25,6 +25,24 @@ plan asigna la interfaz como tema transversal y el harness lo exige.
    completo también requiere ADR.
 5. Capturas en cada PR con pantallas, y una persona que ve la app funcionando después del primer cambio con
    pantallas y al cierre (skill `emba-harness:mirar-producto`).
+6. **Claude Design** para diseñar y revisar la interfaz, salvo que el plan diga «sin Claude Design (OK: persona,
+   dd/mm/aaaa)». Ver la sección siguiente.
+
+## Claude Design
+
+Herramienta estándar de diseño y revisión visual de la empresa desde el 16/11/2026. Se prueba primero en C-08 de
+ai-desempeno.
+
+- **Para qué:** ver y comentar los tokens, los componentes base y las pantallas de ejemplo de un proyecto.
+- **Fuente de verdad:** el repositorio. `docs/diseno/estilo-visual.md` y el código mandan. Lo que se decide en
+  Claude Design entra al repo por el flujo de siempre (spec, prueba, PR).
+- **Sincronización:** la hace una persona con `/design-sync`. La arranca a mano y aprueba cada plan de archivos.
+  El agente deja la librería de componentes lista, pero no sincroniza.
+- **Regla de datos:** a claude.ai se suben solo componentes y pantallas con **datos sintéticos**. Nunca datos de
+  personas: la clase «Personal» de [la clasificación](../seguridad-datos/clasificacion.md) no sale del repositorio.
+  Es una salida de datos (E6) permitida solo para eso.
+- **Aviso:** Claude Design independiente (claude.ai/design) cierra el 14/12/2026 y pasa a vivir dentro de Claude.
+  Este estándar nombra «Claude Design» sin fijar la dirección web. Se revisa cuando termine la mudanza.
 
 ## Accesibilidad (WCAG 2.2 AA)
 

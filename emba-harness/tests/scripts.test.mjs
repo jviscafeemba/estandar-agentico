@@ -104,7 +104,7 @@ test("P-029: un proyecto con pantallas sin estilo visual falla; los HTML de docs
 
 test("temas transversales del plan: asignados o fuera de alcance con OK y fecha", () => {
   const plan = (filas) => `# Plan\n\n## Cambios\n\n| ID | x |\n| --- | --- |\n| C-01 | a |\n\n## Temas transversales\n\n| Tema | Cambio | Nota |\n| --- | --- | --- |\n${filas}\n\n## Fechas\n`;
-  const ok = "| Interfaz y marca | C-08 | |\n| Accesibilidad | C-08 | |\n| Rendimiento | fuera de alcance (OK: Joaquín, 13/11/2026) | |\n| Operación | C-01 | |";
+  const ok = "| Interfaz y marca | C-08 · Claude Design | |\n| Accesibilidad | C-08 | |\n| Rendimiento | fuera de alcance (OK: Joaquín, 13/11/2026) | |\n| Operación | C-01 | |";
   assert.equal(verificarProyecto(armar({ ...BASE, "docs/plan/plan.md": plan(ok) })).errores.length, 0);
   const malo = "| Interfaz y marca | pendiente | |\n| Accesibilidad | fuera de alcance | |\n| Rendimiento | C-02 | |";
   const r = verificarProyecto(armar({ ...BASE, "docs/plan/plan.md": plan(malo) }));
@@ -113,4 +113,16 @@ test("temas transversales del plan: asignados o fuera de alcance con OK y fecha"
   assert.ok(r.errores.some((e) => e.includes("falta el tema transversal «operación»")));
   const sinSeccion = verificarProyecto(armar({ ...BASE, "docs/plan/plan.md": "# Plan\n" }));
   assert.ok(sinSeccion.errores.some((e) => e.includes("## Temas transversales")));
+});
+
+// ---------- 0.4.1 · Claude Design por defecto ----------
+test("interfaz y marca: Claude Design por defecto, o «sin Claude Design» con OK y fecha", () => {
+  const plan = (interfaz) =>
+    `# Plan\n\n## Temas transversales\n\n| Tema | Cambio | Nota |\n| --- | --- | --- |\n| Interfaz y marca | ${interfaz} | |\n| Accesibilidad | C-08 | |\n| Rendimiento | C-02 | |\n| Operación | C-01 | |\n`;
+  const errores = (interfaz) => verificarProyecto(armar({ ...BASE, "docs/plan/plan.md": plan(interfaz) })).errores;
+  assert.deepEqual(errores("C-08 · Claude Design"), []);
+  assert.deepEqual(errores("C-08 · sin Claude Design (OK: Joaquín, 16/11/2026)"), []);
+  assert.deepEqual(errores("fuera de alcance (OK: Joaquín, 16/11/2026)"), [], "fuera de alcance no pide Claude Design");
+  assert.ok(errores("C-08").some((e) => e.includes("no dice «Claude Design»")));
+  assert.ok(errores("C-08 · sin Claude Design").some((e) => e.includes("necesita el OK")));
 });

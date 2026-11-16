@@ -29,6 +29,8 @@ Las plantillas están en `<harness>/plantillas/` (`<harness>` = dos niveles arri
    - `.claude/protegidos.txt`: una carpeta de pruebas por línea, terminada en `/` (por ejemplo `tests/`,
      `api/tests/`, `web/tests/`). Sin este archivo el hook solo protege `tests/` (F-P-12);
    - `.claude/salida-permitida.txt`, solo si una sesión orquestadora va a hacer push y abrir PR: desde
-     `plantillas/salida-permitida.txt` (F-P-03).
+     `plantillas/salida-permitida.txt` (F-P-03);
+   - `.claude/ajustes-harness.txt`, solo si el proyecto necesita alguno de los ajustes opcionales de los hooks
+     (`plantillas/ajustes-harness.txt`). Sin el archivo, todos quedan apagados.
    Cerrá con `ESPERA: <persona> (crear .claude/protegidos.txt…)` si todavía no están.
 4. Corré `node "<harness>/scripts/verificar-proyecto.mjs" .` y mostrá el resultado.
