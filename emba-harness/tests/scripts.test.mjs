@@ -126,3 +126,38 @@ test("interfaz y marca: Claude Design por defecto, o «sin Claude Design» con O
   assert.ok(errores("C-08").some((e) => e.includes("no dice «Claude Design»")));
   assert.ok(errores("C-08 · sin Claude Design").some((e) => e.includes("necesita el OK")));
 });
+
+// ---------- 0.4.2 · prueba de diseño (F-C08-05) y título del plan (F-C08-02) ----------
+const PLAN_CD = (interfaz = "C-08 · Claude Design") =>
+  `# Plan\n\n## Temas transversales\n\n| Tema | Cambio | Nota |\n| --- | --- | --- |\n| Interfaz y marca | ${interfaz} | |\n| Accesibilidad | C-08 | |\n| Rendimiento | C-02 | |\n| Operación | C-01 | |\n`;
+const DIRECCION = (extra = {}) => {
+  const d = { enlace: "- **Proyecto de Claude Design:** https://claude.ai/design/p/abc123", elegida: "- **Dirección elegida por:** Joaquín, 17/11/2026", captura: "![Lista](direccion/lista.png)", ...extra };
+  return `# Estilo visual\n\n## Dirección visual\n\n${d.enlace}\n${d.elegida}\n\n${d.captura}\n\n## 1. Marca\n`;
+};
+const CON_PANTALLAS = { ...BASE, "web/src/App.tsx": "x", "docs/diseno/direccion/lista.png": "png" };
+
+test("prueba de diseño: con Claude Design y pantallas, el estilo visual muestra la dirección elegida", () => {
+  const ok = verificarProyecto(armar({ ...CON_PANTALLAS, "docs/plan/plan.md": PLAN_CD(), "docs/diseno/estilo-visual.md": DIRECCION() }));
+  assert.deepEqual(ok.errores, []);
+  const errores = (estilo, plan = PLAN_CD(), extra = {}) =>
+    verificarProyecto(armar({ ...CON_PANTALLAS, ...extra, "docs/plan/plan.md": plan, "docs/diseno/estilo-visual.md": estilo })).errores;
+  assert.ok(errores("# Estilo visual\n\n## 2. Tokens\n").some((e) => e.includes("falta la sección «## Dirección visual»")), "solo tokens: F-C08-05");
+  assert.ok(errores(DIRECCION({ enlace: "- **Proyecto de Claude Design:** <enlace al proyecto>" })).some((e) => e.includes("Proyecto de Claude Design")));
+  assert.ok(errores(DIRECCION({ elegida: "- **Dirección elegida por:** <persona>, dd/mm/aaaa" })).some((e) => e.includes("Dirección elegida por")));
+  assert.ok(errores(DIRECCION({ captura: "" })).some((e) => e.includes("no tiene capturas")));
+  assert.ok(errores(DIRECCION({ captura: "![Lista](direccion/no-existe.png)" })).some((e) => e.includes("no-existe.png no existe")));
+});
+
+test("prueba de diseño: no se pide sin Claude Design, con la interfaz fuera de alcance o sin pantallas", () => {
+  const solo = "# Estilo visual\n\n## 2. Tokens\n";
+  const errores = (archivos) => verificarProyecto(armar(archivos)).errores;
+  assert.deepEqual(errores({ ...CON_PANTALLAS, "docs/plan/plan.md": PLAN_CD("C-08 · sin Claude Design (OK: Joaquín, 17/11/2026)"), "docs/diseno/estilo-visual.md": solo }), []);
+  assert.deepEqual(errores({ ...CON_PANTALLAS, "docs/plan/plan.md": PLAN_CD("fuera de alcance (OK: Joaquín, 17/11/2026)"), "docs/diseno/estilo-visual.md": solo }), []);
+  assert.deepEqual(errores({ ...BASE, "docs/plan/plan.md": PLAN_CD() }), [], "sin pantallas");
+});
+
+test("F-C08-02: la línea 1 del plan tiene que ser un título", () => {
+  const r = verificarProyecto(armar({ ...BASE, "docs/plan/plan.md": "lan de cambios\n" + PLAN_CD().slice(7) }));
+  assert.ok(r.errores.some((e) => e.includes("la línea 1 tiene que ser el título")));
+  assert.ok(!verificarProyecto(armar({ ...BASE, "docs/plan/plan.md": PLAN_CD() })).errores.some((e) => e.includes("línea 1")));
+});

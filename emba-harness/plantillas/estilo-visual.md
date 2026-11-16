@@ -8,6 +8,22 @@ no repite la base.
 - **Dueño:** <persona>. **Aprobado:** <persona>, dd/mm/aaaa.
 - **Requerimiento:** RNF-0xx (interfaz).
 
+## Dirección visual
+
+La prueba de que alguien diseñó esto **mirándolo** (0.4.2). Se completa en el paso de diseño (skill
+`disenar-interfaz`), antes de la spec del primer cambio con pantallas. Todo lo demás de este archivo sale de la
+dirección elegida. Si el plan dice «sin Claude Design (OK: …)», esta sección dice cómo se eligió la dirección sin él.
+
+- **Proyecto de Claude Design:** <enlace al proyecto>
+- **Dirección elegida por:** <persona>, dd/mm/aaaa
+- **Qué se eligió y por qué:** <una o dos frases de la persona>
+- **Alternativas descartadas:** `docs/diseno/direcciones.md`
+
+![<pantalla> en la dirección elegida](direccion/<pantalla>.png)
+
+`verificar-proyecto` falla, si el plan usa Claude Design y hay pantallas, cuando falta el enlace, el nombre con la
+fecha o una captura que exista en el repo.
+
 ## 1. Marca
 
 | Empresa o ámbito | Logo (ruta en el repo) | Color primario | Nombre que se muestra |
@@ -72,14 +88,16 @@ que los cambios siguientes se vean iguales.
 Por defecto, la interfaz se diseña y se revisa en Claude Design (estándar de empresa `estandares/interfaz.md`).
 Si el plan dice «sin Claude Design (OK: persona, dd/mm/aaaa)», esta sección dice solo eso.
 
-- **Proyecto de sistema de diseño:** <enlace al proyecto en Claude Design>.
+- **Proyecto de sistema de diseño:** el de «Dirección visual».
+- **Cuándo:** primero **antes** de la spec, para elegir la dirección (paso de diseño); después en cada cambio con
+  pantallas, para revisar lo implementado (skill `mirar-producto`).
 - **Qué se sincroniza:** los tokens de §2, los componentes base de §3 y las pantallas de ejemplo de §5. Todo con
   datos sintéticos: ningún dato de personas sale del repositorio.
 - **Quién sincroniza:** una persona, con `/design-sync`. Lo arranca a mano y aprueba cada plan de archivos. El agente
   deja la librería de componentes lista para sincronizar, pero no sincroniza.
-- **Fuente de verdad:** el repositorio. Este archivo y el código mandan; Claude Design es para ver y comentar. Un
-  cambio que nace de un comentario en Claude Design entra al repo por el flujo de siempre (spec, prueba, PR), no
-  copiándolo de vuelta.
+- **Fuente de verdad:** el repositorio. En Claude Design se explora y se elige; lo elegido vuelve al repo y desde
+  ahí manda este archivo y el código. Un cambio que nace después de un comentario en Claude Design entra al repo por
+  el flujo de siempre (spec, prueba, PR), no copiándolo de vuelta.
 - **Última sincronización:** dd/mm/aaaa, commit `<sha>`, por <persona>.
 
 ## 7. Cómo se verifica

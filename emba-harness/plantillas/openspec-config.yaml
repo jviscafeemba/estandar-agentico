@@ -26,6 +26,7 @@ rules:
     - "Sección «Supuestos respondidos»: cada supuesto con su respuesta escrita y quién la dio. Un supuesto sin respuesta no se implementa."
     - "Sección «Pruebas existentes autorizadas»: lista de las pruebas existentes que el cambio puede modificar, con la razón; si no hay, escribir «ninguna». La implementadora no puede tocar otras."
     - "Sección «Pantallas»: qué pantallas agrega o cambia el cambio y qué secciones de docs/diseno/estilo-visual.md aplica; si no tiene, escribir «ninguna»."
+    - "Si el cambio tiene pantallas y el plan dice «Claude Design», la propuesta no se escribe hasta que docs/diseno/estilo-visual.md tenga la «Dirección visual» elegida por una persona (skill /emba-harness:disenar-interfaz). La sección «Pantallas» enlaza las capturas de esa dirección o el proyecto de Claude Design: una spec con pantallas no se aprueba sin verlas."
     - "Sección «Fuera de alcance»: lo que no entra y adónde va (pendiente P-0nn, pregunta Q-0nn o cambio C-0n)."
     - "Lo que el usuario esperaría ver y ninguna spec cubre se anota como pendiente P-0nn o pregunta Q-0nn; no se deja implícito."
   specs:
@@ -41,7 +42,7 @@ rules:
   tasks:
     - "Prueba primero: la primera tarea de cada grupo escribe la prueba que falla; la implementación va después."
     - "Cada prueba nueva cita en su nombre o docstring el ID RF-0xx o RNF-0xx que verifica."
-    - "Si el cambio tiene pantallas, una tarea corre la skill mirar-producto y deja las capturas en docs/capturas/C-0n/."
+    - "Si el cambio tiene pantallas, una tarea corre la skill mirar-producto y deja las capturas en docs/capturas/C-0n/ (con node <harness>/scripts/capturar.mjs). La mirada de la persona se pide antes de abrir el PR."
     - "Si el plan usa Claude Design, una tarea deja la librería de componentes lista para /design-sync (tokens, componentes base y pantallas de ejemplo, solo con datos sintéticos). El agente prepara; la persona sincroniza."
     - "La última tarea corre la verificación completa: <comando de pruebas> y node <harness>/scripts/verificar-proyecto.mjs ."
     - "Nunca modificar una prueba existente que no esté en «Pruebas existentes autorizadas» de la propuesta."

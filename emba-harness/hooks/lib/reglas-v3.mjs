@@ -206,7 +206,7 @@ export function comandoSobreProtegidos(comando, protegidos, { desdeRaiz = false,
   // F-06-12: el texto de un mensaje de commit no es un comando («timeout del ERP» se leía como «del», borrar).
   const limpio = comando.replace(/\s(-m|--message)(\s+|=)("[^"]*"|'[^']*')/g, " ");
   for (const tramo of tramos(limpio)) {
-    let t = normalizar(tramo).replaceAll("\\", "/");
+    let t = textoParaPruebas(tramo, objetivos);
     if (desdeRaiz) t = quitarRaiz(t, raiz);
     // 0.4.0 (F-P-04): una redirección escribe solo en su destino; «pytest tests/ > salida.txt» no toca tests/.
     // F-06-08: «2>&1», «>$null» o «2>/dev/null» no escriben en ningún archivo del proyecto.
@@ -224,6 +224,26 @@ export function comandoSobreProtegidos(comando, protegidos, { desdeRaiz = false,
     if (tocado) return bloqueoPorShell(tocado);
   }
   return null;
+}
+
+// 0.4.2 (F-P-04 y F-C08): un texto entre comillas con espacios que solo menciona una ruta de pruebas (el cuerpo de un
+// PR, una nota, «echo "corre pytest api/tests" >> notas.md») no escribe en ella y se descarta. Se conserva si empieza
+// como una ruta («tests/a b.py», «./tests/…», «C:/…», «/c/…»), o si el tramo lo lee un intérprete (bash -c "…"),
+// asigna variables o tiene $( ) o `` (falla cerrada).
+const PARECE_RUTA = /^(\.{0,2}\/|[A-Za-z]:\/|~\/)/;
+export function textoParaPruebas(tramo, objetivos) {
+  const p = palabras(tramo);
+  if (!p.length) return "";
+  if (INTERPRETES.test(p[0]) || /^[A-Za-z_]\w*=/.test(p[0]) || /\$\(|`/.test(tramo)) return normalizar(tramo).replaceAll("\\", "/");
+  return p
+    .map((w) => w.replaceAll("\\", "/"))
+    .map((w) => {
+      if (!/\s/.test(w)) return w;
+      const sinPunto = w.replace(/^(\.\/)+/, "");
+      const esRuta = PARECE_RUTA.test(w) || objetivos.some((o) => sinPunto.toLowerCase().startsWith(o.toLowerCase()));
+      return esRuta ? w : "_";
+    })
+    .join(" ");
 }
 
 const COPIAR = /^(cp|mv|copy|move|copy-item|move-item|cpi|mi|cpp)$/i;
@@ -340,11 +360,47 @@ const ALIAS = { "invoke-restmethod": "invoke-webrequest", iwr: "invoke-webreques
 
 function tramoExento(tramo, regla, permitidas, consultarPR) {
   if (/\$\(|`/.test(tramo)) return false; // un subcomando puede esconder otra salida
-  const p = palabras(tramo);
+  const p = sinRedireccionesDeSalida(palabras(tramo));
   if (regla === "cliente-http") return clienteLoopback(p);
   if (regla === "git-push") return pushPermitido(p, permitidas);
-  if (regla === "gh-publica") return prPermitido(p, permitidas) || mergePermitido(p, permitidas, consultarPR);
+  if (regla === "gh-publica") return prPermitido(p, permitidas) || comentarioPermitido(p, permitidas) || mergePermitido(p, permitidas, consultarPR);
   return false;
+}
+
+// 0.4.2 (F-C08): «git push -u origin feat/x 2>&1 | tail -3» se rechazaba porque «2>&1» contaba como un argumento más.
+// Las redirecciones de la salida del comando (2>&1, >/dev/null, > log.txt, 2> err.txt) no cambian a dónde va el push.
+export function sinRedireccionesDeSalida(p) {
+  const salida = [];
+  for (let i = 0; i < p.length; i++) {
+    if (/^(\d|&)?>>?$/.test(p[i])) {
+      i++; // «> archivo»: la redirección y su destino
+      continue;
+    }
+    if (/^\d?>>?\S+$/.test(p[i]) || /^\d?>&\d$/.test(p[i]) || /^&>\S*$/.test(p[i])) continue;
+    salida.push(p[i]);
+  }
+  return salida;
+}
+
+// 0.4.2 (D-20 de ai-desempeno): «pr-comment» en la lista permite comentar un PR del repo actual, por ejemplo para
+// pegar el resultado del CI. gh pr comment [<número>] (--body x | --body-file f) [--edit-last]; nada de --repo.
+function comentarioPermitido(p, permitidas) {
+  if (p[0] !== "gh" || p[1] !== "pr" || p[2] !== "comment") return false;
+  if (!permitidas.some((r) => r[0] === "pr-comment")) return false;
+  let cuerpo = false;
+  const sueltas = [];
+  for (let i = 3; i < p.length; i++) {
+    const [opcion, valor] = p[i].split(/=(.*)/s);
+    if (/^(-b|--body|-F|--body-file)$/.test(opcion)) {
+      cuerpo = true;
+      if (valor === undefined) i++;
+      continue;
+    }
+    if (opcion === "--edit-last") continue;
+    if (p[i].startsWith("-")) return false; // --repo, --web, --editor…
+    sueltas.push(p[i]);
+  }
+  return cuerpo && sueltas.length <= 1;
 }
 
 function clienteLoopback(p) {
@@ -372,6 +428,7 @@ function clienteLoopback(p) {
 // .claude/salida-permitida.txt: una regla por línea; lo demás sigue bloqueado.
 //   push <remoto> <rama con comodines>   p. ej. «push origin feat/*»; main y master nunca
 //   pr-create                            abrir PR con gh pr create en el repo actual (sin --repo)
+//   pr-comment                           comentar un PR del repo actual con --body o --body-file (sin --repo)
 //   merge <rama base con comodines>      unir con gh pr merge un PR cuya base es esa rama, con el CI en verde
 export function leerSalidaPermitida(texto) {
   return leerLista(texto).map((l) => l.split(/\s+/));

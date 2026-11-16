@@ -1,5 +1,63 @@
 # Cambios de emba-harness
 
+## 0.4.2 · 16/11/2026
+
+Lecciones de la corrida 1 de C-08 «Interfaz» en ai-desempeno, que se hizo con el método 0.4.1. Todo lo automático
+pasó en verde (296 pruebas de web, axe sin violaciones y 5 rondas del revisor de spec), y la persona vio la app
+«horrible». La causa fue del método (F-C08-05): Claude Design solo aparecía al final, como revisión, y nadie diseñó
+nada visualmente. El plan lo aprobó Joaquín el 16/11/2026.
+
+### Diseñar antes de la spec
+- **Skill nueva `disenar-interfaz`**, en el primer cambio con pantallas cuando el plan dice «Claude Design»:
+  1. el agente arma el catálogo inicial con datos sintéticos y propone 2 o 3 direcciones, con prompts para
+     Claude Design;
+  2. la persona corre `/design-sync`, explora y elige;
+  3. recién después se escriben `estilo-visual.md` y la spec.
+
+  El agente no abre Claude Design por su cuenta.
+- **`estilo-visual.md` con prueba de diseño:** una sección «Dirección visual» con el enlace al proyecto de Claude
+  Design, «Dirección elegida por: persona, dd/mm/aaaa» y capturas de lo elegido. `verificar-proyecto` falla si falta
+  alguna de las tres cosas, cuando hay pantallas y el plan dice «Claude Design». También falla si una captura citada
+  no existe en el repo.
+- **Aprobación viéndolo:**
+  - la plantilla `openspec-config.yaml` no deja escribir la propuesta sin la dirección elegida, y la sección
+    «Pantallas» enlaza sus capturas;
+  - `proponer-cambio` muestra las capturas al pedir la aprobación;
+  - `revisor-spec` pregunta «¿alguien diseñó esto visualmente?» y marca como grave un estilo que es solo una tabla de
+    tokens.
+- `emba-brain/estandares/interfaz.md`, `plantillas/plan.md` y `PROPUESTA-METODOLOGIA.md` describen el paso de diseño.
+
+### Mirar el producto antes del PR
+- `mirar-producto` pide la mirada de la persona **antes** de abrir el PR. En los momentos obligatorios del plan,
+  cierra con ESPERA hasta su respuesta.
+- **Script nuevo `scripts/capturar.mjs`:** guarda capturas PNG con Chrome o Edge sin ventana, por el protocolo
+  DevTools y sin dependencias.
+  - Toma pantallas, anchos y modo claro u oscuro, con cookies sintéticas para ver pantallas con sesión.
+  - Solo abre `localhost`, `127.x`, `[::1]` o `file:`.
+
+  En la corrida 1 hubo que hacerlo con un script suelto, porque ni el navegador de la app ni Playwright guardaban
+  PNG.
+
+### Menores
+- **F-C08-01:** `plantillas/plan.md` explica cómo subir la versión del harness: el commit vive en el CI y, si el
+  proyecto lo fija también en una prueba del método, en esa prueba. Las dos se cambian juntas, con la prueba
+  autorizada.
+- **F-C08-02:** `verificar-proyecto` falla si la línea 1 de `docs/plan/plan.md` no es un `# título`.
+- **`bloquear-salida`:** un push o PR permitido seguido de una tubería o una redirección de su salida
+  (`git push -u origin feat/x 2>&1 | tail -3`) ya no se rechaza.
+- **`salida-permitida.txt`:** línea nueva `pr-comment`, para `gh pr comment` con `--body` o `--body-file` en el repo
+  actual (D-20: pegar el CI en el PR). `--repo`, `--web` y comentar sin cuerpo siguen bloqueados.
+- **`proteger-pruebas`:** un texto entre comillas con espacios que solo menciona una ruta de pruebas (el cuerpo de un
+  PR, una nota) no bloquea. Se sigue mirando si empieza como una ruta, o si el tramo lo lee un intérprete, asigna
+  variables o tiene `$( )`.
+- **`bloquear-secretos` con `sed` y `grep`:** los dos falsos positivos de la corrida vienen de patrones como `.*`
+  entre comillas. Los resuelve el ajuste `secretos-patrones-citados` de la 0.4.1, que un proyecto activa en
+  `.claude/ajustes-harness.txt`. No se cambió la regla por defecto.
+
+### Al subir desde 0.4.1
+Con pantallas y «Claude Design» en el plan, `verificar-proyecto` exige la «Dirección visual» en `estilo-visual.md`.
+Es a propósito: es la corrida en limpio de C-08.
+
 ## 0.4.1 · 16/11/2026
 
 Dos ajustes de hooks para falsos positivos que reportó ai-genesys (13 a 16/11/2026), más Claude Design como

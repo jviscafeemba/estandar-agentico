@@ -33,13 +33,18 @@ No escribas código en este paso.
      escenario que cubre.
    - **Pantallas** (0.4.0): qué pantallas agrega o cambia y qué secciones de `docs/diseno/estilo-visual.md`
      aplica, con escenarios de los estados vacío, cargando, error y sin permiso. Si no tiene, «ninguna».
+     **Antes de escribir esta sección (0.4.2):** si el plan dice «Claude Design» y `estilo-visual.md` no tiene la
+     «Dirección visual» elegida por una persona, frená y corré primero `/emba-harness:disenar-interfaz`. La sección
+     enlaza las capturas de la dirección elegida o el proyecto de Claude Design.
    - **Fuera de alcance**. Incluye lo que el usuario esperaría y la spec no cubre, con su pendiente P-0nn o
      pregunta Q-0nn.
    - **Riesgos**: datos, seguridad, integraciones, irreversibilidad.
 5. En nivel 3, o si la spec la va a implementar otra sesión, lanzá el agente `revisor-spec` de este plugin con
    solo la ruta de la spec (y la rama del cambio del que depende, si ya está unido). Corregí los graves antes de
    mostrarla.
-6. Mostrale la propuesta al usuario y esperá su aprobación explícita antes de implementar. Lo que vale es que
+6. Si el cambio tiene pantallas, mostrale también las capturas de la dirección visual o el enlace al proyecto de
+   Claude Design: la aprobación de una spec con pantallas se hace **viéndolas** (0.4.2).
+   Mostrale la propuesta al usuario y esperá su aprobación explícita antes de implementar. Lo que vale es que
    **una persona la haya leído** (v3.1, C-05): si la respuesta es un «ok» que no contesta los supuestos que
    marcaste, repreguntá esos supuestos en una línea antes de seguir; no los des por aprobados.
 7. **Cuando llegan las respuestas, actualizá el archivo** (supuestos, requisitos y escenarios) antes de seguir:

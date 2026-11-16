@@ -9,6 +9,12 @@ unido a la rama integrada.
 | ID | Cambio | Requerimientos | Depende de | Pantallas | Meta |
 | --- | --- | --- | --- | --- | --- |
 | C-00 | Montaje del método: harness fijado, CI y pruebas del método | RNF-0xx | — | no | dd/mm/aaaa |
+
+**Fijar o subir la versión del harness** (0.4.2, F-C08-01): el commit del harness vive en el CI
+(`.github/workflows/ci.yml`) y, si el proyecto lo fija también en una prueba del método (por ejemplo
+`tests/metodo.test.mjs`), en esa prueba. Al subir de versión se cambian los dos en el mismo commit. La prueba tiene que
+estar en «Pruebas existentes autorizadas» del cambio que sube la versión. Antes de unir, leé la sección «Al subir» del
+CHANGELOG del harness.
 | C-01 | <cambio> | RF-0xx a RF-0xx | C-00 | sí / no | dd/mm/aaaa |
 
 «Pantallas: sí» significa que el cambio agrega o modifica algo que ve una persona. Ese cambio cita
@@ -22,7 +28,10 @@ explícitamente (0.4.0, lección P-029 de ai-desempeno). Cada fila lleva un camb
 de una persona y la fecha: `fuera de alcance (OK: <persona>, dd/mm/aaaa)`. `verificar-proyecto` falla si una fila
 queda sin ninguna de las dos.
 
-La interfaz se diseña y se revisa con **Claude Design** salvo que una persona diga lo contrario (0.4.1). Para no
+La interfaz se diseña y se revisa con **Claude Design** salvo que una persona diga lo contrario (0.4.1). El diseño va
+**antes** de la spec del primer cambio con pantallas (0.4.2): el agente prepara el catálogo y propone direcciones
+(skill `disenar-interfaz`), una persona elige en Claude Design, y recién después se escriben el estilo visual y la
+spec. Para no
 usarlo, la fila dice `sin Claude Design (OK: <persona>, dd/mm/aaaa)` en lugar de `Claude Design`. `verificar-proyecto`
 falla si la fila de interfaz no dice ninguna de las dos.
 

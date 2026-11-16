@@ -15,7 +15,7 @@ poc-agentico/
 │   ├── INDICE.md                     mapa corto; enlaza, no copia
 │   ├── estandares/ glosario/ sistemas/ seguridad-datos/ decisiones/ lecciones/
 │   └── skills/consultar-brain/       el agente consulta bajo demanda
-├── emba-harness/                     HARNESS = plugin "emba-harness" (v0.4.1, ver CHANGELOG.md)
+├── emba-harness/                     HARNESS = plugin "emba-harness" (v0.4.2, ver CHANGELOG.md)
 │   ├── hooks/                        bloquear-secretos, bloquear-comandos, registrar-metricas
 │   ├── skills/                       proponer-cambio, verificar, revisar, cerrar-fase, nuevo-proyecto
 │   ├── agents/revisor.md             revisor independiente (no vio la implementación)
