@@ -27,7 +27,14 @@ hasta el final (P-029). Esta skill hace que alguien la vea.
 6. **En el PR**: copiá la lista de capturas a la descripción, con las imágenes enlazadas, y agregá la casilla
    `- [ ] Una persona vio la app funcionando (mirada al producto)`. El PR no se une con la casilla sin marcar en los
    momentos que fija el plan: el primer cambio con pantallas y el cierre.
-7. Bajá la app si la levantaste vos (`docker compose down`).
+7. **Si el plan usa Claude Design** (fila «Interfaz y marca» de `docs/plan/plan.md`; 0.4.1):
+   - pedile a la persona que sincronice con `/design-sync` si los componentes cambiaron (no lo hagas vos), y revisá
+     en Claude Design los componentes sincronizados contra el estilo visual;
+   - en el PR, sumá el enlace al proyecto de Claude Design y la casilla
+     `- [ ] Componentes revisados en Claude Design`;
+   - en `mirada.md`, anotá los hallazgos de Claude Design en una sección aparte, «Hallazgos en Claude Design», para
+     medir si aporta algo distinto de las capturas. Si no hubo ninguno, escribí «ninguno».
+8. Bajá la app si la levantaste vos (`docker compose down`).
 
 Si no podés sacar capturas (no hay navegador disponible), decilo y cerrá con `ESPERA: <persona> (mirada al
 producto de <C-0n>)`, con los pasos para que la persona la haga.
