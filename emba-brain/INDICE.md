@@ -16,6 +16,7 @@ Este índice enlaza; no copia. Leé solo el documento que necesites.
 | Qué va en el AGENTS.md de un proyecto | [estandares/contexto-agentes.md](estandares/contexto-agentes.md) |
 | Manejo de secretos y credenciales | [estandares/secretos.md](estandares/secretos.md) |
 | Compuertas mínimas de CI | [estandares/ci.md](estandares/ci.md) |
+| Interfaz de las apps (accesibilidad, estados, textos, marca) | [estandares/interfaz.md](estandares/interfaz.md) |
 | Numeración de facturas y documentos fiscales | [estandares/documentos-fiscales.md](estandares/documentos-fiscales.md) |
 | Términos de negocio (empresa, base, consumidor, código de almacén…) | [glosario/negocio.md](glosario/negocio.md) |
 | Qué sistemas existen y cómo se integran | [sistemas/mapa.md](sistemas/mapa.md) |

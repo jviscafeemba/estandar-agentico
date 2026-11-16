@@ -1,0 +1,59 @@
+# Plantilla de openspec/config.yaml para proyectos de nivel 3 (emba-harness 0.4.0).
+# Recoge las lecciones del piloto de ai-desempeno (13/11/2026). Completar lo marcado con <…>.
+schema: spec-driven
+
+context: |
+  Language: es
+  All artifacts must be written in es (español), con fechas dd/mm/aaaa.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+
+  Proyecto: <nombre>, <qué hace y para quién>. Nivel 3 del método agéntico EMBA (emba-harness 0.4.0).
+  Fuentes de verdad (leerlas antes de proponer o implementar):
+  - AGENTS.md: reglas que no se negocian.
+  - docs/requerimientos/requerimientos.md: requisitos RF-0xx y RNF-0xx.
+  - docs/adr/: decisiones.
+  - docs/plan/plan.md: orden de los cambios C-0n y temas transversales.
+  - docs/diseno/estilo-visual.md: cómo se ven las pantallas (si el proyecto tiene pantallas).
+  - docs/preguntas.md: preguntas abiertas.
+  - docs/plan/pendientes.md: pendientes con ID P-0nn.
+  Stack: <…>.
+  Pruebas: <comando>.
+  Solo datos sintéticos; nunca datos reales ni secretos.
+
+rules:
+  proposal:
+    - "Citar en la propuesta los IDs RF-0xx y RNF-0xx que cubre el cambio y el ID del plan (C-0n)."
+    - "Sección «Supuestos respondidos»: cada supuesto con su respuesta escrita y quién la dio. Un supuesto sin respuesta no se implementa."
+    - "Sección «Pruebas existentes autorizadas»: lista de las pruebas existentes que el cambio puede modificar, con la razón; si no hay, escribir «ninguna». La implementadora no puede tocar otras."
+    - "Sección «Pantallas»: qué pantallas agrega o cambia el cambio y qué secciones de docs/diseno/estilo-visual.md aplica; si no tiene, escribir «ninguna»."
+    - "Sección «Fuera de alcance»: lo que no entra y adónde va (pendiente P-0nn, pregunta Q-0nn o cambio C-0n)."
+    - "Lo que el usuario esperaría ver y ninguna spec cubre se anota como pendiente P-0nn o pregunta Q-0nn; no se deja implícito."
+  specs:
+    - "Cada requisito cita entre paréntesis los IDs RF-0xx o RNF-0xx que implementa."
+    - "Cada requisito tiene al menos un escenario con WHEN / THEN."
+    - "El texto de un requisito no pasa de 500 caracteres (validate --strict falla si pasa)."
+    - "Toda spec con pantallas cita docs/diseno/estilo-visual.md y tiene escenarios de los estados: cargando, vacío, error y sin permiso."
+    - Solo datos sintéticos en los ejemplos; ningún nombre, correo ni documento real.
+    - "Cada spec delta de una capacidad nueva empieza con «## Purpose» y una frase propia: openspec archive deja «TBD» si falta."
+  design:
+    - Respetar los ADR; si el cambio necesita apartarse, proponer un ADR nuevo en el mismo cambio.
+    - "Si el cambio depende de otro, la última revisión del diseño se hace contra el código real de ese cambio ya unido, no contra su spec."
+  tasks:
+    - "Prueba primero: la primera tarea de cada grupo escribe la prueba que falla; la implementación va después."
+    - "Cada prueba nueva cita en su nombre o docstring el ID RF-0xx o RNF-0xx que verifica."
+    - "Si el cambio tiene pantallas, una tarea corre la skill mirar-producto y deja las capturas en docs/capturas/C-0n/."
+    - "La última tarea corre la verificación completa: <comando de pruebas> y node <harness>/scripts/verificar-proyecto.mjs ."
+    - "Nunca modificar una prueba existente que no esté en «Pruebas existentes autorizadas» de la propuesta."
+
+operations:
+  apply:
+    guidance:
+      - "Trabajar solo con la spec: si algo no está escrito, elegir la opción conservadora, anotarla en tasks.md y seguir; si no se puede seguir sin una persona, cerrar con ESPERA."
+      - "Commitear en la rama del cambio con mensajes en español; nunca unir. Push y PR solo si .claude/salida-permitida.txt lo habilita."
+      - "Verificar: skill /emba-harness:verificar o, por script, node <harness>/scripts/verificar-proyecto.mjs con la raíz del repo como argumento."
+      - "Pruebas nuevas: crearlas con la herramienta Write o Edit, nunca con un comando de shell. El hook proteger-pruebas lo permite y las anota como creadas por el agente."
+      - "Comprobar la app local con curl contra localhost o 127.0.0.1 está permitido; nada más sale de la máquina."
+      - Lo que aparece fuera de alcance se anota en docs/plan/pendientes.md con ID P-0nn, no se arregla de paso.
+  archive:
+    guidance:
+      - "Antes de archivar, el PR del cambio tiene que estar unido a la rama integrada."

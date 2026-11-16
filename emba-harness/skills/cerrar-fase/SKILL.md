@@ -24,5 +24,8 @@ disable-model-invocation: true
      markdown, porque en el brain de empresa ese enlace queda roto (F-05-07) — y un título `# …` que diga la
      regla en una frase. Avisale al usuario: **la publica una persona en la retro**, con un PR al brain de empresa
      (`emba-brain/lecciones/` y su fila en `lecciones/README.md`). Así la ve el próximo proyecto (v3.1, C-04).
-4. Resumí las métricas de la fase:
+4. Si el proyecto tiene pantallas y es el cierre del plan: corré `/emba-harness:mirar-producto` sobre todas las
+   pantallas de ejemplo del estilo visual y pedí que una persona la vea antes del PR final (0.4.0).
+5. Revisá la tabla de temas transversales de `docs/plan/plan.md`: lo asignado se cumplió o tiene su pendiente.
+6. Resumí las métricas de la fase:
    `node "<harness>/scripts/metricas.mjs" .`
