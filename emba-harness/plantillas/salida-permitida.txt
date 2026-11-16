@@ -1,11 +1,15 @@
 # .claude/salida-permitida.txt: lo escribe una PERSONA (el agente no puede editarlo: es un archivo de control).
 # Habilita lo mínimo para que la orquestadora publique su trabajo. Todo lo demás sigue bloqueado por bloquear-salida:
-# unir PR, push a main o master, forzar, borrar ramas, refspecs con «:», otros remotos y gh pr create --repo.
+# push o unión a main o master, forzar, borrar ramas, refspecs con «:», otros remotos, --repo, gh pr merge --admin
+# o --auto.
 #
 #   push <remoto> <rama con comodines>   push a esa rama (nunca main ni master)
 #   pr-create                            gh pr create en el repo actual
+#   merge <rama base con comodines>      gh pr merge de un PR cuya base es esa rama (nunca main ni master), solo si
+#                                        todos sus checks de CI pasaron (el hook lo lee con gh pr view)
 #
 # Ejemplo:
 # push origin feat/*
 # push origin integracion
 # pr-create
+# merge integracion

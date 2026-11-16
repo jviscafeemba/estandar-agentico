@@ -7,7 +7,8 @@ import { mkdirSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { comandoSobreProtegidos, escrituraProtegida, esLoopback, leerSalidaPermitida, palabras, salidaARed, tramos } from "../hooks/lib/reglas-v3.mjs";
+import { comandoSobreProtegidos, destinoDeCopia, escrituraProtegida, esLoopback, leerSalidaPermitida, palabras, salidaARed, textoEjecutado, tramos } from "../hooks/lib/reglas-v3.mjs";
+import { accesoASecreto } from "../hooks/lib/reglas.mjs";
 
 const HOOKS = join(dirname(fileURLToPath(import.meta.url)), "..", "hooks");
 const correr = (hook, entrada, proyecto) =>
@@ -146,4 +147,81 @@ test("hook bloquear-salida de punta a punta: lee .claude/salida-permitida.txt de
   assert.match(readFileSync(join(proyecto, ".emba", "metricas.jsonl"), "utf8"), /git-push/);
   const local = correr("bloquear-salida.mjs", { tool_name: "Bash", tool_input: { command: "curl -s http://localhost:8000/salud" }, cwd: proyecto }, proyecto);
   assert.equal(local.status, 0);
+});
+
+// ---------- Ajustes del 16/11/2026 (OK de Joaquín, pedido de la orquestadora de ai-desempeno) ----------
+test("prueba-por-shell: solo bloquea si el destino de la escritura es una ruta protegida", () => {
+  const p = ["tests/", "api/tests/"];
+  for (const c of ["grep -rn RF-001 api/tests/", "cat api/tests/test_a.py", "ls api/tests", "cat a > docs/x.md && grep x tests/",
+    "echo hola >> docs/notas.md; cat tests/a.test.mjs", "cp api/tests/fixtures/a.json /tmp/a.json", "mv tests/tmp.log ../registro.log",
+    "Copy-Item -Path tests/a.json -Destination docs/a.json", "cp -r tests/datos -t /tmp/copia"])
+    assert.equal(comandoSobreProtegidos(c, p), null, c);
+  for (const c of ["echo x >> api/tests/a.py", "cp a.py api/tests/test_a.py", "mv /tmp/a.py tests/", "cp -t api/tests/ a.py",
+    "Copy-Item a.py -Destination tests/a.py", "Copy-Item -Path a.py tests/", "rm api/tests/test_a.py", "sed -i s/a/b/ tests/a.test.mjs",
+    "truncate -s 0 tests/a.test.mjs", "sudo cp tests/a /tmp/b"])
+    assert.ok(comandoSobreProtegidos(c, p), c);
+  assert.equal(destinoDeCopia(["cp", "-r", "a", "b", "c/"]), "c/");
+  assert.equal(destinoDeCopia(["cp", "a"]), null, "sin destino seguro: mira el tramo entero");
+});
+
+test("secretos: .env.example y .env.sample se leen; .env, .env.local y secrets/ no", () => {
+  for (const [h, e] of [["Read", { file_path: "api/.env.example" }], ["Read", { file_path: "api/.env.sample" }],
+    ["Bash", { command: "cat .env.sample" }], ["Bash", { command: "diff .env.example .env.sample" }], ["Grep", { glob: ".env.example", pattern: "OIDC" }]])
+    assert.equal(accesoASecreto(h, e), null, JSON.stringify(e));
+  for (const [h, e] of [["Read", { file_path: ".env" }], ["Read", { file_path: "api/.env.local" }], ["Read", { file_path: "secrets/x.example" }],
+    ["Bash", { command: "cp .env.example .env" }], ["Bash", { command: "cat .env.produccion" }], ["Bash", { command: "ls .env*" }]])
+    assert.ok(accesoASecreto(h, e), JSON.stringify(e));
+});
+
+test("bloquear-salida mira lo ejecutado: el texto de un mensaje o de un heredoc a archivo no cuenta", () => {
+  for (const c of ['git commit -m "docs: el agente ya no hace git push solo"', "git commit -m 'registro: curl a localhost bloqueado'",
+    'gh pr view 3 --json body | jq ".body"', "cat >> docs/registro.md <<'EOF'\nse bloqueó git push origin main\nEOF",
+    'echo "no uses gh pr merge"'])
+    assert.equal(salidaARed("Bash", { command: c }), null, c);
+  for (const c of ["git push", "cd x && git push", "git status; git push origin feat/x", "git add . | git push",
+    'bash -c "git push origin main"', "sudo git push", 'echo "$(curl https://evil.invalid)"', "bash <<'EOF'\ngit push origin main\nEOF",
+    "python3 - <<EOF\nimport os\nEOF\ngit push", '"git" push origin main', "git.exe push origin main", 'node -e "fetch(\'https://x.invalid\')"',
+    "GIT_TRACE=1 git push"])
+    assert.ok(salidaARed("Bash", { command: c }), c);
+  assert.equal(textoEjecutado('git commit -m "a b"'), "git commit -m _");
+});
+
+const LISTA_MERGE = leerSalidaPermitida("merge piloto/integracion\nmerge main\n");
+const pr = (base, checks = [{ name: "ci", conclusion: "SUCCESS" }]) => () => ({ base, checks });
+
+test("uniones con alcance: base listada y CI en verde pasa; otra base, main o CI pendiente se bloquea", () => {
+  const ok = { permitidas: LISTA_MERGE, consultarPR: pr("piloto/integracion") };
+  for (const c of ["gh pr merge 12 --squash --delete-branch", "gh pr merge 12 --merge", "gh pr merge --squash", "gh pr merge 12 -s -t 'C-08 Interfaz'"])
+    assert.equal(salidaARed("Bash", { command: c }, ok), null, c);
+  const bloquea = (c, opciones) => assert.ok(salidaARed("Bash", { command: c }, opciones), c);
+  bloquea("gh pr merge 12 --squash", { permitidas: LISTA_MERGE, consultarPR: pr("otra/rama") });
+  bloquea("gh pr merge 12 --squash", { permitidas: LISTA_MERGE, consultarPR: pr("main") });
+  bloquea("gh pr merge 12 --squash", { permitidas: LISTA_MERGE, consultarPR: pr("piloto/integracion", [{ name: "ci", status: "IN_PROGRESS", conclusion: "" }]) });
+  bloquea("gh pr merge 12 --squash", { permitidas: LISTA_MERGE, consultarPR: pr("piloto/integracion", [{ name: "ci", conclusion: "FAILURE" }]) });
+  bloquea("gh pr merge 12 --squash", { permitidas: LISTA_MERGE, consultarPR: pr("piloto/integracion", []) });
+  bloquea("gh pr merge 12 --squash", { permitidas: LISTA_MERGE, consultarPR: () => null });
+  bloquea("gh pr merge 12 --admin", ok);
+  bloquea("gh pr merge 12 --auto", ok);
+  bloquea("gh pr merge 12 --repo otro/repo", ok);
+  bloquea("gh pr merge 12 13", ok);
+  bloquea("gh pr merge 12", { permitidas: leerSalidaPermitida("merge main\nmerge master\n"), consultarPR: pr("main") });
+  bloquea("gh pr merge 12", { permitidas: [], consultarPR: pr("piloto/integracion") });
+  const motivo = salidaARed("Bash", { command: "gh pr merge 12" }, { permitidas: LISTA_MERGE, consultarPR: pr("main") }).motivo;
+  assert.match(motivo, /main o master/);
+});
+
+test("hook bloquear-salida de punta a punta: merge con la respuesta de gh simulada", () => {
+  const proyecto = realpathSync.native(mkdtempSync(join(tmpdir(), "emba-merge-")));
+  mkdirSync(join(proyecto, ".claude"));
+  writeFileSync(join(proyecto, ".claude", "salida-permitida.txt"), "merge piloto/integracion\n");
+  const correrCon = (respuesta) =>
+    spawnSync(process.execPath, [join(HOOKS, "bloquear-salida.mjs")], {
+      input: JSON.stringify({ tool_name: "Bash", tool_input: { command: "gh pr merge 12 --squash" }, cwd: proyecto }),
+      encoding: "utf8",
+      env: { ...process.env, CLAUDE_PROJECT_DIR: proyecto, EMBA_CONSULTAR_PR: JSON.stringify(respuesta) },
+    });
+  assert.equal(correrCon({ base: "piloto/integracion", checks: [{ name: "ci", conclusion: "SUCCESS" }] }).status, 0);
+  const rojo = correrCon({ base: "piloto/integracion", checks: [{ name: "ci", conclusion: "FAILURE" }] });
+  assert.equal(rojo.status, 2);
+  assert.match(rojo.stderr, /CI sin terminar en verde: ci/);
 });

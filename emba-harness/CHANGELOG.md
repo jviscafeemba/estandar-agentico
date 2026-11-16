@@ -36,6 +36,28 @@ lección P-029: la app pasó todas sus pruebas sin ningún estilo, porque ningú
   pruebas nuevas con Write está permitido (F-P-09).
 - `.claude/salida-permitida.txt` es archivo de control: el agente no puede escribirlo.
 
+### Ajustes del 16/11/2026 (OK de Joaquín, pedido de la orquestadora de ai-desempeno)
+- **`proteger-pruebas`:** copiar o mover **desde** una carpeta de pruebas ya no se bloquea. En `cp`, `mv` y
+  `Copy-Item` solo cuenta el destino; si no se puede leer con certeza, se mira el tramo entero.
+- **`bloquear-secretos`:** `.env.sample` se puede leer, igual que `.env.example`. `.env`, `.env.local` y `secrets/`
+  siguen bloqueados. P-019 no lo frenaba el hook, sino la regla «nunca `.env*`» de las instrucciones.
+- **`bloquear-salida` mira lo que se ejecuta, no el texto.** Ya no cuentan:
+  - un argumento entre comillas con espacios (mensaje de commit, cuerpo de PR);
+  - el cuerpo de un heredoc que va a `cat` o `tee`.
+
+  Falla cerrada: con un intérprete o envoltorio (`bash -c`, `sudo`, `node -e`), una asignación de variables o
+  `$( )`, se mira el tramo entero. Además:
+  - corrige un hueco propio de esta versión: el cuerpo de un heredoc dirigido a un intérprete
+    (`bash <<EOF … git push … EOF`) se quitaba y no se miraba;
+  - `git.exe push` y `gh.exe` también cuentan.
+- **Uniones con alcance:** nueva línea `merge <rama base>` en `.claude/salida-permitida.txt`. `gh pr merge` pasa
+  solo si se cumplen las dos condiciones:
+  - la base del PR es esa rama, y nunca `main` ni `master` (aunque estén en la lista);
+  - todos sus checks de CI pasaron. Sin checks, no se une.
+
+  El hook lo lee con `gh pr view` (solo lectura); si no puede leerlo, bloquea. `--admin`, `--auto` y `--repo`
+  siguen bloqueados.
+
 ### Scripts y skills
 - `verificar-proyecto`:
   - la trazabilidad lee pytest (`test_*.py`, `*_test.py`) y `.spec`/`.tsx` (F-P-05). Sobre ai-desempeno da 41/44,

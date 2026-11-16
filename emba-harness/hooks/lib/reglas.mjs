@@ -2,7 +2,10 @@
 // El hook es la segunda línea de defensa; la primera son los permisos negados de la política administrada.
 
 const DELIM = String.raw`[\\/\s'"=:;|&<>(),]`;
-const ARCHIVO_ENTORNO = new RegExp(String.raw`(^|${DELIM})\.env(\.(?!example\b)[\w.-]+)?(?=$|${DELIM})`, "i");
+// Los ejemplos sin valores (.env.example, .env.sample y sus copias .bak) no se bloquean. 0.4.0: se suma .sample
+// (P-019 de ai-desempeno). .env, .env.local y secrets/ siguen bloqueados.
+const EJEMPLO = String.raw`(?:example|sample)\b`;
+const ARCHIVO_ENTORNO = new RegExp(String.raw`(^|${DELIM})\.env(\.(?!${EJEMPLO})[\w.-]+)?(?=$|${DELIM})`, "i");
 const CARPETA_SECRETOS = new RegExp(String.raw`(^|${DELIM})secrets(?=$|${DELIM})`, "i");
 
 // Quita comillas y el escape de PowerShell, que sirven para partir un nombre (.e""nv, .e`nv) sin cambiar su
