@@ -54,6 +54,35 @@ export function revisarTemasTransversales(textoPlan) {
   return errores;
 }
 
+// La fila «Interfaz y marca» del plan dice Claude Design (y no «sin Claude Design» ni «fuera de alcance»).
+export function usaClaudeDesign(textoPlan) {
+  const seccion = textoPlan.split(/^## Temas transversales\s*$/m)[1];
+  if (seccion === undefined) return false;
+  const fila = seccion.split(/^## /m)[0].split("\n").find((l) => /^\|\s*[^|]*interfaz/i.test(l));
+  return Boolean(fila) && /Claude Design/i.test(fila) && !/sin Claude Design/i.test(fila) && !/fuera de alcance/i.test(fila);
+}
+
+// 0.4.2 (F-C08-05): la sección «Dirección visual» de estilo-visual.md prueba que una persona eligió un diseño mirándolo:
+// enlace al proyecto de Claude Design, quién eligió y cuándo, y al menos una captura que existe en el repo.
+export function revisarPruebaDeDiseno(textoEstilo, carpetaDiseno) {
+  const errores = [];
+  const donde = "docs/diseno/estilo-visual.md";
+  const seccion = textoEstilo.split(/^## [^\n]*Direcci[oó]n visual[^\n]*$/im)[1];
+  if (seccion === undefined)
+    return [`${donde}: el plan usa Claude Design y falta la sección «## Dirección visual» (paso de diseño, skill disenar-interfaz)`];
+  const cuerpo = seccion.split(/^## /m)[0];
+  if (!/Proyecto de Claude Design:\**\s*<?https?:\/\/\S+/i.test(cuerpo))
+    errores.push(`${donde}: falta el enlace «Proyecto de Claude Design: https://…» en «Dirección visual»`);
+  if (!/Direcci[oó]n elegida por:\**\s*[^<\s,][^,\n]*,\s*\d{2}\/\d{2}\/\d{4}/i.test(cuerpo))
+    errores.push(`${donde}: falta «Dirección elegida por: persona, dd/mm/aaaa» en «Dirección visual»`);
+  const imagenes = [...cuerpo.matchAll(/!\[[^\]]*\]\(([^)\s]+\.(?:png|jpe?g|webp))\)/gi)].map((m) => m[1]);
+  if (!imagenes.length) errores.push(`${donde}: «Dirección visual» no tiene capturas de la dirección elegida (![…](….png))`);
+  for (const img of imagenes)
+    if (!/^https?:/i.test(img) && !existsSync(join(carpetaDiseno, img)))
+      errores.push(`${donde}: la captura ${img} no existe (las rutas son relativas a docs/diseno/)`);
+  return errores;
+}
+
 function archivos(dir, filtro) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir).flatMap((nombre) => {
@@ -113,7 +142,17 @@ export function verificarProyecto(raiz) {
 
   // 0.4.0: los temas transversales del plan quedan asignados o fuera de alcance con OK humano.
   const plan = join(raiz, "docs", "plan", "plan.md");
-  if (existsSync(plan)) errores.push(...revisarTemasTransversales(leer(plan)));
+  if (existsSync(plan)) {
+    const textoPlan = leer(plan);
+    // 0.4.2 (F-C08-02): un script dejó corrupta la línea 1 del plan y nada lo detectó.
+    if (!/^# \S/.test(textoPlan.replace(/^﻿/, "")))
+      errores.push("docs/plan/plan.md: la línea 1 tiene que ser el título («# Plan de cambios · …»)");
+    errores.push(...revisarTemasTransversales(textoPlan));
+    // 0.4.2 (F-C08-05): con Claude Design y pantallas, el estilo visual tiene que mostrar que alguien diseñó.
+    const estilo = join(raiz, ESTILO_VISUAL);
+    if (pantallas.length && usaClaudeDesign(textoPlan) && existsSync(estilo))
+      errores.push(...revisarPruebaDeDiseno(leer(estilo), join(raiz, "docs", "diseno")));
+  }
 
   return { errores: [...new Set(errores)], avisos, cobertura: { funcionales, conPrueba: funcionales - sinPrueba.length } };
 }

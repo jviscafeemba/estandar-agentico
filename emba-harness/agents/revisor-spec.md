@@ -21,6 +21,15 @@ rama o commit.
      permiso, si se usa con el teclado, cuánto tarda, qué ve quien la opera. Si un tema transversal del plan cae en
      este cambio y la spec no lo cubre, es un hallazgo;
    - si la spec tiene pantallas y no cita `docs/diseno/estilo-visual.md`, o pide algo que el estilo contradice;
+   - **¿alguien diseñó esto visualmente?** (0.4.2, F-C08-05). Que el estilo exista y sea coherente no alcanza. Si el
+     plan dice «Claude Design», busca en `estilo-visual.md` estas tres cosas:
+     - la sección «Dirección visual», con el enlace al proyecto;
+     - «Dirección elegida por: persona, dd/mm/aaaa»;
+     - capturas que existan.
+
+     Busca también que la sección «Pantallas» de la spec enlace esas capturas o el proyecto. Es **grave** si el
+     estilo es solo una tabla de tokens que nadie vio dibujada, o si la spec se aprobaría sin que una persona vea
+     cómo se verá;
    - **si depende de otro cambio ya unido:** contrastá la spec con el código real de ese cambio (nombres, firmas,
      tablas, rutas), no con su spec. En el piloto de ai-desempeno esta ronda encontró roturas que las anteriores no
      veían.

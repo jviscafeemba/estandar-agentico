@@ -5,6 +5,7 @@
 #
 #   push <remoto> <rama con comodines>   push a esa rama (nunca main ni master)
 #   pr-create                            gh pr create en el repo actual
+#   pr-comment                           gh pr comment con --body o --body-file en el repo actual (p. ej. pegar el CI)
 #   merge <rama base con comodines>      gh pr merge de un PR cuya base es esa rama (nunca main ni master), solo si
 #                                        todos sus checks de CI pasaron (el hook lo lee con gh pr view)
 #
@@ -12,4 +13,5 @@
 # push origin feat/*
 # push origin integracion
 # pr-create
+# pr-comment
 # merge integracion

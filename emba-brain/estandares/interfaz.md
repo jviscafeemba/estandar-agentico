@@ -33,7 +33,17 @@ plan asigna la interfaz como tema transversal y el harness lo exige.
 Herramienta estándar de diseño y revisión visual de la empresa desde el 16/11/2026. Se prueba primero en C-08 de
 ai-desempeno.
 
-- **Para qué:** ver y comentar los tokens, los componentes base y las pantallas de ejemplo de un proyecto.
+- **Para qué:** **diseñar** la dirección visual antes de la spec, y después ver y comentar los tokens, los componentes
+  base y las pantallas de ejemplo de un proyecto.
+- **Paso de diseño, antes de la spec** (desde 16/11/2026, lección F-C08-05 de ai-desempeno). En el primer cambio con
+  pantallas, la secuencia es esta:
+  1. el agente arma el catálogo inicial con datos sintéticos y propone 2 o 3 direcciones, con prompts para Claude
+     Design (skill `emba-harness:disenar-interfaz`);
+  2. una persona corre `/design-sync`, explora las direcciones en Claude Design y elige una;
+  3. recién entonces se escribe `estilo-visual.md`, con el enlace, «Dirección elegida por: persona, dd/mm/aaaa» y
+     capturas de lo elegido.
+
+  Una spec con pantallas se aprueba **viendo** esas capturas o el proyecto, no leyendo una tabla de tokens.
 - **Fuente de verdad:** el repositorio. `docs/diseno/estilo-visual.md` y el código mandan. Lo que se decide en
   Claude Design entra al repo por el flujo de siempre (spec, prueba, PR).
 - **Sincronización:** la hace una persona con `/design-sync`. La arranca a mano y aprueba cada plan de archivos.
