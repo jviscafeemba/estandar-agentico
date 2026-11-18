@@ -40,6 +40,15 @@ if (["Edit", "Write", "MultiEdit", "NotebookEdit"].includes(herramienta)) {
   bloqueo = comandoSobreProtegidos(datos.command, protegidos, { desdeRaiz: ajustes.has("pruebas-desde-raiz"), raiz });
 }
 
+// 0.4.3 (F-C08v2-05): un pedido de autorización válido no se bloquea: se le pregunta a la persona en la app.
+if (bloqueo?.preguntar) {
+  registrar(entrada, { evento: "autorizacion-pedida", regla: bloqueo.regla, herramienta, hook: "proteger-pruebas", pruebas: bloqueo.pruebas });
+  process.stdout.write(
+    JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "ask", permissionDecisionReason: bloqueo.motivo } }) + "\n",
+  );
+  process.exit(0);
+}
+
 if (bloqueo) {
   registrar(entrada, { evento: "bloqueo", regla: bloqueo.regla, herramienta, hook: "proteger-pruebas", ajustes: [...ajustes] });
   process.stderr.write(bloqueo.motivo + "\n");

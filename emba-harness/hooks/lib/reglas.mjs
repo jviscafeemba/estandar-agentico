@@ -15,6 +15,19 @@ export function normalizar(texto) {
   return texto.replace(/["'`]/g, "");
 }
 
+// El cuerpo de un heredoc que recibe cat o tee es texto que va a un archivo, no un comando: se quita. Si lo recibe
+// un intérprete (bash <<EOF, python - <<EOF), es código y se conserva.
+const HEREDOC = /<<-?\s*(['"]?)([A-Za-z_][\w-]*)\1[^\n]*\n[\s\S]*?\n[ \t]*\2[ \t]*(?=\n|$)/g;
+const RECIBE_TEXTO = /^(cat|tee)$/i;
+export function sinHeredocs(comando) {
+  const texto = String(comando ?? "");
+  return texto.replace(HEREDOC, (m, _c, _f, desde) => {
+    const linea = texto.slice(texto.lastIndexOf("\n", desde) + 1, desde);
+    const comandoDelHeredoc = linea.split(/;|&&|\|\||\||&/).pop().trim().split(/\s+/)[0] ?? "";
+    return RECIBE_TEXTO.test(comandoDelHeredoc) ? m.split("\n")[0] : m;
+  });
+}
+
 function comodinARegex(segmento) {
   const cuerpo = segmento.replace(/[.+^${}()|]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".");
   return new RegExp(`^${cuerpo}$`, "i");
@@ -125,8 +138,9 @@ export function sinPatronesCitados(comando) {
 }
 
 export function accesoASecreto(herramienta, entrada = {}, { patronesCitados = false } = {}) {
+  // 0.4.3 (F-C08v2-01): también se ignora el cuerpo de un heredoc que va a cat o tee (texto, no rutas que se leen).
   if (patronesCitados && typeof entrada.command === "string")
-    entrada = { ...entrada, command: sinPatronesCitados(entrada.command) };
+    entrada = { ...entrada, command: sinPatronesCitados(sinHeredocs(entrada.command)) };
   for (const original of textosRevisables(herramienta, entrada)) {
     const t = normalizar(original);
     if (ARCHIVO_ENTORNO.test(t) || CARPETA_SECRETOS.test(t) || comodinAlcanzaSecreto(t)) {
