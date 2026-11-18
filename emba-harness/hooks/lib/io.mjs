@@ -23,11 +23,14 @@ export async function leerEntrada() {
   }
 }
 
-// 0.4.1: ajustes que un proyecto activa a propósito. Apagados por defecto. Los activa una persona, una línea por
-// ajuste, en <proyecto>/.claude/ajustes-harness.txt, que es archivo de control: el agente no puede escribirlo.
-//   pruebas-desde-raiz          E4: en shell, las rutas protegidas se calzan desde la raíz del proyecto
-//   secretos-patrones-citados   secretos: en sed, grep, awk, perl y rg se ignora el patrón entre comillas
-export const AJUSTES = ["pruebas-desde-raiz", "secretos-patrones-citados"];
+// 0.4.1: ajustes que un proyecto cambia a propósito, una línea por ajuste, en <proyecto>/.claude/ajustes-harness.txt
+// (archivo de control: lo escribe una persona, el agente no puede).
+//   pruebas-desde-raiz            E4: en shell, las rutas protegidas se calzan desde la raíz. Apagado por defecto.
+//   secretos-patrones-citados     secretos: se ignoran el patrón entre comillas de sed, grep, awk, perl y rg, y el
+//                                 texto de un heredoc a cat o tee. ENCENDIDO por defecto desde la 0.4.3 (Joaquín,
+//                                 18/11/2026); la línea se acepta pero ya no hace falta.
+//   sin-secretos-patrones-citados apaga el anterior y vuelve al comportamiento de la 0.4.0.
+export const AJUSTES = ["pruebas-desde-raiz", "secretos-patrones-citados", "sin-secretos-patrones-citados"];
 export function leerAjustes(entrada) {
   try {
     const proyecto = process.env.CLAUDE_PROJECT_DIR || entrada.cwd;

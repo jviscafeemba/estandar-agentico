@@ -22,7 +22,8 @@ Las plantillas están en `<harness>/plantillas/` (`<harness>` = dos niveles arri
      los requerimientos. Lo común (accesibilidad, estados, marca) lo da el estándar de empresa
      `estandares/interfaz.md` (skill `emba-empresa:consultar-brain`);
    - si es nivel 3: `openspec/config.yaml` desde `plantillas/openspec-config.yaml`;
-   - `.github/workflows/ci.yml` desde `plantillas/ci.yml`;
+   - `.github/workflows/ci.yml` desde `plantillas/ci.yml`, y `scripts/ci-local.sh` desde `plantillas/ci-local.sh`
+     con los mismos pasos, para cuando GitHub Actions no pueda correr;
    - las entradas de `plantillas/gitignore` en `.gitignore`.
 3. **Lo que escribe una persona** (son archivos de control: el agente no puede escribirlos, y si los escribiera se
    estaría autorizando solo). Mostrale a la persona el contenido sugerido y pedile que los cree ella:

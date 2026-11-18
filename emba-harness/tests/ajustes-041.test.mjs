@@ -104,15 +104,27 @@ test("sinPatronesCitados quita solo el patrón y conserva posiciones", () => {
 });
 
 // ---------- de punta a punta ----------
-test("hooks de punta a punta: sin ajustes, bloquean como en la 0.4.0 y registran", () => {
+// 0.4.3 (Joaquín, 18/11/2026): «secretos-patrones-citados» pasa a encendido por defecto; «pruebas-desde-raiz» sigue
+// apagado. «sin-secretos-patrones-citados» vuelve al comportamiento de la 0.4.0.
+test("hooks de punta a punta: sin ajustes, el patrón citado pasa (0.4.3), E4 sigue como en la 0.4.0 y se registra", () => {
   const p = proyectoCon(null);
-  const r = correr("bloquear-secretos.mjs", { tool_name: "Bash", tool_input: { command: "grep -n 'secrets:' compose.yaml" }, cwd: p }, p);
-  assert.equal(r.status, 2);
+  const sec = (command) => correr("bloquear-secretos.mjs", { tool_name: "Bash", tool_input: { command }, cwd: p }, p).status;
+  assert.equal(sec("grep -n 'secrets:' compose.yaml"), 0);
+  assert.equal(sec("cat > notas.md <<'EOF'\nla carpeta secrets/ y el .env no se tocan\nEOF"), 0, "heredoc a cat (F-C08v2-01)");
+  assert.equal(sec("grep 'x' .env"), 2);
+  assert.equal(sec("bash <<'EOF'\ncat .env\nEOF"), 2, "heredoc a un intérprete se sigue mirando");
   const s = correr("proteger-pruebas.mjs", { tool_name: "Bash", tool_input: { command: "rm platform/x/tests/t.py" }, cwd: p }, p);
   assert.equal(s.status, 2);
   const registro = readFileSync(join(p, ".emba", "metricas.jsonl"), "utf8");
   assert.match(registro, /"regla":"secretos"/);
   assert.match(registro, /"regla":"prueba-por-shell"/);
+});
+
+test("sin-secretos-patrones-citados vuelve al comportamiento de la 0.4.0", () => {
+  const p = proyectoCon("sin-secretos-patrones-citados\n");
+  const r = correr("bloquear-secretos.mjs", { tool_name: "Bash", tool_input: { command: "grep -n 'secrets:' compose.yaml" }, cwd: p }, p);
+  assert.equal(r.status, 2);
+  assert.match(readFileSync(join(p, ".emba", "metricas.jsonl"), "utf8"), /"patronesCitados":false/);
 });
 
 test("hooks de punta a punta: con los ajustes activos, pasan los falsos positivos y se bloquea lo real", () => {

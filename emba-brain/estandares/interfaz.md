@@ -1,8 +1,8 @@
 ---
 dueño: plataforma-agentica
 estado: vigente
-revisado: 2026-11-16
-vence: 2027-02-14
+revisado: 2026-11-18
+vence: 2027-02-16
 fuentes: ["ai-desempeno: P-029 y reporte final del piloto (13/11/2026)", "emba-harness 0.4.1: plantillas/estilo-visual.md", "Joaquín: Claude Design como estándar (16/11/2026)"]
 ---
 # Interfaz de las aplicaciones internas
@@ -39,15 +39,18 @@ ai-desempeno.
   pantallas, la secuencia es esta:
   1. el agente arma el catálogo inicial con datos sintéticos y propone 2 o 3 direcciones, con prompts para Claude
      Design (skill `emba-harness:disenar-interfaz`);
-  2. una persona corre `/design-sync`, explora las direcciones en Claude Design y elige una;
+  2. una persona explora las direcciones en Claude Design y elige una;
   3. recién entonces se escribe `estilo-visual.md`, con el enlace, «Dirección elegida por: persona, dd/mm/aaaa» y
      capturas de lo elegido.
 
   Una spec con pantallas se aprueba **viendo** esas capturas o el proyecto, no leyendo una tabla de tokens.
 - **Fuente de verdad:** el repositorio. `docs/diseno/estilo-visual.md` y el código mandan. Lo que se decide en
   Claude Design entra al repo por el flujo de siempre (spec, prueba, PR).
-- **Sincronización:** la hace una persona con `/design-sync`. La arranca a mano y aprueba cada plan de archivos.
-  El agente deja la librería de componentes lista, pero no sincroniza.
+- **Cómo se usa** (desde 18/11/2026, corrida 2 de C-08): la vía principal es **el navegador**. La persona abre Claude
+  Design en el suyo, o le pide al agente que lo maneje en el navegador de la app con la sesión de ella, con su OK y
+  estando presente. El catálogo y las capturas se adjuntan a los prompts.
+  `/design-sync` es **opcional**: sirve cuando ya existe una librería de componentes compilada, la arranca una persona
+  y aprueba cada plan de archivos. Su `/design-login` pide una terminal interactiva.
 - **Regla de datos:** a claude.ai se suben solo componentes y pantallas con **datos sintéticos**. Nunca datos de
   personas: la clase «Personal» de [la clasificación](../seguridad-datos/clasificacion.md) no sale del repositorio.
   Es una salida de datos (E6) permitida solo para eso.

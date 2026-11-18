@@ -1,24 +1,15 @@
 // Reglas de los hooks nuevos de la versión 0.3 (propuesta v3, docs/iteracion-2/simulaciones/02-propuesta-v3.md).
 // Funciones puras: las prueba tests/reglas-v3.test.mjs. Como todo hook, son una alarma que deja registro, no una
 // frontera de seguridad (EA-15): un comando armado en un archivo y ejecutado después no se ve acá.
-import { normalizar } from "./reglas.mjs";
+import { normalizar, sinHeredocs } from "./reglas.mjs";
+export { sinHeredocs };
 
 // ---------- Lectura de comandos de shell (0.4.0) ----------
 // Hasta la 0.3.3 las reglas miraban el comando entero: una palabra en un tramo y una ruta en otro bastaban para
 // bloquear (F-P-04). Desde la 0.4.0 se parte el comando en tramos (separados por ; && || | & o salto de línea,
 // fuera de comillas) y cada regla mira su tramo. El cuerpo de un heredoc se quita solo si lo recibe cat o tee
 // (texto que va a un archivo); si lo recibe un intérprete (bash <<EOF, python - <<EOF) es código y se mira.
-
-const HEREDOC = /<<-?\s*(['"]?)([A-Za-z_][\w-]*)\1[^\n]*\n[\s\S]*?\n[ \t]*\2[ \t]*(?=\n|$)/g;
-const RECIBE_TEXTO = /^(cat|tee)$/i;
-export function sinHeredocs(comando) {
-  const texto = String(comando ?? "");
-  return texto.replace(HEREDOC, (m, _c, _f, desde) => {
-    const linea = texto.slice(texto.lastIndexOf("\n", desde) + 1, desde);
-    const comandoDelHeredoc = linea.split(/;|&&|\|\||\||&/).pop().trim().split(/\s+/)[0] ?? "";
-    return RECIBE_TEXTO.test(comandoDelHeredoc) ? m.split("\n")[0] : m;
-  });
-}
+// sinHeredocs vive en reglas.mjs desde la 0.4.3, porque también la usa la regla de secretos.
 
 // Parte en tramos respetando comillas simples y dobles. No interpreta subcomandos: un tramo con $( ) o `` no
 // recibe excepciones (ver tramoExento).
@@ -140,7 +131,8 @@ export function escrituraProtegida({ rel, existe, protegidos, autorizadas = [], 
       "Crear pruebas nuevas con Write y agregar pruebas, imports o helpers con Edit está permitido; debilitar una " +
       "prueba existente no. Si contradice el pedido " +
       "o hay que cambiarla, no la esquives: explicá cuál y por qué, y cerrá con ESPERA. Una aprobación en el chat no " +
-      "alcanza: si la persona lo autoriza, ejecuta ella misma `! node <harness>/scripts/autorizar-prueba.mjs " + rel + "`.",
+      "alcanza: si la spec lo justifica, corré `node <harness>/scripts/autorizar-prueba.mjs " + rel + "` como un " +
+      "comando aparte; la app le pide el OK a la persona en el diálogo de permisos.",
   };
 }
 
@@ -199,8 +191,28 @@ export function comandoSobreProtegidos(comando, protegidos, { desdeRaiz = false,
   if (typeof comando !== "string") return null;
   const cmd = normalizar(comando).replaceAll("\\", "/");
   // C-02: el script de autorización lo ejecuta la persona (con «!» en Claude Code), nunca el agente.
-  if (/autorizar-prueba/i.test(cmd))
-    return { regla: "autorizar-prueba", motivo: "Bloqueado por emba-harness (E4): autorizar una prueba lo hace una persona, no el agente. Pedíselo y cerrá con ESPERA." };
+  // 0.4.3 (F-C08v2-05): en la app el «!» del chat no ejecuta, y autorizar obligaba a abrir una terminal. Ahora el
+  // agente puede correr el script, pero el hook no lo deja pasar solo: le pide el OK a la persona en el diálogo de
+  // permisos de la app («preguntar»). Sin persona (simulación, CI) eso equivale a un bloqueo.
+  if (/autorizar-prueba/i.test(cmd)) {
+    const pruebas = pedidoDeAutorizacion(comando);
+    if (pruebas)
+      return {
+        regla: "autorizar-prueba",
+        preguntar: true,
+        pruebas,
+        motivo:
+          `emba-harness (E4): el agente pide autorizar cambios en ${pruebas.join(", ")}, prueba(s) que ya existían. ` +
+          "Aprobá solo si la spec lo justifica (sección «Pruebas existentes autorizadas»); si no, rechazá.",
+      };
+    return {
+      regla: "autorizar-prueba",
+      motivo:
+        "Bloqueado por emba-harness (E4): para pedir que una persona autorice una prueba, corré solo " +
+        "`node <harness>/scripts/autorizar-prueba.mjs <ruta relativa>`, sin nada encadenado ni redirecciones. " +
+        "La app le muestra el pedido a la persona. Si no lo aprueba, cerrá con ESPERA.",
+    };
+  }
   const objetivos = [...protegidos, ...CONTROL];
   const nombra = desdeRaiz ? nombraDesdeRaiz : nombraEnCualquierNivel;
   // F-06-12: el texto de un mensaje de commit no es un comando («timeout del ERP» se leía como «del», borrar).
@@ -244,6 +256,20 @@ export function textoParaPruebas(tramo, objetivos) {
       return esRuta ? w : "_";
     })
     .join(" ");
+}
+
+// Un pedido de autorización válido es un solo tramo: node <…>/autorizar-prueba.mjs <rutas relativas>, sin opciones,
+// sin redirecciones, sin subcomandos y sin rutas que salgan del proyecto. Devuelve las rutas o null.
+export function pedidoDeAutorizacion(comando) {
+  if (typeof comando !== "string" || /\$\(|`|[<>]/.test(comando)) return null;
+  const t = tramos(comando);
+  if (t.length !== 1) return null;
+  const p = palabras(t[0]);
+  if (!/^node(\.exe)?$/i.test(p[0] ?? "") || !/(^|[\\/])autorizar-prueba\.mjs$/i.test(p[1] ?? "")) return null;
+  const rutas = p.slice(2).map((r) => r.replaceAll("\\", "/"));
+  if (!rutas.length) return null;
+  if (rutas.some((r) => r.startsWith("-") || r.startsWith("/") || /^[A-Za-z]:/.test(r) || r.split("/").includes("..") || /[*?]/.test(r))) return null;
+  return rutas.map((r) => r.replace(/^(\.\/)+/, ""));
 }
 
 const COPIAR = /^(cp|mv|copy|move|copy-item|move-item|cpi|mi|cpp)$/i;

@@ -1,5 +1,81 @@
 # Cambios de emba-harness
 
+## 0.4.3 · 18/11/2026
+
+Lecciones de las dos corridas de C-08 «Interfaz» en ai-desempeno (PR #15 con 0.4.1 y PR #17 con 0.4.2). Joaquín aprobó
+el alcance el 18/11/2026, con tres decisiones: tope de 3 rondas, autorizar pruebas con el diálogo de la app y el ajuste
+de secretos encendido por defecto. Ya estaban resueltos en la 0.4.2 F-C08-01 (cómo subir el SHA), F-C08-02 (título del
+plan), `pr-comment` y que `capturar.mjs` guarde PNG.
+
+### Revisor de spec con tope
+- **3 rondas como máximo.** Las rondas 2 y 3 revisan **solo lo corregido**: el diff contra el commit de la ronda
+  anterior y lo que toca. Si quedan graves después de la 3, el revisor termina con `TOPE: <n> graves abiertos` y una
+  persona decide entre tres opciones, y su decisión queda escrita en la propuesta:
+  - seguir con más rondas;
+  - aceptar con los graves anotados en «Riesgos»;
+  - achicar el cambio.
+
+  En las corridas, «hasta cero graves» llevó a 5 rondas en la primera y a 8 en la segunda, con unos 1,7 M de tokens.
+  Las correcciones de una ronda generaban los graves de la siguiente. Va en `revisor-spec`, `proponer-cambio` y la
+  plantilla de OpenSpec.
+
+### Claude Design desde el navegador (F-C08v2-02 y 03)
+- La vía principal es el navegador. La persona usa el suyo, o le pide al agente el navegador de la app con su sesión,
+  con su OK y estando presente (D-22).
+- `/design-sync` queda opcional. Necesita una librería compilada, que en el primer cambio con pantallas no existe, y
+  su `/design-login` no se completa desde la app.
+- El catálogo es para mostrar: HTML estático y capturas que se adjuntan a los prompts.
+- Va en `disenar-interfaz`, `mirar-producto`, `plantillas/estilo-visual.md` y `emba-brain/estandares/interfaz.md`.
+
+### Autorizar pruebas sin terminal (F-C08v2-05)
+- El agente corre `node <harness>/scripts/autorizar-prueba.mjs <ruta>` como un comando aparte, y `proteger-pruebas`
+  responde **«preguntar»**: la app le muestra el pedido a la persona, y sin su clic no corre.
+- Solo vale un pedido limpio: rutas relativas dentro del proyecto, sin comodines, sin nada encadenado y sin
+  redirecciones. Cualquier otra forma se bloquea. Sin persona (simulación, CI), «preguntar» equivale a bloquear.
+- Se registran `autorizacion-pedida` (hook) y `autorizacion` (script) en `.emba/metricas.jsonl`. El script rechaza
+  rutas fuera del proyecto.
+
+### Secretos: patrones y heredocs, encendido por defecto
+- `secretos-patrones-citados` pasa a **encendido por defecto**. Era la tercera vez que aparecía el falso positivo:
+  ai-genesys, la corrida 1 de C-08 y F-C08v2-01.
+- Además ignora el texto de un heredoc que va a `cat` o `tee`. Un heredoc que va a un intérprete se sigue mirando.
+- `.env`, `.env.local`, `secrets/` y todo lo que no es un patrón entre comillas siguen bloqueados.
+- Un proyecto vuelve al comportamiento anterior con `sin-secretos-patrones-citados` en `.claude/ajustes-harness.txt`.
+
+### Vigilante de subagentes (F-P-14, F-C08v2-04 y 06)
+- **Script nuevo `scripts/vigilar.mjs`.** La orquestadora lo corre en segundo plano sobre la carpeta del subagente, y
+  termina con `SIN PROGRESO` (salida 3) cuando pasan N minutos sin archivos nuevos ni commits.
+- No mata al subagente: decide la orquestadora. Va en el brief de la orquestadora.
+
+### Capturas y reflujo (F-C08v2, D-C08v2-03)
+- **`capturar.mjs` acepta `pasos` por pantalla** (`escribir`, `clic` por texto o selector, `esperarTexto`,
+  `esperar`), para apps que cambian de pantalla por estado y no por ruta. Si un paso no encuentra su control, la
+  captura falla en rojo con la lista de controles que sí hay.
+- **Medición de reflujo:** `reflujo.json` con el desborde horizontal y los elementos que se salen. `--estricto`
+  falla si hay alguno.
+- Las capturas se toman al ancho pedido, sin emulación móvil. Así una página sin `<meta viewport>` no esconde un
+  desborde a 400 px.
+- `mirar-producto` pide mirar al menos una captura de cada pantalla antes de informarlas como buenas.
+
+### Verificación propia de la orquestadora (D-C08v2-01 a 03)
+- Antes de aceptar el verde de una implementadora, la orquestadora corre la suite completa 2 veces desde su propia
+  copia. Una falla intermitente es un defecto del cambio. Va en el brief y en la plantilla de OpenSpec.
+
+### Pila de pruebas por corrida (F-C08-03) y CI local (D-20)
+- `AGENTS.md` y la plantilla de OpenSpec exigen un proyecto de Compose con nombre único por corrida, que baja solo su
+  pila.
+- **Plantilla nueva `plantillas/ci-local.sh`**, sacada de la de ai-desempeno: lee el harness fijado en `ci.yml`,
+  verifica una copia limpia del commit exacto con su propia pila y deja el log fuera del repo.
+  - Con `--comentar <PR>` pega el resultado en el PR.
+  - Documenta el caso de Vitest con la máquina cargada (P-044): subir el tiempo solo en las pruebas lentas.
+
+  `nuevo-proyecto` la instala junto con `ci.yml`.
+
+### Al subir desde 0.4.2
+- Los patrones entre comillas de `sed`, `grep`, `awk`, `perl` y `rg` y los heredocs a archivos ya no bloquean.
+- Un pedido de autorización de pruebas abre el diálogo de permisos en lugar de bloquearse.
+- Lo demás son documentos y scripts nuevos.
+
 ## 0.4.2 · 16/11/2026
 
 Lecciones de la corrida 1 de C-08 «Interfaz» en ai-desempeno, que se hizo con el método 0.4.1. Todo lo automático
