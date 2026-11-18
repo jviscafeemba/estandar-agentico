@@ -27,7 +27,11 @@ agente respetó igual las reglas impuestas por pruebas aunque no hubiera AGENTS.
 
 ## Cómo se verifica
 
-- Pruebas: `<comando>`.
+- Pruebas: `<comando>`. Si levantan contenedores, cada corrida usa un proyecto de Compose con **nombre único**
+  (`COMPOSE_PROJECT_NAME=<proyecto>-<rama>-<pid>`) y baja solo esa pila. Nunca se borran contenedores, volúmenes ni
+  redes de otra corrida (F-C08-03).
+- CI local, si GitHub Actions no está disponible: `bash scripts/ci-local.sh [commit]`, desde
+  `plantillas/ci-local.sh` del harness.
 - Brain del proyecto: skill `/emba-harness:verificar`.
 
 ## Flujo

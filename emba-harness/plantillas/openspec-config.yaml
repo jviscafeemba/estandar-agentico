@@ -29,6 +29,7 @@ rules:
     - "Si el cambio tiene pantallas y el plan dice «Claude Design», la propuesta no se escribe hasta que docs/diseno/estilo-visual.md tenga la «Dirección visual» elegida por una persona (skill /emba-harness:disenar-interfaz). La sección «Pantallas» enlaza las capturas de esa dirección o el proyecto de Claude Design: una spec con pantallas no se aprueba sin verlas."
     - "Sección «Fuera de alcance»: lo que no entra y adónde va (pendiente P-0nn, pregunta Q-0nn o cambio C-0n)."
     - "Lo que el usuario esperaría ver y ninguna spec cubre se anota como pendiente P-0nn o pregunta Q-0nn; no se deja implícito."
+    - "Revisor de spec: 3 rondas como máximo; las rondas 2 y 3 revisan solo lo corregido. Si quedan graves después de la 3, una persona decide (seguir, aceptar con los graves en «Riesgos» o achicar el cambio) y la decisión queda escrita en la propuesta."
   specs:
     - "Cada requisito cita entre paréntesis los IDs RF-0xx o RNF-0xx que implementa."
     - "Cada requisito tiene al menos un escenario con WHEN / THEN."
@@ -42,9 +43,9 @@ rules:
   tasks:
     - "Prueba primero: la primera tarea de cada grupo escribe la prueba que falla; la implementación va después."
     - "Cada prueba nueva cita en su nombre o docstring el ID RF-0xx o RNF-0xx que verifica."
-    - "Si el cambio tiene pantallas, una tarea corre la skill mirar-producto y deja las capturas en docs/capturas/C-0n/ (con node <harness>/scripts/capturar.mjs). La mirada de la persona se pide antes de abrir el PR."
-    - "Si el plan usa Claude Design, una tarea deja la librería de componentes lista para /design-sync (tokens, componentes base y pantallas de ejemplo, solo con datos sintéticos). El agente prepara; la persona sincroniza."
+    - "Si el cambio tiene pantallas, una tarea corre la skill mirar-producto: capturas en docs/capturas/C-0n/ con node <harness>/scripts/capturar.mjs (con «pasos» si la app cambia de pantalla por estado y no por ruta) y la medición de reflujo (reflujo.json). La mirada de la persona se pide antes de abrir el PR."
     - "La última tarea corre la verificación completa: <comando de pruebas> y node <harness>/scripts/verificar-proyecto.mjs ."
+    - "Verificación propia de la orquestadora (0.4.3): antes de aceptar el verde de la implementadora, la orquestadora corre la suite completa 2 veces desde su propia copia. Una falla intermitente es un defecto del cambio, no ruido."
     - "Nunca modificar una prueba existente que no esté en «Pruebas existentes autorizadas» de la propuesta."
 
 operations:
@@ -56,6 +57,8 @@ operations:
       - "Pruebas nuevas: crearlas con la herramienta Write o Edit, nunca con un comando de shell. El hook proteger-pruebas lo permite y las anota como creadas por el agente."
       - "Comprobar la app local con curl contra localhost o 127.0.0.1 está permitido; nada más sale de la máquina."
       - Lo que aparece fuera de alcance se anota en docs/plan/pendientes.md con ID P-0nn, no se arregla de paso.
+      - "Cambiar una prueba existente autorizada en la spec: correr node <harness>/scripts/autorizar-prueba.mjs <ruta> como un comando aparte; la app le pide el OK a la persona. Si no lo aprueba, cerrar con ESPERA."
+      - "Pila de pruebas propia: un proyecto de Compose con nombre único por corrida (por ejemplo <proyecto>-<rama>-<pid>). Bajar solo esa pila; nunca contenedores, volúmenes ni redes de otra corrida (F-C08-03)."
   archive:
     guidance:
       - "Antes de archivar, el PR del cambio tiene que estar unido a la rama integrada."

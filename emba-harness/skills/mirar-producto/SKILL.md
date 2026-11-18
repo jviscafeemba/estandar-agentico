@@ -21,10 +21,21 @@ del PR, cuando todavía es barato corregir.
       la spec y, al cierre del plan, todas las de `estilo-visual.md` §5), los anchos (escritorio y unos 400 px) y los
       esquemas (`light` y, si el estilo define modo oscuro, `dark`). Para ver una pantalla con sesión, usá una cookie
       **sintética** en `cookies`;
-   2. corré `node "<harness>/scripts/capturar.mjs" docs/capturas/<C-0n>/capturas.json`.
+   2. si la app cambia de pantalla por estado y no por ruta (ingresar, elegir una pestaña), dale a cada pantalla sus
+      **pasos**: `escribir`, `clic` (por texto o selector) y `esperarTexto` (0.4.3). Un paso que no encuentra su
+      control hace fallar la captura en rojo: si falla, corregí el paso; no informes las demás como buenas;
+   3. corré `node "<harness>/scripts/capturar.mjs" docs/capturas/<C-0n>/capturas.json --estricto`.
 
    Para los estados (vacío, error, sin permiso), sumá una pantalla por estado con los datos sintéticos que lo
    provocan. El formato completo está al comienzo del script.
+
+   **Reflujo.** El script mide en cada captura si la página desborda a lo ancho y deja `reflujo.json`. Con
+   `--estricto`, un desborde hace fallar el script: es un hallazgo del cambio. En la corrida 2 de C-08 esta medición
+   encontró un desborde real en Responder.
+
+   **Informá lo que salió, no lo que esperabas.** Mirá vos al menos una captura de cada pantalla antes de decir que
+   están bien. En la corrida 2 de C-08 un script de capturas se informó «en verde» mientras fotografiaba la pantalla
+   equivocada (D-C08v2-03).
 3. **Contrastá cada captura con `docs/diseno/estilo-visual.md`**:
    - la dirección visual elegida y sus capturas;
    - tokens y marca;
@@ -37,8 +48,9 @@ del PR, cuando todavía es barato corregir.
    - lo que no coincide con el estilo, y para cada cosa el pendiente P-0nn o la corrección dentro del cambio;
    - la línea `Vista por: <persona>, dd/mm/aaaa`, **vacía**. La completa la persona, no el agente.
 5. **Si el plan usa Claude Design** (fila «Interfaz y marca» de `docs/plan/plan.md`):
-   - pedile a la persona que sincronice con `/design-sync` si los componentes cambiaron. No lo hagas vos;
-   - revisá en Claude Design los componentes sincronizados contra la dirección elegida;
+   - llevá las capturas del cambio a Claude Design desde el navegador: la persona, o vos en el navegador de la app con
+     su sesión, si ella lo pide y está presente. Compará con la dirección elegida. `/design-sync` es opcional, solo si
+     hay una librería compilada;
    - en `mirada.md`, anotá los hallazgos de Claude Design en una sección aparte, «Hallazgos en Claude Design», para
      medir si aportan algo distinto de las capturas. Si no hubo ninguno, escribí «ninguno».
 6. **Pedí la mirada de la persona antes de abrir el PR** (0.4.2).

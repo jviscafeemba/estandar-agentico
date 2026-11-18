@@ -17,3 +17,11 @@ Nombre de la sesión: `PROYECTO · propósito` (ej. `NEXO · f4-carril-sap`).
    se anota como pendiente P-0nn o pregunta Q-0nn; no queda implícito (0.4.0, P-029 de ai-desempeno).
 9. **Orquestadora:** la verificación oculta de cada cambio se escribe antes de lanzar la implementación
    (`plantillas/verificacion-oculta.md`), fuera del repo.
+10. **Orquestadora, vigilante (0.4.3):** al lanzar una implementadora o un revisor como subagente, corré en segundo
+    plano `node <harness>/scripts/vigilar.mjs <carpeta del subagente> --minutos 10`. Si termina con «SIN PROGRESO»,
+    revisá al subagente. Si está colgado, relanzalo con su contexto o en uno nuevo, y anotalo en el registro. Cuando
+    el subagente termina, pará el vigilante.
+11. **Orquestadora, verificación propia (0.4.3):** antes de aceptar el verde de una implementadora, corré la suite
+    completa **2 veces** desde tu propia copia (no la de la implementadora), con la pila de pruebas propia. Una falla
+    intermitente es un defecto del cambio. En la corrida 2 de C-08 así aparecieron 2 pruebas intermitentes y 1 defecto
+    que la implementadora había dado por buenos (D-C08v2-01 a 03).

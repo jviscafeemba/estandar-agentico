@@ -91,14 +91,15 @@ Si el plan dice «sin Claude Design (OK: persona, dd/mm/aaaa)», esta sección d
 - **Proyecto de sistema de diseño:** el de «Dirección visual».
 - **Cuándo:** primero **antes** de la spec, para elegir la dirección (paso de diseño); después en cada cambio con
   pantallas, para revisar lo implementado (skill `mirar-producto`).
-- **Qué se sincroniza:** los tokens de §2, los componentes base de §3 y las pantallas de ejemplo de §5. Todo con
-  datos sintéticos: ningún dato de personas sale del repositorio.
-- **Quién sincroniza:** una persona, con `/design-sync`. Lo arranca a mano y aprueba cada plan de archivos. El agente
-  deja la librería de componentes lista para sincronizar, pero no sincroniza.
+- **Cómo se usa:** desde el navegador (vía principal, 0.4.3). Una persona abre el proyecto, o se lo pide al agente
+  en el navegador de la app con su sesión, estando presente. Se le adjuntan las capturas del catálogo y de la app.
+  Todo con datos sintéticos: ningún dato de personas sale del repositorio.
+- **`/design-sync` (opcional):** solo si el proyecto tiene una librería de componentes compilada. Lo arranca una
+  persona y aprueba cada plan de archivos.
 - **Fuente de verdad:** el repositorio. En Claude Design se explora y se elige; lo elegido vuelve al repo y desde
   ahí manda este archivo y el código. Un cambio que nace después de un comentario en Claude Design entra al repo por
   el flujo de siempre (spec, prueba, PR), no copiándolo de vuelta.
-- **Última sincronización:** dd/mm/aaaa, commit `<sha>`, por <persona>.
+- **Última revisión en Claude Design:** dd/mm/aaaa, commit `<sha>`, por <persona>.
 
 ## 7. Cómo se verifica
 

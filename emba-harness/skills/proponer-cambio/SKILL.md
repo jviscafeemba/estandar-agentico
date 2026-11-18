@@ -39,9 +39,14 @@ No escribas código en este paso.
    - **Fuera de alcance**. Incluye lo que el usuario esperaría y la spec no cubre, con su pendiente P-0nn o
      pregunta Q-0nn.
    - **Riesgos**: datos, seguridad, integraciones, irreversibilidad.
-5. En nivel 3, o si la spec la va a implementar otra sesión, lanzá el agente `revisor-spec` de este plugin con
-   solo la ruta de la spec (y la rama del cambio del que depende, si ya está unido). Corregí los graves antes de
-   mostrarla.
+5. En nivel 3, o si la spec la va a implementar otra sesión, lanzá el agente `revisor-spec` de este plugin. Pasale
+   solo la ruta de la spec, el número de ronda y, si el cambio depende de otro ya unido, su rama. Corregí los graves
+   y hacé commit de la spec antes de cada ronda siguiente. **Máximo 3 rondas** (0.4.3):
+   - en las rondas 2 y 3, pasale también el commit de la ronda anterior: revisa solo lo corregido, no la spec entera;
+   - si después de la ronda 3 quedan graves, no lances una cuarta. Llevale a la persona la lista de graves abiertos
+     y tres opciones: **seguir** con más rondas (decide cuántas), **aceptar** con los graves anotados como riesgos en
+     la sección «Riesgos» de la propuesta, o **achicar** el cambio y pasar lo dudoso a otro C-0n. Cerrá con
+     `ESPERA: <persona> (tope del revisor de spec en <C-0n>)` y anotá su decisión en la spec.
 6. Si el cambio tiene pantallas, mostrale también las capturas de la dirección visual o el enlace al proyecto de
    Claude Design: la aprobación de una spec con pantallas se hace **viéndolas** (0.4.2).
    Mostrale la propuesta al usuario y esperá su aprobación explícita antes de implementar. Lo que vale es que
