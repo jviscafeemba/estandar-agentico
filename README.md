@@ -1,5 +1,8 @@
 # Prueba de concepto — Estándar agéntico EMBA
 
+> **Método 1.0, congelado el 19/11/2026** (`emba-harness` 0.4.3). Regla de congelamiento y mejoras anotadas:
+> [`docs/metodo-1.0.md`](docs/metodo-1.0.md).
+
 Implementa en pequeño la propuesta B+ del informe «Estándar agéntico EMBA» (29/10/2026): brain de empresa,
 brain de proyecto y harness, con medición. **No toca ningún proyecto real del equipo.**
 

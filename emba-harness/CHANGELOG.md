@@ -1,5 +1,11 @@
 # Cambios de emba-harness
 
+## Método 1.0 · 19/11/2026 · congelado
+
+El método queda congelado en esta versión (0.4.3), sin cambios de código. Solo se publica un parche si una falla
+bloquea el trabajo de un proyecto; toda otra mejora se anota en `docs/metodo-1.0.md` y se revisa el 15/01/2027.
+Lo decidió Joaquín Viscafe el 19/11/2026.
+
 ## 0.4.3 · 18/11/2026
 
 Lecciones de las dos corridas de C-08 «Interfaz» en ai-desempeno (PR #15 con 0.4.1 y PR #17 con 0.4.2). Joaquín aprobó
