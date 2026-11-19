@@ -225,6 +225,26 @@ footer { border-top: 1px solid var(--linea); padding-top: 20px; font-size: 0.875
 </section>
 
 <section>
+  <span class="etiqueta">Conocimiento</span>
+  <h2>Tres cerebros: dónde vive cada cosa</h2>
+  <p class="lectura suave">Los agentes solo saben lo que está escrito. Por eso cada dato vive en un solo lugar, y los
+  demás lugares lo enlazan en vez de copiarlo.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Cerebro</th><th>Dónde</th><th>Qué guarda</th><th>Quién lo cuida</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Empresa · emba-brain</strong></td><td>Carpeta <span class="mono">emba-brain/</span> del repositorio del método</td><td>Las normas de EMBA que valen para todos los proyectos: cómo se trabaja, cómo se guardan los secretos, qué exige la integración continua, cómo deben verse las interfaces. También el glosario del negocio (empresa, factura, almacén…), el mapa de sistemas y las decisiones de empresa. Cada documento tiene un dueño y una fecha en que vence.</td><td>El área dueña de cada documento</td></tr>
+        <tr><td><strong>Personal</strong></td><td>Carpeta propia de cada persona</td><td>Tareas, bitácora y lecciones de quien trabaja. Enlaza a los proyectos, no copia.</td><td>Cada persona</td></tr>
+        <tr><td><strong>Proyecto</strong></td><td>El repositorio del proyecto</td><td>Las instrucciones para los agentes (<span class="mono">AGENTS.md</span>, corto), los requerimientos, las decisiones de arquitectura, el plan, los pendientes, las preguntas abiertas y el estilo visual.</td><td>El líder técnico del proyecto</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="nota lectura">Antes de inventar una regla, el agente consulta emba-brain. Y lo que se puede comprobar
+  automáticamente no se escribe ahí: se convierte en un control del harness, una prueba o un paso de la integración
+  continua.</p>
+</section>
+
+<section>
   <span class="etiqueta">Proceso · nivel 3</span>
   <h2>El recorrido de un cambio</h2>
   <p class="lectura suave">Los pasos con círculo lleno los hace o decide una persona. El resto lo hacen agentes, cada uno
@@ -271,6 +291,35 @@ footer { border-top: 1px solid var(--linea); padding-top: 20px; font-size: 0.875
       </tbody>
     </table>
   </div>
+</section>
+
+<section>
+  <span class="etiqueta">Elementos</span>
+  <h2>Las piezas del método</h2>
+  <p class="lectura suave">El método se arma con doce piezas. Cada una tiene un código (E1 a E12) porque así aparecen en
+  los documentos y en las conversaciones del equipo. La última columna dice qué mostró la prueba real.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Código</th><th>Pieza</th><th>Para qué sirve</th><th>Qué mostró la prueba</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">E1</td><td><strong>Brain de empresa</strong></td><td>Normas y vocabulario comunes, para que cada proyecto no los invente.</td><td><span class="chip igual">vigente</span> Sumó la norma de interfaz.</td></tr>
+        <tr><td class="mono">E2</td><td><strong>Instrucciones del proyecto</strong> (<span class="mono">AGENTS.md</span>)</td><td>Lo que el agente tiene que saber del proyecto: reglas que no se negocian y dónde está cada cosa.</td><td><span class="chip igual">vigente</span> Cada regla nombra la prueba que la hace cumplir.</td></tr>
+        <tr><td class="mono">E3</td><td><strong>Especificación con supuestos</strong></td><td>Escribir qué se construye y qué se supuso, antes del código, y que otro agente lo revise.</td><td><span class="chip nuevo">el más valioso</span> Atrapó 36 errores graves antes del código.</td></tr>
+        <tr><td class="mono">E4</td><td><strong>Pruebas primero, protegidas</strong></td><td>Las pruebas se escriben antes que el código y no se pueden debilitar sin permiso.</td><td><span class="chip ajuste">ajustado</span> El permiso ahora se pide con un diálogo.</td></tr>
+        <tr><td class="mono">E5</td><td><strong>Revisión independiente</strong></td><td>Quien revisa no es quien escribió, y no ve sus explicaciones.</td><td><span class="chip igual">vigente</span> Encontró problemas en cada cambio.</td></tr>
+        <tr><td class="mono">E6</td><td><strong>Controles de seguridad</strong></td><td>Bloquear secretos, salidas de datos y comandos peligrosos.</td><td><span class="chip igual">vigente</span> Cero fugas; todavía da algunos bloqueos de más.</td></tr>
+        <tr><td class="mono">E7</td><td><strong>Trabajo en paralelo</strong></td><td>Varios agentes en partes separadas del mismo proyecto, sin pisarse.</td><td><span class="chip igual">sin probar</span> Todo se hizo de a un cambio.</td></tr>
+        <tr><td class="mono">E8</td><td><strong>Aprobación sin papeleo</strong></td><td>Que la persona apruebe leyendo lo justo, sin hojas de control.</td><td><span class="chip igual">sin probar</span> No se midió todavía.</td></tr>
+        <tr><td class="mono">E9</td><td><strong>Cierre y lecciones</strong></td><td>Cada cambio termina archivado y deja sus lecciones escritas.</td><td><span class="chip igual">vigente</span> Las lecciones aplicadas no se repitieron.</td></tr>
+        <tr><td class="mono">E10</td><td><strong>Pendientes numerados</strong></td><td>Lo que aparece fuera del alcance se anota con un número; no se arregla de paso.</td><td><span class="chip igual">vigente</span> Evitó que los cambios crecieran sin control.</td></tr>
+        <tr><td class="mono">E11</td><td><strong>Indicadores</strong></td><td>Medir tiempos, rondas, defectos y costo de cada cambio.</td><td><span class="chip ajuste">a mejorar</span> El registro todavía se llena en parte a mano.</td></tr>
+        <tr><td class="mono">E12</td><td><strong>Chequeos ocultos</strong></td><td>Pruebas que el agente programador no ve, escritas desde la especificación.</td><td><span class="chip nuevo">sumado</span> Atrapó un error que se le escapó a todos los demás controles.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="nota lectura">Además de las doce piezas, la prueba real agregó tres pasos que ya están dentro del recorrido:
+  el diseño visual elegido por una persona, la mirada al producto antes de unir y la verificación propia del agente
+  coordinador.</p>
 </section>
 
 <section>
