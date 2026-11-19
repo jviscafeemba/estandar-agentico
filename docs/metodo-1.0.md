@@ -5,8 +5,8 @@
 - **Qué es la 1.0:** exactamente `emba-harness` 0.4.3, más `emba-brain/estandares/` y `PROPUESTA-METODOLOGIA.md`
   tal como están en `main` en esta fecha. No hay cambios de código. La etiqueta `metodo-1.0` marca el commit de unión
   de este documento.
-- **Informe final:** https://claude.ai/code/artifact/9ecd22a2-83dd-4de3-a18d-7a279475ada4 (privado; se comparte
-  desde su menú).
+- **Informe final:** `docs/informe-metodo-1.0.html`, publicado en
+  https://claude.ai/code/artifact/9ecd22a2-83dd-4de3-a18d-7a279475ada4 (privado; se comparte desde su menú).
 
 ## Evidencia
 

@@ -1,0 +1,363 @@
+<title>Método agéntico EMBA</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: una columna de lectura (~68ch) con tablas y el flujo que se ensanchan a 960px; encabezado como ficha técnica. */
+:root {
+  --tinta: #17232b;
+  --tinta-suave: #4b5a64;
+  --fondo: #f6f8f9;
+  --superficie: #ffffff;
+  --linea: #d8e0e4;
+  --acento: #0e5f6e;
+  --acento-tenue: #e2f0f2;
+  --nuevo: #1d6b3a;
+  --nuevo-fondo: #e3f2e7;
+  --ajuste: #8a5a00;
+  --ajuste-fondo: #fbf0d9;
+  --igual: #4b5a64;
+  --igual-fondo: #eceff1;
+  --pend: #9b2c2c;
+  --pend-fondo: #f9e5e5;
+  --f-titulo: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-texto: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --tinta: #e3eaee; --tinta-suave: #a3b2bb; --fondo: #11181d; --superficie: #18222a; --linea: #2c3a43;
+    --acento: #6cc4d2; --acento-tenue: #173640;
+    --nuevo: #7fd49a; --nuevo-fondo: #17331f; --ajuste: #e7b85a; --ajuste-fondo: #3a2c10;
+    --igual: #a3b2bb; --igual-fondo: #222e36; --pend: #f09a9a; --pend-fondo: #3d1d1f;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --tinta: #e3eaee; --tinta-suave: #a3b2bb; --fondo: #11181d; --superficie: #18222a; --linea: #2c3a43;
+  --acento: #6cc4d2; --acento-tenue: #173640;
+  --nuevo: #7fd49a; --nuevo-fondo: #17331f; --ajuste: #e7b85a; --ajuste-fondo: #3a2c10;
+  --igual: #a3b2bb; --igual-fondo: #222e36; --pend: #f09a9a; --pend-fondo: #3d1d1f;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--fondo); color: var(--tinta);
+  font: 400 16px/1.6 var(--f-texto);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.pagina { max-width: 960px; margin: 0 auto; padding-block: 40px 72px; display: flex; flex-direction: column; gap: 48px; }
+.lectura { max-width: 68ch; }
+h1, h2, h3 { font-family: var(--f-titulo); line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.5rem; font-weight: 600; }
+h3 { font-size: 1.0625rem; font-weight: 600; }
+p { margin: 0; }
+section { display: flex; flex-direction: column; gap: 16px; }
+.etiqueta { font: 500 0.75rem/1 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--acento); }
+.suave { color: var(--tinta-suave); }
+code, .mono { font-family: var(--f-mono); font-size: 0.875em; }
+code { background: var(--acento-tenue); color: var(--tinta); padding: 1px 5px; border-radius: 3px; }
+a { color: var(--acento); }
+a:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+
+.ficha { display: flex; flex-direction: column; gap: 20px; border-bottom: 2px solid var(--tinta); padding-bottom: 28px; }
+.ficha dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 24px; margin: 0; }
+.ficha dt { font: 500 0.7rem/1.4 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--tinta-suave); }
+.ficha dd { margin: 2px 0 0; font-weight: 500; }
+.sello { align-self: flex-start; font: 600 0.8rem/1 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--acento); border: 1.5px solid var(--acento); padding: 6px 10px; border-radius: 3px; }
+
+.cifras { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--linea); border: 1px solid var(--linea); }
+.cifra { background: var(--superficie); padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+.cifra b { font: 600 1.5rem/1.1 var(--f-titulo); font-variant-numeric: tabular-nums; }
+.cifra span { font-size: 0.875rem; color: var(--tinta-suave); line-height: 1.4; }
+
+.tabla { overflow-x: auto; border: 1px solid var(--linea); background: var(--superficie); }
+table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--linea); }
+tr:last-child td { border-bottom: 0; }
+th { font: 500 0.72rem/1.3 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--tinta-suave); background: var(--fondo); }
+td.id { font-family: var(--f-mono); font-size: 0.85rem; white-space: nowrap; color: var(--acento); }
+
+.chip { display: inline-block; font: 500 0.72rem/1 var(--f-mono); padding: 4px 7px; border-radius: 3px; white-space: nowrap; }
+.chip.nuevo { color: var(--nuevo); background: var(--nuevo-fondo); }
+.chip.ajuste { color: var(--ajuste); background: var(--ajuste-fondo); }
+.chip.igual { color: var(--igual); background: var(--igual-fondo); }
+.chip.pend { color: var(--pend); background: var(--pend-fondo); }
+
+.flujo { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: paso; }
+.flujo li { counter-increment: paso; display: grid; grid-template-columns: 44px 1fr; gap: 0 14px; position: relative; padding-bottom: 18px; }
+.flujo li::before {
+  content: counter(paso); grid-row: 1 / span 2;
+  width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  font: 600 0.85rem/1 var(--f-mono); color: var(--acento); background: var(--superficie); border: 1.5px solid var(--acento);
+  position: relative; z-index: 1;
+}
+.flujo li::after { content: ""; position: absolute; left: 15.5px; top: 32px; bottom: 0; width: 1.5px; background: var(--linea); }
+.flujo li:last-child::after { display: none; }
+.flujo .cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.flujo .quien { font: 500 0.75rem/1 var(--f-mono); color: var(--tinta-suave); }
+.flujo p { color: var(--tinta-suave); font-size: 0.9375rem; max-width: 72ch; }
+.flujo li.humano::before { background: var(--acento); color: var(--superficie); }
+
+.par { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+.bloque { display: flex; flex-direction: column; gap: 8px; }
+ul.lista, ol.lista { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; }
+.nota { border-left: 3px solid var(--acento); padding: 4px 0 4px 14px; color: var(--tinta-suave); font-size: 0.9375rem; }
+footer { border-top: 1px solid var(--linea); padding-top: 20px; font-size: 0.875rem; color: var(--tinta-suave); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="pagina">
+
+<header class="ficha">
+  <span class="etiqueta">Informe final del método · 19/11/2026</span>
+  <h1>Método agéntico EMBA</h1>
+  <span class="sello">Versión 1.0 · congelada</span>
+  <p class="lectura">Cómo se construye software con agentes en EMBA: qué hace la persona, qué hace cada agente, qué controla
+  el harness y qué evidencia lo respalda. Describe la versión 1.0, congelada el 19/11/2026 hasta la revisión del
+  15/01/2027.</p>
+  <dl>
+    <div><dt>Versión</dt><dd>Método 1.0 = emba-harness 0.4.3</dd></div>
+    <div><dt>Publicada</dt><dd><span class="mono">main @ a976876</span>, 18/11/2026</dd></div>
+    <div><dt>Congelada</dt><dd>19/11/2026 (PR #7)</dd></div>
+    <div><dt>Repositorio</dt><dd>jviscafeemba/estandar-agentico</dd></div>
+    <div><dt>Herramientas</dt><dd>Claude Code, OpenSpec 1.15, Claude Design</dd></div>
+    <div><dt>Primer proyecto</dt><dd>ai-desempeno (nivel 3)</dd></div>
+  </dl>
+</header>
+
+<section>
+  <span class="etiqueta">Estado</span>
+  <h2>Cómo se llegó a la 1.0</h2>
+  <div class="lectura" style="display:flex;flex-direction:column;gap:12px">
+    <p><strong>Piloto (0.3.3), 12 y 13/11/2026.</strong> Siete cambios de ai-desempeno. Cumplió 5 de sus 6 criterios y no
+    dejó escapar ningún defecto grave. Pero la app pasó 365 pruebas y salió sin ningún estilo visual: ningún
+    requerimiento lo pedía y nadie la miró funcionando (P-029).</p>
+    <p><strong>0.4.0 y 0.4.1.</strong> Temas transversales en el plan, un revisor de spec que busca lo que falta, la mirada
+    al producto y Claude Design. La corrida 1 de C-08 «Interfaz» mostró que, con Claude Design solo al final, nadie
+    diseñaba: se cerró sin unir.</p>
+    <p><strong>0.4.2.</strong> El diseño pasa antes de la spec: una persona elige la dirección visual mirándola y aprueba
+    viendo capturas. La corrida 2 de C-08 entregó una interfaz diseñada, vista y firmada antes de unirse, con 8 rondas
+    de spec y un costo alto.</p>
+    <p><strong>0.4.3.</strong> Corrige lo que mostró la corrida 2: tope de 3 rondas, Claude Design desde el navegador,
+    autorizar pruebas con el diálogo de la app, vigilante de subagentes y verificación propia de la orquestadora. C-09
+    confirmó que autorizar pruebas desde un subagente funciona.</p>
+    <p><strong>1.0.</strong> El 19/11/2026 el método se congela en la 0.4.3. Cada versión anterior salió de un solo
+    cambio; lo que falta aprender sale de usarlo en otros proyectos, no de otra corrida.</p>
+  </div>
+  <div class="cifras" role="list" aria-label="Cifras de la evidencia">
+    <div class="cifra" role="listitem"><b>9</b><span>cambios reales con el método: 7 del piloto y 2 corridas de C-08</span></div>
+    <div class="cifra" role="listitem"><b>0</b><span>defectos graves escapados a la rama integrada</span></div>
+    <div class="cifra" role="listitem"><b>36</b><span>graves atrapados en la spec antes del código (21 + 15)</span></div>
+    <div class="cifra" role="listitem"><b>1</b><span>desborde real visto solo por la mirada al producto</span></div>
+    <div class="cifra" role="listitem"><b>93 %</b><span>del costo de C-08 fue la orquestadora: primera mejora anotada</span></div>
+  </div>
+</section>
+
+<section>
+  <span class="etiqueta">Evidencia</span>
+  <h2>Las pruebas del método</h2>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Prueba</th><th>Versión</th><th>Resultado</th><th>Informe</th></tr></thead>
+      <tbody>
+        <tr><td>Piloto de ai-desempeno, C-00 a C-06</td><td class="mono">0.3.3</td><td>5 de 6 criterios, 0 escapados, 129,6 USD. La app salió sin estilo</td><td><a href="https://claude.ai/code/artifact/79680ac5-b70e-483c-9f65-c7e5e7d4fe87">Reporte del piloto</a></td></tr>
+        <tr><td>C-08 «Interfaz», corrida 1</td><td class="mono">0.4.1</td><td>Sin paso de diseño. Se cerró sin unir (PR #15)</td><td rowspan="2"><a href="https://claude.ai/code/artifact/ddcb6862-1960-479c-91b7-3b87a4416cac">Método 0.4 a prueba</a></td></tr>
+        <tr><td>C-08 «Interfaz», corrida 2</td><td class="mono">0.4.2</td><td>Diseño elegido y mirada firmada; unido (PR #17). 8 rondas, ≈ 154 USD</td></tr>
+        <tr><td>C-09 «Listo para el piloto de RRHH»</td><td class="mono">0.4.3</td><td>En curso. Autorizar pruebas desde un subagente: funciona</td><td>Se suma al cerrar</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <span class="etiqueta">Fundamento</span>
+  <h2>Tres cerebros, cada dato en un solo lugar</h2>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Cerebro</th><th>Dónde</th><th>Qué guarda</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Empresa</strong></td><td><code>emba-brain/</code></td><td>Estándares (flujo, secretos, CI, interfaz), glosario de negocio, mapa de sistemas, ADR de empresa y lecciones candidatas. Cada documento tiene dueño y fecha de vencimiento.</td></tr>
+        <tr><td><strong>Personal</strong></td><td><code>_brain/</code></td><td>Tablero de tareas, portafolio, personas, lecciones y bitácora de Joaquín. Enlaza a los proyectos; no copia.</td></tr>
+        <tr><td><strong>Proyecto</strong></td><td>cada repo</td><td><code>AGENTS.md</code> (≤ 150 líneas), requerimientos RF/RNF, ADR, plan, pendientes P-0nn, preguntas Q-0nn y estilo visual.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="nota lectura">Lo que se puede verificar no se escribe en el brain: se convierte en un hook, una prueba o una compuerta de CI del harness.</p>
+</section>
+
+<section>
+  <span class="etiqueta">Escala</span>
+  <h2>Niveles de proyecto</h2>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Nivel</th><th>Cuándo</th><th>Lleva</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1 · Exploración</strong></td><td>POC, script, análisis</td><td><code>CLAUDE.md</code> corto y <code>pendientes.md</code>.</td></tr>
+        <tr><td><strong>2 · Producto</strong></td><td>App con usuarios y un equipo</td><td>Nivel 1, ADR, el flujo del harness, CI, plan con temas transversales y estilo visual si tiene pantallas.</td></tr>
+        <tr><td><strong>3 · Plataforma</strong></td><td>Crítico, con integraciones y producción</td><td>Nivel 2, OpenSpec, revisor de spec, verificación oculta, mirada al producto, sesión orquestadora y runbook.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <span class="etiqueta">Proceso · nivel 3</span>
+  <h2>El recorrido de un cambio</h2>
+  <p class="lectura suave">Los pasos marcados con círculo lleno los hace o decide una persona. El resto lo hacen agentes,
+  cada uno en su propio contexto.</p>
+  <ol class="flujo">
+    <li class="humano"><div class="cab"><h3>Plan y temas transversales</h3><span class="quien">persona + orquestadora</span></div>
+      <p>El plan ordena los cambios C-0n y asigna interfaz y marca, accesibilidad, rendimiento y operación a un cambio, o los deja fuera de alcance con el OK de una persona y la fecha. La interfaz usa Claude Design salvo que el plan diga «sin Claude Design» con OK.</p></li>
+    <li class="humano"><div class="cab"><h3>Diseño visual en Claude Design</h3><span class="quien">agente + persona</span></div>
+      <p>Solo en el primer cambio con pantallas, o en uno que agrega un tipo de pantalla nuevo. El agente arma un catálogo estático con datos sintéticos y propone 2 o 3 direcciones. La persona las explora en Claude Design desde el navegador y elige una. <code>estilo-visual.md</code> registra el enlace, quién eligió, la fecha y las capturas.</p></li>
+    <li><div class="cab"><h3>Spec con supuestos</h3><span class="quien">orquestadora</span></div>
+      <p>Propuesta OpenSpec que cita los RF y RNF, responde cada supuesto, lista las pruebas existentes que puede tocar y describe sus pantallas citando el estilo visual.</p></li>
+    <li><div class="cab"><h3>Revisor de spec, hasta 3 rondas</h3><span class="quien">agente revisor-spec</span></div>
+      <p>Revisa en contexto limpio y busca también lo que el usuario espera y la spec no pide. Las rondas 2 y 3 revisan solo lo corregido. Si después de la 3 quedan graves, decide una persona: seguir, aceptar con riesgos anotados o achicar el cambio.</p></li>
+    <li class="humano"><div class="cab"><h3>Aprobación de la spec</h3><span class="quien">persona</span></div>
+      <p>En el chat de la orquestadora, nunca reenviada desde otra sesión. Si la spec tiene pantallas, se aprueba viendo las capturas de la dirección visual.</p></li>
+    <li><div class="cab"><h3>Verificación oculta</h3><span class="quien">orquestadora</span></div>
+      <p>Chequeos escritos desde la spec antes de implementar, guardados fuera del repo, que la implementadora no ve.</p></li>
+    <li><div class="cab"><h3>Prueba que falla, luego código</h3><span class="quien">implementadora</span></div>
+      <p>Subagente con solo la spec. Primero las pruebas en rojo. Para cambiar una prueba existente autorizada, pide permiso con <code>autorizar-prueba.mjs</code> y la persona lo aprueba en el diálogo de la app. Un vigilante avisa si se cuelga.</p></li>
+    <li><div class="cab"><h3>Verificación propia de la orquestadora</h3><span class="quien">orquestadora</span></div>
+      <p>Repite las pruebas de la plataforma hasta descartar intermitencias. En C-08 encontró 3 problemas que la implementadora había dado por buenos.</p></li>
+    <li><div class="cab"><h3>Revisor de código</h3><span class="quien">agente revisor</span></div>
+      <p>Lee el diff, la spec y los requerimientos, no la descripción del autor. Clasifica los hallazgos en grave, medio y menor.</p></li>
+    <li class="humano"><div class="cab"><h3>Mirada al producto</h3><span class="quien">agente + persona</span></div>
+      <p>La app corre, <code>capturar.mjs</code> guarda las capturas por pasos a varios anchos y mide el reflujo, y una persona la ve <strong>antes de abrir el PR</strong>. Firma «Vista por». Es obligatoria en el primer cambio con pantallas y al cierre.</p></li>
+    <li class="humano"><div class="cab"><h3>PR y unión</h3><span class="quien">orquestadora + persona</span></div>
+      <p>Con CI en verde, o con el CI local si el CI del repositorio no corre. A <span class="mono">main</span> une siempre una persona.</p></li>
+    <li><div class="cab"><h3>Cierre y lecciones</h3><span class="quien">orquestadora</span></div>
+      <p>Spec archivada, pendientes actualizados y, durante el congelamiento, mejoras del método anotadas en <code>docs/metodo-1.0.md</code>, sin implementarlas.</p></li>
+  </ol>
+</section>
+
+<section>
+  <span class="etiqueta">Roles</span>
+  <h2>Quién hace qué</h2>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Rol</th><th>Hace</th><th>No hace</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Persona (líder)</strong></td><td>Aprueba el plan, el diseño, las specs y lo que queda fuera de alcance; mira el producto; escribe los archivos de control; autoriza pruebas; une a <span class="mono">main</span>.</td><td>—</td></tr>
+        <tr><td><strong>Orquestadora</strong></td><td>Specs, verificación oculta y propia, lanza implementadoras y revisores, push y PR con la lista de salida, registro.</td><td>Escribir el código de un cambio; aprobar; unir a <span class="mono">main</span>.</td></tr>
+        <tr><td><strong>Implementadora</strong></td><td>Solo con la spec: prueba que falla, código, verificación, commits.</td><td>Push, unir, cambiar pruebas no autorizadas, tocar otro cambio.</td></tr>
+        <tr><td><strong>Revisor de spec</strong></td><td>Revisa la spec antes del código, en contexto limpio, hasta 3 rondas.</td><td>Ver el chat de la orquestadora.</td></tr>
+        <tr><td><strong>Revisor de código</strong></td><td>Revisa el diff contra la spec y los requerimientos.</td><td>Corregir.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <span class="etiqueta">Elementos</span>
+  <h2>Los elementos del método en la 1.0</h2>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>ID</th><th>Elemento</th><th>Estado</th><th>Evidencia</th></tr></thead>
+      <tbody>
+        <tr><td class="id">E1</td><td>Brain de empresa</td><td><span class="chip igual">vigente</span></td><td>Suma el estándar de interfaz.</td></tr>
+        <tr><td class="id">E2</td><td><code>AGENTS.md</code></td><td><span class="chip igual">vigente</span></td><td>Nombra la prueba de cada regla, incluida la interfaz.</td></tr>
+        <tr><td class="id">E3</td><td>Spec con supuestos (OpenSpec)</td><td><span class="chip ajuste">con tope</span></td><td>El control más productivo: 36 graves antes del código. Sin tope llegó a 8 rondas; ahora son 3.</td></tr>
+        <tr><td class="id">E4</td><td>Prueba primero con hook</td><td><span class="chip ajuste">ajustado</span></td><td>Autorizar pruebas pasa por el diálogo de la app; probado desde un subagente en C-09.</td></tr>
+        <tr><td class="id">E5</td><td>Revisión independiente</td><td><span class="chip igual">vigente</span></td><td>Atrapó defectos en cada cambio, incluidos 3 graves en total.</td></tr>
+        <tr><td class="id">E6</td><td>Hooks de seguridad</td><td><span class="chip igual">vigente</span></td><td>0 fugas. Lista de salida, excepción para localhost y ajuste de secretos encendido.</td></tr>
+        <tr><td class="id">E7</td><td>Carriles en paralelo</td><td><span class="chip pend">sin evidencia</span></td><td>Todos los cambios fueron secuenciales.</td></tr>
+        <tr><td class="id">E8</td><td>Aprobación sin hoja</td><td><span class="chip pend">sin evidencia</span></td><td>No se midió la atención del aprobador.</td></tr>
+        <tr><td class="id">E9</td><td>Cierre y lecciones</td><td><span class="chip ajuste">congelado</span></td><td>Las lecciones ahora se anotan para la revisión, no se aplican de inmediato.</td></tr>
+        <tr><td class="id">E10</td><td>Pendientes con ID</td><td><span class="chip igual">vigente</span></td><td>Lo fuera de alcance quedó anotado, no se arregló de paso.</td></tr>
+        <tr><td class="id">E11</td><td>Indicadores</td><td><span class="chip pend">a mejorar</span></td><td>El registro sigue en parte manual y mezcla tiempo activo con esperas (M-02).</td></tr>
+        <tr><td class="id">E12</td><td>Verificación oculta</td><td><span class="chip igual">vigente</span></td><td>Atrapó el único defecto que se le escapó a todos los demás controles en el piloto.</td></tr>
+        <tr><td class="id">—</td><td>Temas transversales y mirada al producto</td><td><span class="chip nuevo">probado</span></td><td>La mirada encontró un desborde real que ninguna prueba vio.</td></tr>
+        <tr><td class="id">—</td><td>Diseño antes de la spec, con Claude Design</td><td><span class="chip nuevo">probado</span></td><td>C-08 corrida 2: una persona eligió la dirección y la interfaz salió diseñada.</td></tr>
+        <tr><td class="id">—</td><td>Verificación propia de la orquestadora</td><td><span class="chip nuevo">probado</span></td><td>Encontró 2 pruebas intermitentes y 1 defecto que la implementadora había dado por buenos.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <span class="etiqueta">Controles automáticos</span>
+  <h2>Lo que impone el harness</h2>
+  <p class="lectura suave">Los hooks son una alarma que deja registro, no una frontera de seguridad. La primera defensa
+  son los permisos de la política de la empresa.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Control</th><th>Qué bloquea</th><th>Qué deja pasar</th></tr></thead>
+      <tbody>
+        <tr><td><strong>bloquear-secretos</strong></td><td>Leer, tocar o borrar <code>.env</code>, <code>.env.local</code> y <code>secrets/</code>.</td><td><code>.env.example</code> y <code>.env.sample</code>, y los patrones entre comillas de <code>sed</code>, <code>grep</code> y similares (encendido por defecto).</td></tr>
+        <tr><td><strong>bloquear-comandos</strong></td><td>Push forzado, <code>reset --hard</code>, <code>git clean -f</code>, descargar y ejecutar, <code>drop database</code>, borrados masivos fuera del proyecto.</td><td>El resto de comandos locales.</td></tr>
+        <tr><td><strong>bloquear-salida</strong></td><td>Todo lo que sale de la máquina: red, push, PR, publicar paquetes, código en línea con red.</td><td>Consultas a localhost; push, PR y comentarios que permita <code>salida-permitida.txt</code>. Nunca unir a <span class="mono">main</span>.</td></tr>
+        <tr><td><strong>proteger-pruebas</strong></td><td>Escribir por shell en carpetas de pruebas, o cambiar una aserción de una prueba que ya existía sin autorización.</td><td>Crear pruebas nuevas con Write; un pedido limpio de <code>autorizar-prueba.mjs</code> abre el diálogo de la app.</td></tr>
+        <tr><td><strong>vigilar</strong></td><td>—</td><td>Avisa si un subagente no avanza en 10 minutos.</td></tr>
+        <tr><td><strong>verificar-proyecto</strong></td><td>CI en rojo si <code>AGENTS.md</code> pasa de 150 líneas, se cita un ADR o RF inexistente, hay pantallas sin estilo visual, el plan deja un tema transversal sin asignar o el estilo no registra la dirección visual elegida.</td><td>Avisa, sin fallar, si un RF no tiene prueba o faltan las carpetas protegidas.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="par">
+    <div class="bloque">
+      <h3>Lo que escribe solo una persona</h3>
+      <ul class="lista">
+        <li><code>.claude/protegidos.txt</code>: carpetas de pruebas protegidas.</li>
+        <li><code>.claude/salida-permitida.txt</code>: push, PR y comentarios permitidos.</li>
+        <li><code>.emba/pruebas-autorizadas.txt</code>: pruebas existentes que se pueden cambiar, vía el diálogo.</li>
+        <li><code>.claude/ajustes-harness.txt</code>: ajustes opcionales de los hooks.</li>
+      </ul>
+      <p class="suave" style="font-size:0.9375rem">Si un agente pudiera escribirlos, se estaría autorizando solo.</p>
+    </div>
+    <div class="bloque">
+      <h3>Skills y agentes</h3>
+      <ul class="lista">
+        <li><code>proponer-cambio</code>, <code>verificar</code>, <code>revisar</code>, <code>cerrar-fase</code>, <code>nuevo-proyecto</code></li>
+        <li><code>disenar-interfaz</code> y <code>mirar-producto</code></li>
+        <li>Scripts <code>capturar.mjs</code>, <code>autorizar-prueba.mjs</code> y <code>vigilar.mjs</code></li>
+        <li>Agentes <code>revisor</code> y <code>revisor-spec</code></li>
+        <li>Plantillas: plan, estilo visual, OpenSpec nivel 3, verificación oculta, lista de salida, CI local</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="etiqueta">Congelamiento</span>
+  <h2>La regla hasta el 15/01/2027</h2>
+  <ol class="lista lectura">
+    <li>El método no cambia por mejoras. Solo se publica un parche si una falla <strong>bloquea</strong> el trabajo de un proyecto: un hook que impide un paso legítimo sin alternativa, un script roto o un riesgo de seguridad.</li>
+    <li>Cada parche dice en el CHANGELOG qué falla bloqueante resuelve, con su evidencia, y lo aprueba una persona.</li>
+    <li>Toda otra mejora se anota en <code>docs/metodo-1.0.md</code> con su evidencia y no se implementa hasta la revisión.</li>
+    <li>La revisión es el 15/01/2027, después de abrir el ciclo 2026 de ai-desempeno, con los datos de los proyectos que usen la 1.0. De ahí sale, si corresponde, una 1.1.</li>
+  </ol>
+</section>
+
+<section>
+  <span class="etiqueta">Para la revisión</span>
+  <h2>Mejoras anotadas</h2>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>ID</th><th>Mejora</th><th>Evidencia</th><th>Prioridad</th></tr></thead>
+      <tbody>
+        <tr><td class="id">M-01</td><td><strong>Costo de la orquestadora:</strong> una sesión por fase con traspaso escrito, en lugar de una sesión que dura todo el cambio.</td><td>C-08: ≈ 143 de ≈ 154 USD fueron la orquestadora, que releyó 387 M de tokens de caché en 26 h. C-09 prueba una versión manual.</td><td><span class="chip pend">alta</span></td></tr>
+        <tr><td class="id">M-02</td><td><strong>Registro de eventos automático</strong>, separando tiempo activo de esperas.</td><td>Piloto: 3 eventos corregidos. C-08: el tiempo activo no se pudo separar.</td><td><span class="chip ajuste">media</span></td></tr>
+        <tr><td class="id">M-03</td><td><strong>CI independiente</strong> cuando el del repositorio no corre.</td><td>ai-desempeno usa el CI local desde el 16/11/2026.</td><td><span class="chip ajuste">media</span></td></tr>
+        <tr><td class="id">M-04</td><td><strong>Pruebas sensibles a la carga</strong> de la máquina.</td><td>Rojos falsos por límites de tiempo de Vitest con la máquina ocupada.</td><td><span class="chip ajuste">media</span></td></tr>
+        <tr><td class="id">M-05</td><td><strong>Claude Design después de su mudanza</strong> a Claude (claude.ai/design cierra el 14/12/2026).</td><td>Aviso del producto.</td><td><span class="chip igual">al ocurrir</span></td></tr>
+        <tr><td class="id">M-06</td><td><strong>E7 carriles y E8 aprobación sin hoja</strong>, todavía sin evidencia real.</td><td>Todos los cambios fueron secuenciales.</td><td><span class="chip igual">baja</span></td></tr>
+        <tr><td class="id">M-07</td><td><strong>Manual de marca</strong> de EMBA y de Gabriel/GPTO.</td><td>Q-004 de ai-desempeno: la marca sigue pendiente.</td><td><span class="chip igual">área dueña</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  Fuentes: reporte final del piloto de ai-desempeno (13/11/2026), informe «Método 0.4 a prueba» (18/11/2026), registro de
+  eventos de C-08 y C-09, CHANGELOG de emba-harness 0.4.0 a 0.4.3, <code>docs/metodo-1.0.md</code>,
+  <code>emba-brain/estandares/</code> y <code>PROPUESTA-METODOLOGIA.md</code>. Son 9 cambios reales: las cifras son
+  indicios, no estadística.
+</footer>
+
+</div>
