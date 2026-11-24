@@ -5,9 +5,12 @@
 - **Qué es la 1.0:** exactamente `emba-harness` 0.4.3, más `emba-brain/estandares/` y `PROPUESTA-METODOLOGIA.md`
   tal como están en `main` en esta fecha. No hay cambios de código. La etiqueta `metodo-1.0` marca el commit de unión
   de este documento.
-- **Guía para el equipo:** `docs/guia-equipo-metodo-1.0.html`, en lenguaje simple y sin nombres internos.
-  Publicada en https://claude.ai/code/artifact/9ecd22a2-83dd-4de3-a18d-7a279475ada4 (privada; se comparte desde su
-  menú).
+- **Guía para el equipo:** `docs/guia-equipo-metodo-1.0.html`, en lenguaje simple y sin nombres internos: cómo
+  funciona el método y cómo empezar, sin la evidencia. Publicada en
+  https://claude.ai/code/artifact/9ecd22a2-83dd-4de3-a18d-7a279475ada4 (privada; se comparte desde su menú).
+- **La prueba, para el equipo:** `docs/prueba-metodo-1.0.html`: cómo se probó en ai-desempeno, con cifras,
+  capturas, lo que mostró cada pieza, lecciones y límites. Publicada en
+  https://claude.ai/code/artifact/53ce3a74-3e01-4446-86f7-04e69dea3065 (privada).
 - **Informe técnico:** `docs/informe-metodo-1.0.html`, para quien mantiene el método: versiones, elementos,
   hooks y archivos de control.
 
