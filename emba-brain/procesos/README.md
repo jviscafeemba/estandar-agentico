@@ -14,7 +14,8 @@ fuentes: ["ai-genesys, Fase 1.5 (gobernanza): docs/procesos/ (23/11/2026)", ../s
 
 Una página de proceso describe un proceso de información de un área: qué operaciones tiene, con qué frecuencia,
 quién las hace, qué rastro dejan en los sistemas y qué reglas las tocan. Una página por proceso. Vive en el repo del
-proyecto, no aquí. Aquí están la plantilla y las reglas comunes.
+proyecto, no aquí; la ubicación sugerida, no obligatoria, es `docs/procesos/<area>/`. Aquí están la plantilla y las
+reglas comunes.
 
 - Plantilla: [plantilla.md](plantilla.md).
 - Ejemplo real (8 procesos de Finanzas, con matriz de dueños):
@@ -51,8 +52,8 @@ página cita referencias, nunca importes ni nombres de clientes o personas.
   En operaciones de diseño o configuración del sistema se abre en quién decide, quién ejecuta y quién autoriza. Si
   nadie sabe, eso es el hallazgo.
 - **Dueño**: la persona que responde por el dato del proceso. Sale de la **matriz de dueños** del proyecto (un YAML,
-  una fila por proceso; molde en la plantilla). Mientras el área no nombre a alguien, el líder técnico del proyecto es
-  dueño **provisional** y la página lo dice.
+  una fila por proceso; molde en la plantilla). Regla para toda EMBA (27/11/2026): mientras el área no nombre a
+  alguien, el líder técnico del proyecto es dueño **provisional** y la página lo dice.
 
 ## Pendientes y preguntas
 

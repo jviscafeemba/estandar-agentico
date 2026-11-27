@@ -7,7 +7,8 @@ fuentes: ["ai-genesys, Fase 1.5 (gobernanza): docs/procesos/plantilla.md (23/11/
 ---
 # Plantilla de página de proceso
 
-Copiar el bloque a `docs/procesos/<area>/<proceso>.md` del proyecto y llenar. Reglas: [README.md](README.md).
+Copiar el bloque a una página del repo del proyecto y llenar. Ubicación sugerida, no obligatoria:
+`docs/procesos/<area>/<proceso>.md`. Reglas: [README.md](README.md).
 Ejemplo lleno: [ai-genesys, Finanzas](https://github.com/gcastillo-emba/ai-genesys/tree/main/docs/procesos/finanzas).
 
 ```markdown
@@ -15,6 +16,9 @@ Ejemplo lleno: [ai-genesys, Finanzas](https://github.com/gcastillo-emba/ai-genes
 
 <Una frase: qué abarca, desde dónde hasta dónde.> Dominios: <partes del producto que lo consumen>.
 Dueño: <de la matriz de dueños; «(prov.)» si es provisional>.
+
+**Contrato de la fuente:** <opcional, si el proyecto tiene contratos de datos (por ejemplo ODCS): un enlace por
+tabla fuente. Si no los tiene, se borra la línea.>
 
 **Lo que se sabe:** <3 a 5 frases. Cada afirmación con su nivel de evidencia y su fuente:
 (dato: …), (declarado: documento:línea), (código: archivo:línea), (hipótesis).>
@@ -38,7 +42,7 @@ Preguntas abiertas: <IDs del registro de preguntas del proyecto.>
 
 ## Matriz de dueños
 
-Un archivo por proyecto, `docs/procesos/duenos.yaml`, una fila por proceso. El ID no se reutiliza ni se renumera.
+Un archivo por proyecto (sugerido: `docs/procesos/duenos.yaml`), una fila por proceso. El ID no se reutiliza ni se renumera.
 
 ```yaml
 version: 1
