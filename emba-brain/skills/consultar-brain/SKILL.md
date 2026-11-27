@@ -1,6 +1,6 @@
 ---
 name: consultar-brain
-description: Consulta el brain de empresa EMBA. Usar cuando haga falta un estándar de la empresa (flujo de trabajo, secretos, CI, qué va en AGENTS.md), un término de negocio (empresa, base, consumidor, factura, almacén), el mapa de sistemas, la plantilla de página de proceso, la clasificación de datos o una decisión de empresa (ADR-E…), y el repositorio del proyecto no lo resuelve.
+description: Consulta el brain de empresa EMBA. Usar cuando haga falta un estándar de la empresa (flujo de trabajo, secretos, CI, qué va en AGENTS.md), un término de negocio (empresa, base, consumidor, factura, almacén), el mapa de sistemas, la clasificación de datos o una decisión de empresa (ADR-E…), y el repositorio del proyecto no lo resuelve.
 ---
 
 # Consultar el brain de empresa
