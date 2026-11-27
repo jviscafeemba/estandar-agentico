@@ -16,7 +16,7 @@ poc-agentico/
 ├── .claude-plugin/marketplace.json   marketplace interno "emba-local" (2 plugins)
 ├── emba-brain/                       BRAIN DE EMPRESA = plugin "emba-empresa"
 │   ├── INDICE.md                     mapa corto; enlaza, no copia
-│   ├── estandares/ glosario/ sistemas/ seguridad-datos/ decisiones/ lecciones/
+│   ├── estandares/ glosario/ sistemas/ procesos/ seguridad-datos/ decisiones/ lecciones/
 │   └── skills/consultar-brain/       el agente consulta bajo demanda
 ├── emba-harness/                     HARNESS = plugin "emba-harness" (v0.4.3, ver CHANGELOG.md)
 │   ├── hooks/                        bloquear-secretos, bloquear-comandos, registrar-metricas

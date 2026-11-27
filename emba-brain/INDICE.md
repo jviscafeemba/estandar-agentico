@@ -20,6 +20,7 @@ Este índice enlaza; no copia. Leé solo el documento que necesites.
 | Numeración de facturas y documentos fiscales | [estandares/documentos-fiscales.md](estandares/documentos-fiscales.md) |
 | Términos de negocio (empresa, base, consumidor, código de almacén…) | [glosario/negocio.md](glosario/negocio.md) |
 | Qué sistemas existen y cómo se integran | [sistemas/mapa.md](sistemas/mapa.md) |
+| Cómo documentar un proceso de un área (página de proceso, evidencia, dueños) | [procesos/README.md](procesos/README.md) · [plantilla](procesos/plantilla.md) |
 | Clasificación de datos y qué puede ver un agente | [seguridad-datos/clasificacion.md](seguridad-datos/clasificacion.md) |
 | Decisiones de empresa | [ADR-E001](decisiones/ADR-E001-desarrollo-agentico-federado.md), [ADR-E002](decisiones/ADR-E002-politica-seguridad-agentes.md) |
 | Lecciones candidatas (aún no son estándar) | [lecciones/README.md](lecciones/README.md) |
